@@ -3,8 +3,9 @@
  * Mengizinkan aplikasi diinstal di HP (Add to Home Screen / Install App)
  */
 
-const CACHE_NAME = 'epondok-v2';
+const CACHE_NAME = 'epondok-v3';
 const ASSETS_TO_CACHE = [
+  '/',
   './',
   './index.html',
   './css/style.css',
@@ -33,7 +34,9 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
+      return Promise.allSettled(
+        ASSETS_TO_CACHE.map((url) => cache.add(url).catch(() => {}))
+      );
     })
   );
   self.skipWaiting();
@@ -52,10 +55,24 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  if (!event.request.url.startsWith('http')) return;
+
+  // Navigasi halaman: prioritaskan jaringan, fallback ke cache jika offline
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('./index.html')
+          .then((res) => res || caches.match('/'))
+          .then((res) => res || caches.match('./'));
+      })
+    );
+    return;
+  }
+
+  // Aset statis: cache-first dengan background update
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Fetch background update
         fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
@@ -65,7 +82,7 @@ self.addEventListener('fetch', (event) => {
         }).catch(() => {});
         return cachedResponse;
       }
-      return fetch(event.request).catch(() => caches.match('./index.html'));
+      return fetch(event.request);
     })
   );
 });
