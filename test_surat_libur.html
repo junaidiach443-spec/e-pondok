@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cetak Surat Izin Libur Santri - Pondok Pesantren Al-Usymuni</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 5mm 6mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            margin: 0;
+            padding: 8px;
+            font-family: Arial, 'Segoe UI', Helvetica, sans-serif;
+            color: #15803d;
+            background: #f1f5f9;
+        }
+
+        .page-sheet {
+            width: 283mm;
+            height: 194mm;
+            margin: 0 auto 16px auto;
+            background: #fff;
+            padding: 4mm 7mm;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12mm;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            page-break-after: always;
+            break-after: page;
+            overflow: hidden;
+        }
+
+        .cut-line {
+            position: absolute;
+            left: 50%;
+            top: 4mm;
+            bottom: 4mm;
+            border-left: 1px dashed #cbd5e1;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .cut-marker {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 2px 4px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .surat-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* WATERMARK BACKGROUND (LAMBANG AL-USYMUNI) */
+        .surat-card::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 195px;
+            height: 195px;
+            background-image: url('assets/surat_libur_watermark_clean.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.16;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .surat-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* KOP HEADER */
+        .kop-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .kop-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kop-logo {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .kop-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .kop-arabic {
+            height: 28px;
+            object-fit: contain;
+            margin-bottom: 1px;
+        }
+
+        .kop-latin {
+            color: #15803d;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.15;
+        }
+
+        /* BARCODE KOP KEDATANGAN */
+        .kop-barcode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #15803d;
+            background: #f0fdf4;
+            border-radius: 4px;
+            padding: 2px 6px;
+            width: 130px;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .bc-title {
+            font-size: 7px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #15803d;
+            margin-bottom: 1px;
+            line-height: 1;
+        }
+
+        .bc-svg {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20px;
+            width: 100%;
+        }
+
+        .bc-nis {
+            font-family: Arial, monospace, sans-serif;
+            font-size: 7.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #15803d;
+            margin-top: 1px;
+            line-height: 1;
+        }
+
+        /* TITLE */
+        .surat-title {
+            text-align: center;
+            margin: 2px 0 4px 0;
+        }
+
+        .surat-title h3 {
+            margin: 0;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #15803d;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            line-height: 1.25;
+        }
+
+        /* DATA SANTRI */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            line-height: 1.34;
+            color: #15803d;
+            margin-bottom: 2px;
+        }
+
+        .data-table td {
+            vertical-align: top;
+            padding: 1.5px 0;
+        }
+
+        .data-table td.col-label {
+            width: 105px;
+            font-weight: 700;
+            color: #15803d;
+        }
+
+        .data-table td.col-colon {
+            width: 12px;
+            text-align: left;
+            font-weight: 700;
+            color: #15803d;
+        }
+
+        .data-table td.col-val {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .data-table td.col-val b {
+            font-weight: 800;
+        }
+
+        /* TITIMANGSA */
+        .titimangsa-box {
+            color: #15803d;
+            font-weight: 800;
+            font-size: 10.5px;
+            margin: 2px 0 1px 0;
+            text-align: left;
+        }
+
+        /* TANDA TANGAN SECTION */
+        .ttd-section {
+            width: 100%;
+            text-align: center;
+            margin-top: 1px;
+        }
+
+        .ttd-header {
+            font-size: 10.5px;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #15803d;
+            margin-bottom: 1px;
+        }
+
+        .ttd-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ttd-grid td {
+            width: 50%;
+            vertical-align: top;
+            text-align: center;
+            padding: 0 4px;
+            position: relative;
+        }
+
+        .ttd-jabatan {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #15803d;
+            margin-bottom: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ttd-sign-box {
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .ttd-img-ketua {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-40%, -35%);
+            height: 84px;
+            max-height: none;
+            max-width: none;
+            object-fit: contain;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .ttd-img-sekre {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-45%, -38%);
+            height: 92px;
+            max-height: none;
+            max-width: none;
+            object-fit: contain;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .ttd-nama {
+            color: #15803d;
+            font-weight: 800;
+            font-size: 10px;
+            text-decoration: underline;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* GARIS PEMISAH & PERHATIAN */
+        .perhatian-divider {
+            border-top: 1.5px solid #15803d;
+            margin: 4px 0 3px 0;
+        }
+
+        .perhatian-box {
+            padding: 0;
+            margin: 0 0 3px 0;
+            font-size: 8px;
+            line-height: 1.34;
+            color: #15803d;
+        }
+
+        .perhatian-row {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .perhatian-title {
+            font-weight: 800;
+            white-space: nowrap;
+            margin-right: 4px;
+            color: #15803d;
+        }
+
+        .perhatian-items {
+            flex: 1;
+            font-weight: 600;
+            color: #15803d;
+        }
+
+        .perhatian-items div {
+            margin-bottom: 0.5px;
+        }
+
+        /* FOOTER ALAMAT */
+        .footer-info {
+            font-size: 7.2px;
+            line-height: 1.32;
+            color: #15803d;
+            padding-top: 2px;
+            margin-top: 1px;
+        }
+
+        .footer-info p {
+            margin: 0;
+        }
+
+        .footer-info b {
+            font-weight: 800;
+        }
+
+        .footer-info a {
+            color: #0284c7;
+            text-decoration: underline;
+        }
+
+        /* TOOLBAR CETAK DI BROWSER */
+        .no-print-bar {
+            position: sticky;
+            top: 0;
+            background: #1e293b;
+            color: #fff;
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+
+        .btn-print-action {
+            background: #16a34a;
+            color: white;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-print-action:hover {
+            background: #15803d;
+        }
+
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .no-print-bar {
+                display: none !important;
+            }
+
+            .page-sheet {
+                box-shadow: none;
+                margin: 0;
+                padding: 4mm 7mm;
+                width: 100%;
+                height: 100vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print-bar">
+        <div>
+            <b>🖨️ Format Resmi Surat Izin Libur - Pondok Pesantren Al-Usymuni</b>
+            <span style="font-size: 12px; color: #94a3b8; margin-left: 10px;">(Ukuran A4 Landscape • 2 Surat Langsung Per Lembar)</span>
+        </div>
+        <button class="btn-print-action" onclick="window.print()">
+            <span>🖨️</span> Cetak Sekarang
+        </button>
+    </div>
+
+    <!-- 1 LEMBAR A4 LANDSCAPE = 2 SURAT BERDAMPINGAN -->
+    <div class="page-sheet">
+        <div class="cut-line"></div>
+        <div class="cut-marker">✂</div>
+
+        <!-- ================= SURAT 1 (KIRI) ================= -->
+        <div class="surat-card">
+            <!-- Kop Surat -->
+            <div class="kop-wrapper">
+                <div class="kop-brand">
+                    <img src="assets/surat_libur_logo_clean.png" alt="Logo" class="kop-logo">
+                    <div class="kop-text">
+                        <img src="assets/surat_libur_kaligrafi_clean.png" alt="Kaligrafi" class="kop-arabic">
+                        <div class="kop-latin">Pondok Pesantren Al-Usymuni</div>
+                    </div>
+                </div>
+                <div class="kop-barcode">
+                    <div class="bc-title">SCAN KEDATANGAN</div>
+                    <div class="bc-svg" data-nis="1441-02-049"></div>
+                    <div class="bc-nis">NIS: 1441-02-049</div>
+                </div>
+            </div>
+
+            <!-- Judul Surat -->
+            <div class="surat-title">
+                <h3>SURAT IZIN LIBUR ........</h3>
+            </div>
+
+            <!-- Data Santri -->
+            <table class="data-table">
+                <tr>
+                    <td class="col-label">Nama</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">..................................................................................</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Kamar/Daerah</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">A-01/A-02/A-03/B-01/B-02/B-03/B-04/B-05/Pengurus</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Keperluan</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">Libur Ramadhan</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Lama Izin</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">46 Hari</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Surat ini berlaku</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">
+                        Ahad, 27 Sya’ban 1447 H. / 15 Februari 2026 M. s/d<br>
+                        Rabu, 13 Syawal 1447 H. / 01 April 2026 M.
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Titimangsa & Tanda Tangan -->
+            <div>
+                <div class="titimangsa-box">
+                    Tarate, 25 Sya’ban 1447 H. | 13 Februari 2026 M.
+                </div>
+                <div class="ttd-section">
+                    <div class="ttd-header">
+                        Pengurus,<br>
+                        Pondok Pesantren Al-Usymuni
+                    </div>
+                    <table class="ttd-grid">
+                        <tr>
+                            <td>
+                                <div class="ttd-jabatan">Ketua Umum</div>
+                                <div class="ttd-sign-box">
+                                    <img src="assets/surat_libur_ttd_ketua_clean.png" alt="TTD Ketua" class="ttd-img-ketua">
+                                </div>
+                                <div class="ttd-nama">K. AHMAD ROBEITH AL FAROH, M.H.</div>
+                            </td>
+                            <td>
+                                <div class="ttd-jabatan">Sekretaris Umum</div>
+                                <div class="ttd-sign-box">
+                                    <img src="assets/surat_libur_ttd_sekretaris_clean.png" alt="TTD Sekretaris + Stempel" class="ttd-img-sekre">
+                                </div>
+                                <div class="ttd-nama">LUTFI NURULLAH, M.H.</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Garis Pemisah & Perhatian -->
+            <div>
+                <div class="perhatian-divider"></div>
+                <div class="perhatian-box">
+                    <div class="perhatian-row">
+                        <span class="perhatian-title">Perhatian :</span>
+                        <div class="perhatian-items">
+                            <div>* Jaga Nama Baik Pondok Pesantren Al-Usymuni.</div>
+                            <div>* Memakai seragam Santri (Kopyah Putih, Baju Putih & Sarung Hijau)</div>
+                            <div>* Kembali ke Pesantren Sesuai dengan waktu yang sudah ditentukan</div>
+                            <div>* Surat Izin dikembalikan setelah kembali Ke Pondok Pesantren.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Alamat -->
+            <div class="footer-info">
+                <p><b>Alamat :</b> Jl. Pesantren No. 11 Tarate Pandian Sumenep Jatim, <b>Kode Pos :</b> 69414</p>
+                <p><b>Telp.</b> (0328) 662261- 662326 &nbsp;&bull;&nbsp; <b>Email :</b> <a href="mailto:sekretariat.ppu@gmail.com">sekretariat.ppu@gmail.com</a> &nbsp;&bull;&nbsp; <b>Hp :</b> 087850119090</p>
+            </div>
+        </div>
+
+        <!-- ================= SURAT 2 (KANAN) ================= -->
+        <div class="surat-card">
+            <!-- Kop Surat -->
+            <div class="kop-wrapper">
+                <div class="kop-brand">
+                    <img src="assets/surat_libur_logo_clean.png" alt="Logo" class="kop-logo">
+                    <div class="kop-text">
+                        <img src="assets/surat_libur_kaligrafi_clean.png" alt="Kaligrafi" class="kop-arabic">
+                        <div class="kop-latin">Pondok Pesantren Al-Usymuni</div>
+                    </div>
+                </div>
+                <div class="kop-barcode">
+                    <div class="bc-title">SCAN KEDATANGAN</div>
+                    <div class="bc-svg" data-nis="1441-02-050"></div>
+                    <div class="bc-nis">NIS: 1441-02-050</div>
+                </div>
+            </div>
+
+            <!-- Judul Surat -->
+            <div class="surat-title">
+                <h3>SURAT IZIN LIBUR ........</h3>
+            </div>
+
+            <!-- Data Santri -->
+            <table class="data-table">
+                <tr>
+                    <td class="col-label">Nama</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">..................................................................................</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Kamar/Daerah</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">A-01/A-02/A-03/B-01/B-02/B-03/B-04/B-05/Pengurus</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Keperluan</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">Libur Ramadhan</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Lama Izin</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">46 Hari</td>
+                </tr>
+                <tr>
+                    <td class="col-label">Surat ini berlaku</td>
+                    <td class="col-colon">:</td>
+                    <td class="col-val">
+                        Ahad, 27 Sya’ban 1447 H. / 15 Februari 2026 M. s/d<br>
+                        Rabu, 13 Syawal 1447 H. / 01 April 2026 M.
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Titimangsa & Tanda Tangan -->
+            <div>
+                <div class="titimangsa-box">
+                    Tarate, 25 Sya’ban 1447 H. | 13 Februari 2026 M.
+                </div>
+                <div class="ttd-section">
+                    <div class="ttd-header">
+                        Pengurus,<br>
+                        Pondok Pesantren Al-Usymuni
+                    </div>
+                    <table class="ttd-grid">
+                        <tr>
+                            <td>
+                                <div class="ttd-jabatan">Ketua Umum</div>
+                                <div class="ttd-sign-box">
+                                    <img src="assets/surat_libur_ttd_ketua_clean.png" alt="TTD Ketua" class="ttd-img-ketua">
+                                </div>
+                                <div class="ttd-nama">K. AHMAD ROBEITH AL FAROH, M.H.</div>
+                            </td>
+                            <td>
+                                <div class="ttd-jabatan">Sekretaris Umum</div>
+                                <div class="ttd-sign-box">
+                                    <img src="assets/surat_libur_ttd_sekretaris_clean.png" alt="TTD Sekretaris + Stempel" class="ttd-img-sekre">
+                                </div>
+                                <div class="ttd-nama">LUTFI NURULLAH, M.H.</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Garis Pemisah & Perhatian -->
+            <div>
+                <div class="perhatian-divider"></div>
+                <div class="perhatian-box">
+                    <div class="perhatian-row">
+                        <span class="perhatian-title">Perhatian :</span>
+                        <div class="perhatian-items">
+                            <div>* Jaga Nama Baik Pondok Pesantren Al-Usymuni.</div>
+                            <div>* Memakai seragam Santri (Kopyah Putih, Baju Putih & Sarung Hijau)</div>
+                            <div>* Kembali ke Pesantren Sesuai dengan waktu yang sudah ditentukan</div>
+                            <div>* Surat Izin dikembalikan setelah kembali Ke Pondok Pesantren.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Alamat -->
+            <div class="footer-info">
+                <p><b>Alamat :</b> Jl. Pesantren No. 11 Tarate Pandian Sumenep Jatim, <b>Kode Pos :</b> 69414</p>
+                <p><b>Telp.</b> (0328) 662261- 662326 &nbsp;&bull;&nbsp; <b>Email :</b> <a href="mailto:sekretariat.ppu@gmail.com">sekretariat.ppu@gmail.com</a> &nbsp;&bull;&nbsp; <b>Hp :</b> 087850119090</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generator Barcode Code 128 (Format SVG Vektor Ringan)
+        function generateCode128SVG(text, height = 20, barWidth = 0.85) {
+            if (!text) return '';
+            const patterns = [
+                "212222", "222122", "222221", "121223", "121322", "131222", "122213", "122312", "132212", "221213",
+                "221312", "231212", "112232", "122132", "122231", "113222", "123122", "123221", "223211", "221132",
+                "221231", "213212", "223112", "312131", "311222", "321122", "321221", "312212", "322112", "322211",
+                "212123", "212321", "232121", "111323", "131123", "131321", "112313", "132113", "132311", "211313",
+                "231113", "231311", "112133", "112331", "132131", "113123", "113321", "133121", "313121", "211331",
+                "231131", "213113", "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111",
+                "314111", "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
+                "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112", "134111",
+                "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112", "421211", "212141",
+                "214121", "412121", "111143", "111341", "131141", "114113", "114311", "411113", "411311", "113141",
+                "114131", "311141", "411131", "211412", "211214", "211232", "2331112"
+            ];
+            let codes = [104];
+            let checksum = 104;
+            for (let i = 0; i < text.length; i++) {
+                let code = text.charCodeAt(i) - 32;
+                if (code < 0 || code > 95) code = 0;
+                codes.push(code);
+                checksum += code * (i + 1);
+            }
+            codes.push(checksum % 103);
+            codes.push(106);
+            let modules = "";
+            for (let c of codes) {
+                let pattern = patterns[c];
+                if (!pattern) continue;
+                for (let j = 0; j < pattern.length; j++) {
+                    let width = parseInt(pattern[j], 10);
+                    modules += (j % 2 === 0 ? "1" : "0").repeat(width);
+                }
+            }
+            let totalWidth = Math.ceil(modules.length * barWidth);
+            let rects = "";
+            let x = 0;
+            for (let i = 0; i < modules.length; i++) {
+                if (modules[i] === "1") {
+                    rects += `<rect x="${x}" y="0" width="${barWidth}" height="${height}" fill="#15803d" />`;
+                }
+                x += barWidth;
+            }
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${height}" width="${totalWidth}" height="${height}" style="max-width: 100%; height: ${height}px; display: block; margin: 0 auto;">${rects}</svg>`;
+        }
+
+        document.querySelectorAll('.bc-svg').forEach(el => {
+            const nis = el.getAttribute('data-nis') || '1441-02-049';
+            el.innerHTML = generateCode128SVG(nis, 20, 0.85);
+        });
+    </script>
+</body>
+
+</html>

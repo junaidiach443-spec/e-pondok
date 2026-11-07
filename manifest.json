@@ -1,0 +1,24 @@
+{
+  "name": "e-Pondok PP. AL-USYMUNI",
+  "short_name": "e-Pondok",
+  "description": "Sistem Manajemen Keuangan & Administrasi PP. Al-Usymuni",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#3b28cc",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/favicon.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

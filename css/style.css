@@ -1,0 +1,363 @@
+/* ==========================================================================
+   e-Pondok Keuangan PP. AL-USYMUNI - Modern Aesthetic Stylesheet
+   Desain visual modern, elegan, clean, dan interaktif
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
+    --color-primary: #3b28cc;
+    --color-primary-dark: #1e1b4b;
+    --color-finetiks-blue: #4d38f5;
+    --color-finetiks-orange: #ff6b00;
+    --card-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.03);
+    --card-shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    font-size: 14.5px; /* Skala font & rem diturunkan dari 16px ke 14.5px agar lebih ramping, padat, dan nyaman dipandang */
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: #f8fafc;
+    color: #1e293b;
+    letter-spacing: -0.011em;
+}
+
+/* Custom Scrollbar - Sleek Minimalist */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+    border: 1px solid transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Page Transition Animation */
+.page-enter,
+#main-container > div:not(.hidden) {
+    animation: pageFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Elevation & Aesthetic Hover */
+.bg-white.rounded-2xl {
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+}
+
+.bg-white.rounded-2xl:hover {
+    border-color: rgba(203, 213, 225, 0.9);
+}
+
+/* Interactive Clickable Cards Hover */
+.cursor-pointer.bg-white.rounded-2xl:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Modern Form Controls & Inputs */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    font-family: var(--font-sans);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #d1d5db;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.15);
+    background-color: #ffffff;
+}
+
+/* Numbers in Tables & KPI Cards */
+.font-mono,
+td.font-mono,
+span.font-mono {
+    font-family: var(--font-mono) !important;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+/* Table Aesthetics & Compact Proportions */
+table th {
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.04em !important;
+}
+
+table td {
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
+    font-size: 0.84rem !important;
+}
+
+table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+table tbody tr:hover {
+    background-color: rgba(248, 250, 252, 0.95) !important;
+}
+
+/* Pagination Control Styling */
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    background-color: #ffffff;
+    border-top: 1px solid #f1f5f9;
+}
+
+@media (min-width: 640px) {
+    .pagination-container {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.1rem;
+    height: 2.1rem;
+    padding: 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #475569;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.pagination-btn.active {
+    background-color: #3b28cc;
+    border-color: #3b28cc;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(59, 40, 204, 0.3);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: #f8fafc;
+}
+
+/* Button Micro-Interactions */
+button {
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:active {
+    transform: scale(0.97);
+}
+
+/* Status Badges with Pulse/Dot Glow */
+.status-pill-aktif {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-pill-aktif::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background-color: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.status-pill-lunas {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #6ee7b7;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-pill-lunas::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background-color: #059669;
+}
+
+/* Progress Bar Smooth Animation */
+.progress-bar-fill {
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Struk Thermal 58mm Monospace Preview */
+.struk-preview {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #111827;
+    background: #fffdfa;
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Modal Animations */
+.modal-backdrop-open {
+    opacity: 1 !important;
+}
+
+.modal-content-open {
+    opacity: 1 !important;
+    transform: scale(1) translateY(0) !important;
+}
+
+/* Ambient glow accents for dashboard hero cards */
+.hero-glow-emerald {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
+.hero-glow-indigo {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0) 70%);
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
+/* Smooth selection on student cards */
+#list-santri-ikhtibar-selectable > div {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Shake animation for invalid auth credentials */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-8px); }
+    40%, 80% { transform: translateX(8px); }
+}
+.animate-shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+/* ==========================================================================
+   Mobile UX & Responsive Optimizations (Tampilan Nyaman di HP)
+   ========================================================================== */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    /* Kontrol sentuh lebih nyaman di HP */
+    button, 
+    input[type="text"], 
+    input[type="password"], 
+    input[type="number"], 
+    input[type="date"], 
+    select {
+        min-height: 42px;
+    }
+
+    /* Scrolling tabel lebih halus di layar sentuh */
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Kartu & padding di HP */
+    .bg-white.rounded-2xl {
+        border-radius: 18px;
+    }
+
+    /* Modal responsif tidak mepet layar */
+    .modal-content-open {
+        max-width: 95vw !important;
+        margin: 12px auto !important;
+        max-height: 92vh !important;
+        overflow-y: auto !important;
+        border-radius: 20px !important;
+    }
+
+    /* Panel bayar syahriah mengambang di HP */
+    #action-panel-bayar {
+        padding: 12px 16px !important;
+        box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.12) !important;
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+    }
+}
+
