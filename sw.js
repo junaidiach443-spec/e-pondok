@@ -3,7 +3,7 @@
  * Mengizinkan aplikasi diinstal di HP (Add to Home Screen / Install App)
  */
 
-const CACHE_NAME = 'epondok-v1';
+const CACHE_NAME = 'epondok-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS_TO_CACHE = [
   './js/navigation.js',
   './js/dashboard.js',
   './js/santri.js',
+  './js/izin-keluar.js',
   './js/syahriah.js',
   './js/pembayaran-lain.js',
   './js/tagihan-kustom.js',
