@@ -5,7 +5,7 @@
  * ==========================================================================
  */
 
-const DATA_VERSION = '2026-10-26-ppu-74-gt-guru-tugas';
+const DATA_VERSION = '2026-11-08-ppu-74-gt-v2';
 
 // Konfigurasi Pengaturan Sistem Awal
 var appSettings = {
@@ -2566,7 +2566,7 @@ function loadDataFromStorage() {
     }
 
     const savedTrx = localStorage.getItem('transactions');
-    if (savedTrx && isNewVersion) {
+    if (savedTrx) {
         try {
             let parsed = JSON.parse(savedTrx);
             if (Array.isArray(parsed)) transactions = parsed;
@@ -2578,7 +2578,7 @@ function loadDataFromStorage() {
     }
 
     const savedMutasi = localStorage.getItem('mutasiKamarList');
-    if (savedMutasi && isNewVersion) {
+    if (savedMutasi) {
         try {
             let parsed = JSON.parse(savedMutasi);
             if (Array.isArray(parsed)) mutasiKamarList = parsed;
@@ -2588,7 +2588,7 @@ function loadDataFromStorage() {
     }
 
     const savedLiburan = localStorage.getItem('liburanSantriList');
-    if (savedLiburan && isNewVersion) {
+    if (savedLiburan) {
         try {
             let parsed = JSON.parse(savedLiburan);
             if (Array.isArray(parsed)) liburanSantriList = parsed;
@@ -2601,7 +2601,7 @@ function loadDataFromStorage() {
     }
 
     const savedPulang = localStorage.getItem('pulangSantriList');
-    if (savedPulang && isNewVersion) {
+    if (savedPulang) {
         try {
             let parsed = JSON.parse(savedPulang);
             if (Array.isArray(parsed)) pulangSantriList = parsed;

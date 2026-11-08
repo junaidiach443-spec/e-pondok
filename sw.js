@@ -1,9 +1,10 @@
 /**
  * Service Worker untuk e-Pondok PWA
  * Mengizinkan aplikasi diinstal di HP (Add to Home Screen / Install App)
+ * & Menjamin pembaruan hosting langsung tampil (Network-First untuk kode aplikasi)
  */
 
-const CACHE_NAME = 'epondok-v5';
+const CACHE_NAME = 'epondok-v6';
 const ASSETS_TO_CACHE = [
   '/',
   './',
@@ -57,32 +58,62 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
 
-  // Navigasi halaman: prioritaskan jaringan, fallback ke cache jika offline
-  if (event.request.mode === 'navigate') {
+  const url = event.request.url;
+
+  // Lewati request API Google Apps Script & Google Sheets agar selalu live
+  if (url.includes('script.google.com') || url.includes('google.com/macros')) {
+    return;
+  }
+
+  // File kode aplikasi & navigasi: NETWORK-FIRST
+  // Memastikan perubahan kode di hosting selalu segera diambil tanpa tertahan cache lawas
+  const isApplicationCode = event.request.mode === 'navigate' ||
+                            event.request.destination === 'script' ||
+                            event.request.destination === 'style' ||
+                            url.includes('/js/') ||
+                            url.includes('/css/') ||
+                            url.endsWith('.html');
+
+  if (isApplicationCode) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('./index.html')
-          .then((res) => res || caches.match('/'))
-          .then((res) => res || caches.match('./'));
-      })
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const resClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Jika offline, ambil dari cache
+          return caches.match(event.request).then((cached) => {
+            if (cached) return cached;
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html')
+                .then((res) => res || caches.match('/'))
+                .then((res) => res || caches.match('./'));
+            }
+            return caches.match('./index.html');
+          });
+        })
     );
     return;
   }
 
-  // Aset statis: cache-first dengan background update
+  // Aset statis (gambar, font, logo): Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        fetch(event.request).then((networkResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, networkResponse);
-            });
+            const resClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
           }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-      return fetch(event.request);
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

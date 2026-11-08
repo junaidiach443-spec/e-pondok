@@ -33,47 +33,62 @@ function tutupModal(id) {
 function initApp() {
     // 1. Memuat Data dari LocalStorage
     if (typeof loadDataFromStorage === 'function') {
-        loadDataFromStorage();
+        try { loadDataFromStorage(); } catch (e) { console.error("Error loadDataFromStorage:", e); }
+    }
+
+    // Segera perbarui Dashboard santri KPI agar tidak pernah kosong / 0
+    if (typeof updateDashboard === 'function') {
+        try { updateDashboard(); } catch (e) { console.error("Error updateDashboard awal:", e); }
     }
 
     // Inisialisasi Kunci Pengurus & Autentikasi
     if (typeof initAuth === 'function') {
-        initAuth();
+        try { initAuth(); } catch (e) { console.error("Error initAuth:", e); }
     }
 
     // 2. Tampilkan Tanggal Masehi & Hijriah
     if (typeof updateDateHeader === 'function') {
-        updateDateHeader();
-        setInterval(updateDateHeader, 1000 * 60 * 60); // Update tiap 1 jam
+        try {
+            updateDateHeader();
+            setInterval(updateDateHeader, 1000 * 60 * 60); // Update tiap 1 jam
+        } catch (e) { console.error("Error updateDateHeader:", e); }
     }
     
     // 3. Set Nilai Form Pengaturan Tarif
-    const elTarif = document.getElementById('setting-tarif');
-    if (elTarif && appSettings) {
-        elTarif.value = appSettings.tarifSyahriah;
-    }
+    try {
+        const elTarif = document.getElementById('setting-tarif');
+        if (elTarif && appSettings) {
+            elTarif.value = appSettings.tarifSyahriah;
+        }
+    } catch (e) { console.error("Error setting tarif:", e); }
 
     // 4. Inisialisasi Data Master & Dropdown
-    if (typeof updateFiltersAndDropdowns === 'function') updateFiltersAndDropdowns();
-    if (typeof renderPengaturanTahunAjaran === 'function') renderPengaturanTahunAjaran();
-    if (typeof renderPengaturanTagihan === 'function') renderPengaturanTagihan();
-    if (typeof renderPengaturanPembayaranLain === 'function') renderPengaturanPembayaranLain();
-    if (typeof renderPengaturanPJDivisi === 'function') renderPengaturanPJDivisi();
-    if (typeof renderPengaturanKhususIkhtibar === 'function') renderPengaturanKhususIkhtibar();
-    if (typeof renderPengaturanKamar === 'function') renderPengaturanKamar();
-    if (typeof renderPengaturanAuth === 'function') renderPengaturanAuth();
-    if (typeof renderPengeluaranMenu === 'function') renderPengeluaranMenu();
-    if (typeof updateLiburanFiltersAndDropdowns === 'function') updateLiburanFiltersAndDropdowns();
-    if (typeof updatePulangFiltersAndDropdowns === 'function') updatePulangFiltersAndDropdowns();
+    const safeExec = (fnName) => {
+        if (typeof window[fnName] === 'function') {
+            try { window[fnName](); } catch (e) { console.warn(`Peringatan init ${fnName}:`, e); }
+        }
+    };
+
+    safeExec('updateFiltersAndDropdowns');
+    safeExec('renderPengaturanTahunAjaran');
+    safeExec('renderPengaturanTagihan');
+    safeExec('renderPengaturanPembayaranLain');
+    safeExec('renderPengaturanPJDivisi');
+    safeExec('renderPengaturanKhususIkhtibar');
+    safeExec('renderPengaturanKamar');
+    safeExec('renderPengaturanAuth');
+    safeExec('renderPengeluaranMenu');
+    safeExec('updateLiburanFiltersAndDropdowns');
+    safeExec('updatePulangFiltersAndDropdowns');
 
     // 5. Buka Halaman Awal (Dashboard)
     if (typeof navigate === 'function') {
-        navigate('dashboard');
+        try { navigate('dashboard'); } catch (e) { console.error("Error navigate dashboard:", e); }
     }
 
     // 6. Inisialisasi Cloud Sync Google Apps Script
     if (typeof initCloudSync === 'function') {
-        initCloudSync();
+        try { initCloudSync(); } catch (e) { console.error("Error initCloudSync:", e); }
     }
 }
 
@@ -82,14 +97,31 @@ window.bukaModal = bukaModal;
 window.tutupModal = tutupModal;
 window.initApp = initApp;
 
-// Jalankan saat browser selesai loading
-window.onload = () => {
+let appInitialized = false;
+function startAppOnce() {
+    if (appInitialized) return;
+    appInitialized = true;
     initApp();
 
-    // Registrasi Service Worker untuk PWA (Instalasi Aplikasi di HP)
+    // Registrasi Service Worker untuk PWA (Instalasi Aplikasi di HP & Auto-Update)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+            // Segera cek pembaruan file di hosting setiap kali aplikasi dibuka
+            if (reg) {
+                reg.update().catch(() => {});
+            }
+        }).catch(() => {});
     }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAppOnce);
+} else {
+    startAppOnce();
+}
+
+window.addEventListener('load', () => {
+    startAppOnce();
 
     // Global Click Listener untuk menutup dropdown combobox saat klik di luar
     document.addEventListener('click', (e) => {
@@ -111,5 +143,5 @@ window.onload = () => {
             }
         }
     });
-};
+});
 

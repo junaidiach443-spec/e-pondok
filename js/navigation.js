@@ -185,3 +185,4 @@ window.toggleSidebar = toggleSidebar;
 window.toggleMenu = toggleMenu;
 window.updateHeaderTitle = updateHeaderTitle;
 window.navigate = navigate;
+window.navigateToPage = navigate;

@@ -13,12 +13,17 @@ function setDashboardPeriodFilter(filter) {
 }
 
 function updateDashboard() {
-    const TA = getTahunAjaranAktif();
-    const activeSantriList = (santriData || []).filter(s => s.status === 'Aktif');
+    const TA = (typeof getTahunAjaranAktif === 'function') ? getTahunAjaranAktif() : '1447/1448';
+    
+    // Ambil data santri dari variabel santriData atau window.santriData
+    const allSantri = (typeof santriData !== 'undefined' && Array.isArray(santriData) && santriData.length > 0)
+        ? santriData
+        : ((typeof window !== 'undefined' && Array.isArray(window.santriData)) ? window.santriData : []);
+    
+    const activeSantriList = allSantri.filter(s => s.status === 'Aktif');
     const santriAktif = activeSantriList.length;
 
     // Hitung Statistik Real-Time Demografi & Status Santri
-    const allSantri = santriData || [];
     const totalSemua = allSantri.length;
     const totalBoyong = allSantri.filter(s => s.status === 'Boyong').length;
     const totalGT = allSantri.filter(s => s.status === 'GT').length;
@@ -28,18 +33,20 @@ function updateDashboard() {
         if (el) el.innerText = text;
     };
 
-    setKpiText('dash-kpi-total', `${totalSemua} Santri`);
-    setKpiText('dash-kpi-aktif', `${santriAktif} Santri`);
-    setKpiText('dash-kpi-boyong', `${totalBoyong} Santri`);
-    setKpiText('dash-kpi-gt', `${totalGT} Santri`);
+    if (totalSemua > 0) {
+        setKpiText('dash-kpi-total', `${totalSemua} Santri`);
+        setKpiText('dash-kpi-aktif', `${santriAktif} Santri`);
+        setKpiText('dash-kpi-boyong', `${totalBoyong} Santri`);
+        setKpiText('dash-kpi-gt', `${totalGT} Santri`);
 
-    setKpiText('master-kpi-total', `${totalSemua} Santri`);
-    setKpiText('master-kpi-aktif', `${santriAktif} Santri`);
-    setKpiText('master-kpi-boyong', `${totalBoyong} Santri`);
-    setKpiText('master-kpi-gt', `${totalGT} Santri`);
+        setKpiText('master-kpi-total', `${totalSemua} Santri`);
+        setKpiText('master-kpi-aktif', `${santriAktif} Santri`);
+        setKpiText('master-kpi-boyong', `${totalBoyong} Santri`);
+        setKpiText('master-kpi-gt', `${totalGT} Santri`);
+    }
 
     const elTotalSantri = document.getElementById('dash-total-santri');
-    if (elTotalSantri) elTotalSantri.innerText = santriAktif;
+    if (elTotalSantri && totalSemua > 0) elTotalSantri.innerText = santriAktif;
 
     const today = new Date().toLocaleDateString('en-CA');
 
