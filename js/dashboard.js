@@ -17,6 +17,27 @@ function updateDashboard() {
     const activeSantriList = (santriData || []).filter(s => s.status === 'Aktif');
     const santriAktif = activeSantriList.length;
 
+    // Hitung Statistik Real-Time Demografi & Status Santri
+    const allSantri = santriData || [];
+    const totalSemua = allSantri.length;
+    const totalBoyong = allSantri.filter(s => s.status === 'Boyong').length;
+    const totalGT = allSantri.filter(s => s.status === 'GT').length;
+
+    const setKpiText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    };
+
+    setKpiText('dash-kpi-total', `${totalSemua} Santri`);
+    setKpiText('dash-kpi-aktif', `${santriAktif} Santri`);
+    setKpiText('dash-kpi-boyong', `${totalBoyong} Santri`);
+    setKpiText('dash-kpi-gt', `${totalGT} Santri`);
+
+    setKpiText('master-kpi-total', `${totalSemua} Santri`);
+    setKpiText('master-kpi-aktif', `${santriAktif} Santri`);
+    setKpiText('master-kpi-boyong', `${totalBoyong} Santri`);
+    setKpiText('master-kpi-gt', `${totalGT} Santri`);
+
     const elTotalSantri = document.getElementById('dash-total-santri');
     if (elTotalSantri) elTotalSantri.innerText = santriAktif;
 

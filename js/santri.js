@@ -197,17 +197,26 @@ function renderMasterSantriTable(resetPage = false) {
     const totalGT = (santriData || []).filter(s => s.status === 'GT').length;
     const uniqueTahun = [...new Set((santriData || []).map(s => s.tahunMasuk).filter(Boolean))].length;
 
-    const elTotal = document.getElementById('master-kpi-total');
+    const elTotal = document.getElementById('master-kpi-total') || document.getElementById('dash-kpi-total');
     if (elTotal) elTotal.innerText = `${totalSemua} Santri`;
 
-    const elAktif = document.getElementById('master-kpi-aktif');
+    const elAktif = document.getElementById('master-kpi-aktif') || document.getElementById('dash-kpi-aktif');
     if (elAktif) elAktif.innerText = `${totalAktif} Santri`;
 
-    const elBoyong = document.getElementById('master-kpi-boyong');
+    const elBoyong = document.getElementById('master-kpi-boyong') || document.getElementById('dash-kpi-boyong');
     if (elBoyong) elBoyong.innerText = `${totalBoyong} Santri`;
 
-    const elGt = document.getElementById('master-kpi-gt');
+    const elGt = document.getElementById('master-kpi-gt') || document.getElementById('dash-kpi-gt');
     if (elGt) elGt.innerText = `${totalGT} Santri`;
+
+    const elDashTotal = document.getElementById('dash-kpi-total');
+    if (elDashTotal) elDashTotal.innerText = `${totalSemua} Santri`;
+    const elDashAktif = document.getElementById('dash-kpi-aktif');
+    if (elDashAktif) elDashAktif.innerText = `${totalAktif} Santri`;
+    const elDashBoyong = document.getElementById('dash-kpi-boyong');
+    if (elDashBoyong) elDashBoyong.innerText = `${totalBoyong} Santri`;
+    const elDashGt = document.getElementById('dash-kpi-gt');
+    if (elDashGt) elDashGt.innerText = `${totalGT} Santri`;
 
     const elTahun = document.getElementById('master-kpi-tahun');
     if (elTahun) elTahun.innerText = `${Math.max(1, uniqueTahun)} Angkatan`;

@@ -355,28 +355,9 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <!-- Kartu 1: Total Santri Aktif -->
-                    <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-slate-700/50 flex flex-col justify-between">
-                        <div class="hero-glow-indigo"></div>
-                        <div class="relative z-10">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-indigo-300 border border-white/10 shadow-inner">
-                                    <i class="fas fa-users text-base"></i>
-                                </div>
-                                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Aktif
-                                </span>
-                            </div>
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Santri Terdaftar</h3>
-                            <div class="text-4xl lg:text-5xl font-extrabold tracking-tight font-mono mb-2" id="dash-total-santri">0</div>
-                        </div>
-                        <div class="relative z-10 text-[11px] text-slate-400 font-medium flex items-center gap-1.5 pt-3 border-t border-white/10">
-                            <i class="fas fa-user-check text-emerald-400"></i> Status santri aktif pondok pesantren
-                        </div>
-                    </div>
-
-                    <!-- Kartu 2: Saldo Kas Pesantren Saat Ini (Kas Masuk - Kas Keluar) -->
+                <!-- 2 Kartu Hero Saldo Kas & Pemasukan Utama -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Kartu 1: Saldo Kas Pesantren Saat Ini (Kas Masuk - Kas Keluar) -->
                     <div class="bg-gradient-to-br from-indigo-900 via-indigo-800 to-[#1e1b4b] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-indigo-700/50 flex flex-col justify-between">
                         <div class="hero-glow-indigo"></div>
                         <div class="relative z-10">
@@ -397,7 +378,7 @@
                         </div>
                     </div>
 
-                    <!-- Kartu 3: Pemasukan Hari Ini -->
+                    <!-- Kartu 2: Pemasukan Hari Ini -->
                     <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-emerald-700/50 flex flex-col justify-between">
                         <div class="hero-glow-emerald"></div>
                         <div class="relative z-10">
@@ -415,6 +396,50 @@
                         <div class="relative z-10 text-[11px] text-emerald-200/90 font-medium flex items-center justify-between pt-3 border-t border-white/10">
                             <span id="dash-income-sub-left"><i class="fas fa-clock mr-1"></i> Hari ini</span>
                             <span class="text-rose-200">Keluar: <b class="text-white font-mono" id="dash-expense-today">Rp 0</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 KPI Ringkasan Status Santri Pesantren (Total, Aktif Kamar, Boyong, GT) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div onclick="navigateToPage('master-santri')" class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-users-viewfinder"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider truncate">Total Seluruh Santri</p>
+                            <h3 class="text-2xl font-extrabold text-gray-800 font-mono mt-0.5 tracking-tight" id="dash-kpi-total">0 Santri</h3>
+                            <p class="text-[10px] text-gray-400 font-medium truncate">Semua data terdaftar</p>
+                        </div>
+                    </div>
+                    <div onclick="navigateToPage('santri')" class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider truncate">Santri Aktif Kamar</p>
+                            <h3 class="text-2xl font-extrabold text-emerald-700 font-mono mt-0.5 tracking-tight" id="dash-kpi-aktif">0 Santri</h3>
+                            <p class="text-[10px] text-emerald-600 font-medium truncate">Sedang menempati kamar</p>
+                        </div>
+                    </div>
+                    <div onclick="navigateToPage('boyong-santri')" class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs hover:shadow-md hover:border-rose-300 transition-all cursor-pointer group flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-box-archive"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider truncate">Santri Boyong</p>
+                            <h3 class="text-2xl font-extrabold text-rose-600 font-mono mt-0.5 tracking-tight" id="dash-kpi-boyong">0 Santri</h3>
+                            <p class="text-[10px] text-rose-700 font-medium truncate">Tetap diarsip di data master</p>
+                        </div>
+                    </div>
+                    <div onclick="navigateToPage('boyong-santri')" class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider truncate">Guru Tugas / Non-Mukim (GT)</p>
+                            <h3 class="text-2xl font-extrabold text-amber-600 font-mono mt-0.5 tracking-tight" id="dash-kpi-gt">0 Santri</h3>
+                            <p class="text-[10px] text-amber-700 font-medium truncate">Santri aktif tugas / non-mukim</p>
                         </div>
                     </div>
                 </div>
@@ -458,50 +483,6 @@
                         <button onclick="bukaModalSantri()" class="bg-[#5b52e5] hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center justify-center gap-2 text-sm">
                             <i class="fas fa-plus"></i> Tambah Santri
                         </button>
-                    </div>
-                </div>
-
-                <!-- 4 KPI Ringkasan Master Data Arsip -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-users-viewfinder"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Seluruh Santri</p>
-                            <h3 class="text-2xl font-extrabold text-gray-800 font-mono mt-0.5" id="master-kpi-total">0</h3>
-                            <p class="text-[10px] text-gray-400 font-medium">Semua data terdaftar</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Santri Aktif Kamar</p>
-                            <h3 class="text-2xl font-extrabold text-emerald-700 font-mono mt-0.5" id="master-kpi-aktif">0</h3>
-                            <p class="text-[10px] text-emerald-600 font-medium">Sedang menempati kamar</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-box-archive"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Santri Boyong</p>
-                            <h3 class="text-2xl font-extrabold text-rose-600 font-mono mt-0.5" id="master-kpi-boyong">0</h3>
-                            <p class="text-[10px] text-rose-700 font-medium">Tetap diarsip di data master</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Guru Tugas / Non-Mukim (GT)</p>
-                            <h3 class="text-2xl font-extrabold text-amber-600 font-mono mt-0.5" id="master-kpi-gt">0</h3>
-                            <p class="text-[10px] text-amber-700 font-medium">Santri aktif tugas / non-mukim</p>
-                        </div>
                     </div>
                 </div>
 
