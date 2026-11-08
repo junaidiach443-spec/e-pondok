@@ -134,17 +134,31 @@ function playBeepSound(type = 'success') {
 
 // Update Filter Dropdown untuk Halaman Liburan
 function updateLiburanFiltersAndDropdowns() {
-    // Populate Dropdown Kamar Filter
+    // Kumpulkan seluruh kamar dari master kamar, santri data, dan liburanSantriList
+    const kamarSet = new Set();
+    if (typeof getAllNamaKamar === 'function') {
+        getAllNamaKamar().forEach(k => { if (k) kamarSet.add(String(k).trim()); });
+    }
+    const santriMap = new Map((window.santriData || []).map(s => [String(s.id), s]));
+    (window.liburanSantriList || []).forEach(item => {
+        const s = santriMap.get(String(item.santriId));
+        const kmr = (s?.kamar || s?.kamarTerakhir || item?.kamar || '').trim();
+        if (kmr) kamarSet.add(kmr);
+    });
+    const sortedKamars = [...kamarSet].sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+    // Populate Dropdown Kamar Filter di Tabel Utama
     const selKmr = document.getElementById('filter-liburan-kamar');
     if (selKmr) {
         const currentVal = selKmr.value;
-        const kamars = (typeof getAllNamaKamar === 'function') ? getAllNamaKamar() : ['A-01', 'A-02', 'A-03', 'B-01', 'B-02', 'B-04', 'B-05'];
-        let html = '<option value="all">Semua Kamar</option>';
-        kamars.forEach(k => {
+        let html = '<option value="all">🏠 Semua Kamar Santri</option>';
+        sortedKamars.forEach(k => {
             html += `<option value="${k}">Kamar ${k}</option>`;
         });
         selKmr.innerHTML = html;
-        if (currentVal) selKmr.value = currentVal;
+        if (currentVal && [...selKmr.options].some(o => o.value === currentVal)) {
+            selKmr.value = currentVal;
+        }
     }
 
     // Populate Dropdown Periode Liburan Filter
@@ -152,12 +166,42 @@ function updateLiburanFiltersAndDropdowns() {
     if (selPeriode) {
         const currentVal = selPeriode.value;
         const periodes = [...new Set((window.liburanSantriList || []).map(x => x.namaLiburan).filter(Boolean))];
-        let html = '<option value="all">Semua Periode Liburan</option>';
+        let html = '<option value="all">📅 Semua Periode Liburan</option>';
         periodes.forEach(p => {
             html += `<option value="${p}">${p}</option>`;
         });
         selPeriode.innerHTML = html;
-        if (currentVal) selPeriode.value = currentVal;
+        if (currentVal && [...selPeriode.options].some(o => o.value === currentVal)) {
+            selPeriode.value = currentVal;
+        }
+    }
+
+    // Populate Dropdown Kamar & Periode di Modal Export Liburan
+    const selExpKmr = document.getElementById('export-liburan-kamar');
+    if (selExpKmr) {
+        const curExpVal = selExpKmr.value;
+        let expHtml = '<option value="all">Semua Kamar (Seluruh Asrama)</option>';
+        sortedKamars.forEach(k => {
+            expHtml += `<option value="${k}">Kamar ${k}</option>`;
+        });
+        selExpKmr.innerHTML = expHtml;
+        if (curExpVal && [...selExpKmr.options].some(o => o.value === curExpVal)) {
+            selExpKmr.value = curExpVal;
+        }
+    }
+
+    const selExpPeriode = document.getElementById('export-liburan-periode');
+    if (selExpPeriode) {
+        const curExpPVal = selExpPeriode.value;
+        const periodes = [...new Set((window.liburanSantriList || []).map(x => x.namaLiburan).filter(Boolean))];
+        let expPHtml = '<option value="all">Semua Periode Liburan</option>';
+        periodes.forEach(p => {
+            expPHtml += `<option value="${p}">${p}</option>`;
+        });
+        selExpPeriode.innerHTML = expPHtml;
+        if (curExpPVal && [...selExpPeriode.options].some(o => o.value === curExpPVal)) {
+            selExpPeriode.value = curExpPVal;
+        }
     }
 
     // Update Status Santri Terpilih di Modal Liburan
@@ -189,7 +233,7 @@ function renderLiburanSantriPage(resetPage = false) {
     }
 
     const list = window.liburanSantriList || [];
-    const santriMap = new Map((window.santriData || []).map(s => [s.id, s]));
+    const santriMap = new Map((window.santriData || []).map(s => [String(s.id), s]));
 
     // Ambil input filter
     const search = (document.getElementById('search-liburan-santri')?.value || '').toLowerCase().trim();
@@ -211,7 +255,7 @@ function renderLiburanSantriPage(resetPage = false) {
     // Hitung KPI
     const totalTerdaftar = activeList.length;
     const sedangLibur = activeList.filter(x => x.status === 'Sedang Libur' || x.status === 'Izin/Belum Pulang').length;
-    const kembaliTepat = activeList.filter(x => x.status === 'Kembali Tepat Waktu').length;
+    const kembaliTepat = activeList.filter(x => x.status === 'Kembali Tepat Waktu' || x.tglKembaliRealisasi).length;
     const terlambat = activeList.filter(x => x.status === 'Terlambat Kembali').length;
 
     const elKpiTotal = document.getElementById('liburan-kpi-total');
@@ -226,19 +270,32 @@ function renderLiburanSantriPage(resetPage = false) {
 
     // Filter Data
     let filtered = activeList.filter(item => {
-        const s = santriMap.get(item.santriId) || {};
+        const s = santriMap.get(String(item.santriId)) || {};
         const nama = (s.nama || '').toLowerCase();
         const nis = (s.nis || '').toLowerCase();
-        const kamar = (s.kamar || s.kamarTerakhir || '').toLowerCase();
+        const kamar = (s.kamar || s.kamarTerakhir || item.kamar || '').toLowerCase();
         const tujuan = (item.tujuan || '').toLowerCase();
         const penjemput = (item.penjemput || '').toLowerCase();
         const periode = (item.namaLiburan || '').toLowerCase();
 
         const matchSearch = !search || nama.includes(search) || nis.includes(search) || kamar.includes(search) || tujuan.includes(search) || penjemput.includes(search) || periode.includes(search);
-        const matchStatus = (statusFilter === 'all') 
-            || (statusFilter === 'belum-kembali' ? !item.tglKembaliRealisasi : item.status === statusFilter);
+        
+        const isSudahKembali = !!item.tglKembaliRealisasi || item.status === 'Kembali Tepat Waktu';
+        const isBelumKembali = !isSudahKembali;
+
+        let matchStatus = true;
+        if (statusFilter === 'all') {
+            matchStatus = true;
+        } else if (statusFilter === 'sudah-kembali') {
+            matchStatus = isSudahKembali;
+        } else if (statusFilter === 'belum-kembali') {
+            matchStatus = isBelumKembali;
+        } else {
+            matchStatus = (item.status === statusFilter);
+        }
+
         const matchPeriode = (periodeFilter === 'all') || (item.namaLiburan === periodeFilter);
-        const matchKamar = (kamarFilter === 'all') || ((s.kamar || s.kamarTerakhir || '') === kamarFilter);
+        const matchKamar = (kamarFilter === 'all') || (kamar === kamarFilter.toLowerCase());
 
         return matchSearch && matchStatus && matchPeriode && matchKamar;
     });
@@ -3113,67 +3170,347 @@ function cetakSuratIzinPulang(id) {
 }
 
 // ==========================================================================
-// 5. EXPORT EXCEL (Liburan & Pulang)
+// 5. EXPORT EXCEL & KONTROL DATA (Liburan & Pulang)
 // ==========================================================================
 
-function exportLiburanSantriExcel() {
+// Buka Modal Export Liburan Santri
+function bukaModalExportLiburan() {
+    const list = window.liburanSantriList || [];
+    if (list.length === 0) {
+        return showToast("Belum ada data izin liburan santri untuk diekspor!", "info");
+    }
+
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const activeTA = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : '';
+    const activeList = list.filter(item => !activeTA || !item.tahunAjaran || item.tahunAjaran === activeTA);
+
+    const totalSantri = activeList.length;
+    const sudahBalek = activeList.filter(x => x.tglKembaliRealisasi || x.status === 'Kembali Tepat Waktu').length;
+    const belumBalek = activeList.filter(x => !x.tglKembaliRealisasi && x.status !== 'Kembali Tepat Waktu').length;
+
+    // Update KPI di Modal Export
+    const kpiTot = document.getElementById('export-kpi-total');
+    const kpiSdh = document.getElementById('export-kpi-sudah');
+    const kpiBlm = document.getElementById('export-kpi-belum');
+    if (kpiTot) kpiTot.innerText = totalSantri;
+    if (kpiSdh) kpiSdh.innerText = sudahBalek;
+    if (kpiBlm) kpiBlm.innerText = belumBalek;
+
+    // Sinkronkan pilihan dropdown kamar dan periode di modal
+    updateLiburanFiltersAndDropdowns();
+
+    // Sesuaikan pilihan awal di modal dengan filter yang sedang aktif di layar
+    const screenKmr = document.getElementById('filter-liburan-kamar')?.value || 'all';
+    const screenPrd = document.getElementById('filter-liburan-periode')?.value || 'all';
+    const screenSts = document.getElementById('filter-liburan-status')?.value || 'all';
+
+    const selExpKmr = document.getElementById('export-liburan-kamar');
+    const selExpPrd = document.getElementById('export-liburan-periode');
+    if (selExpKmr && screenKmr !== 'all') selExpKmr.value = screenKmr;
+    if (selExpPrd && screenPrd !== 'all') selExpPrd.value = screenPrd;
+
+    // Set radio status balek
+    if (screenSts === 'belum-kembali') {
+        const rad = document.querySelector('input[name="export-liburan-status-filter"][value="belum"]');
+        if (rad) rad.checked = true;
+    } else if (screenSts === 'sudah-kembali' || screenSts === 'Kembali Tepat Waktu') {
+        const rad = document.querySelector('input[name="export-liburan-status-filter"][value="sudah"]');
+        if (rad) rad.checked = true;
+    } else if (screenSts === 'Terlambat Kembali') {
+        const rad = document.querySelector('input[name="export-liburan-status-filter"][value="terlambat"]');
+        if (rad) rad.checked = true;
+    } else {
+        const rad = document.querySelector('input[name="export-liburan-status-filter"][value="all"]');
+        if (rad) rad.checked = true;
+    }
+
+    bukaModal('modal-export-liburan');
+}
+
+// Eksekusi Download File Excel Rekap Balek / Belum Balek Liburan
+function eksekusiExportLiburanExcel() {
     const list = window.liburanSantriList || [];
     if (list.length === 0) return showToast("Tidak ada data izin liburan untuk diekspor!", "info");
 
-    const santriMap = new Map((window.santriData || []).map(s => [s.id, s]));
+    const santriMap = new Map((window.santriData || []).map(s => [String(s.id), s]));
 
-    let tableHtml = `
-        <table border="1">
-            <thead>
-                <tr style="background-color: #f59e0b; color: white;">
-                    <th>No</th>
-                    <th>Nama Santri</th>
-                    <th>NIS</th>
-                    <th>Kamar</th>
-                    <th>Periode Liburan</th>
-                    <th>Tahun Ajaran</th>
-                    <th>Tgl Mulai</th>
-                    <th>Batas Wajib Kembali</th>
-                    <th>Tgl Tiba Realisasi</th>
-                    <th>Status</th>
-                    <th>Tujuan</th>
-                    <th>Penjemput</th>
-                    <th>Catatan</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    const statusChoice = document.querySelector('input[name="export-liburan-status-filter"]:checked')?.value || 'all';
+    const kamarChoice = document.getElementById('export-liburan-kamar')?.value || 'all';
+    const periodeChoice = document.getElementById('export-liburan-periode')?.value || 'all';
 
-    list.forEach((item, idx) => {
-        const s = santriMap.get(item.santriId) || {};
-        tableHtml += `
-            <tr>
-                <td>${idx + 1}</td>
-                <td>${s.nama || '-'}</td>
-                <td>${s.nis || '-'}</td>
-                <td>${s.kamar || s.kamarTerakhir || '-'}</td>
-                <td>${item.namaLiburan}</td>
-                <td>${item.tahunAjaran || '-'}</td>
-                <td>${item.tglMulai}</td>
-                <td>${item.tglKembali}</td>
-                <td>${item.tglKembaliRealisasi || '-'}</td>
-                <td>${item.status}</td>
-                <td>${item.tujuan || '-'}</td>
-                <td>${item.penjemput || '-'}</td>
-                <td>${item.catatan || '-'}</td>
-            </tr>
-        `;
+    const activeTA = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : '';
+    const todayStr = new Date().toLocaleDateString('en-CA');
+
+    // Filter data sesuai kriteria modal export
+    const filtered = list.filter(item => {
+        // Cek Tahun Ajaran
+        if (activeTA && item.tahunAjaran && item.tahunAjaran !== activeTA) return false;
+
+        const s = santriMap.get(String(item.santriId)) || {};
+        const santriKamar = (s.kamar || s.kamarTerakhir || item.kamar || '').trim();
+
+        const isSudah = !!item.tglKembaliRealisasi || item.status === 'Kembali Tepat Waktu';
+        const isBelum = !isSudah;
+        const isLate = (item.status === 'Terlambat Kembali') || (isBelum && item.tglKembali && item.tglKembali < todayStr);
+
+        // Filter Status Kepulangan
+        if (statusChoice === 'belum' && !isBelum) return false;
+        if (statusChoice === 'sudah' && !isSudah) return false;
+        if (statusChoice === 'terlambat' && !isLate) return false;
+
+        // Filter Kamar
+        if (kamarChoice !== 'all' && santriKamar.toLowerCase() !== kamarChoice.toLowerCase()) return false;
+
+        // Filter Periode
+        if (periodeChoice !== 'all' && item.namaLiburan !== periodeChoice) return false;
+
+        return true;
     });
 
-    tableHtml += `</tbody></table>`;
+    if (filtered.length === 0) {
+        return showToast("Tidak ada data santri yang cocok dengan kriteria filter export!", "warning");
+    }
 
-    const blob = new Blob([tableHtml], { type: "application/vnd.ms-excel;charset=utf-8;" });
-    const link = document.createElement("a");
+    // Urutkan: Kamar -> Nama Santri
+    filtered.sort((a, b) => {
+        const sa = santriMap.get(String(a.santriId)) || {};
+        const sb = santriMap.get(String(b.santriId)) || {};
+        const ka = (sa.kamar || a.kamar || '').localeCompare(sb.kamar || b.kamar || '');
+        if (ka !== 0) return ka;
+        return (sa.nama || '').localeCompare(sb.nama || '');
+    });
+
+    // Susun baris data Excel
+    const rows = filtered.map((item, idx) => {
+        const s = santriMap.get(String(item.santriId)) || {};
+        const isSudah = !!item.tglKembaliRealisasi || item.status === 'Kembali Tepat Waktu';
+        const isLate = (item.status === 'Terlambat Kembali') || (!isSudah && item.tglKembali && item.tglKembali < todayStr);
+
+        let statusBalekStr = isSudah ? 'SUDAH BALEK' : 'BELUM BALEK';
+        let statusDetailStr = item.status || (isSudah ? 'Kembali Tepat Waktu' : 'Sedang Libur');
+        if (isLate && !isSudah) statusDetailStr = 'Terlambat (Belum Balek)';
+
+        // Hitung Keterlambatan Hari
+        let ketTerlambat = 'Tepat Waktu / Masa Libur';
+        if (item.hariTerlambat && item.hariTerlambat > 0) {
+            ketTerlambat = `Terlambat ${item.hariTerlambat} Hari`;
+        } else if (!isSudah && item.tglKembali && item.tglKembali < todayStr) {
+            const diffDays = Math.max(1, Math.floor((new Date(todayStr) - new Date(item.tglKembali)) / 86400000));
+            ketTerlambat = `Terlambat ${diffDays} Hari`;
+        } else if (isSudah && item.status === 'Kembali Tepat Waktu') {
+            ketTerlambat = 'Tepat Waktu';
+        }
+
+        const tglRealisasiStr = item.tglKembaliRealisasi 
+            ? (formatTanggalIndo(item.tglKembaliRealisasi) + (item.jamKembaliRealisasi ? ' ' + item.jamKembaliRealisasi : '')) 
+            : 'Belum Kembali';
+
+        return {
+            "No": idx + 1,
+            "Status Balek": statusBalekStr,
+            "Status Rinci": statusDetailStr,
+            "Nama Santri": s.nama || 'Santri',
+            "NIS": s.nis || '-',
+            "Kamar": s.kamar || s.kamarTerakhir || item.kamar || '-',
+            "Kelas": s.kelas || '-',
+            "Periode Liburan": item.namaLiburan || '-',
+            "Tahun Ajaran": item.tahunAjaran || activeTA || '-',
+            "Tgl Mulai Libur": formatTanggalIndo(item.tglMulai) || item.tglMulai || '-',
+            "Batas Wajib Balek": formatTanggalIndo(item.tglKembali) || item.tglKembali || '-',
+            "Tgl Realisasi Tiba": tglRealisasiStr,
+            "Keterangan Terlambat": ketTerlambat,
+            "Tujuan / Asal Santri": item.tujuan || s.asalKota || s.desa || '-',
+            "Wali / Penjemput": item.penjemput || s.namaWali || s.ayah || '-',
+            "No WhatsApp / HP": s.hp || s.noHpWali || '-',
+            "Petugas Verifikasi": item.petugasPenerima || item.petugasIzin || 'Pengurus Asrama',
+            "Catatan Kedatangan": item.catatanKedatangan || item.catatan || '-'
+        };
+    });
+
+    const labelStatusMap = {
+        'all': 'SEMUA_SANTRI',
+        'belum': 'BELUM_BALEK',
+        'sudah': 'SUDAH_BALEK',
+        'terlambat': 'TERLAMBAT_BALEK'
+    };
+    const statusLabel = labelStatusMap[statusChoice] || 'REKAP';
+    const kamarLabel = (kamarChoice !== 'all') ? `_Kamar_${kamarChoice.replace(/\s+/g, '_')}` : '';
     const dateStr = new Date().toLocaleDateString('en-CA');
-    link.href = URL.createObjectURL(blob);
-    link.download = `Rekap_Liburan_Santri_PP_ALUSYMUNI_${dateStr}.xls`;
-    link.click();
-    showToast("Data izin liburan berhasil diekspor ke Excel!");
+    const fileName = `Rekap_Liburan_${statusLabel}${kamarLabel}_PP_ALUSYMUNI_${dateStr}`;
+
+    // Gunakan SheetJS jika tersedia
+    if (typeof XLSX !== 'undefined') {
+        const ws = XLSX.utils.json_to_sheet(rows);
+        
+        // Auto set lebar kolom
+        const colWidths = Object.keys(rows[0]).map(key => {
+            const maxLen = Math.max(
+                key.length,
+                ...rows.map(r => String(r[key] || '').length)
+            );
+            return { wch: Math.min(Math.max(maxLen + 2, 10), 45) };
+        });
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        const sheetName = (statusChoice === 'belum') ? "Santri Belum Balek" : (statusChoice === 'sudah' ? "Santri Sudah Balek" : "Rekap Liburan");
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        XLSX.writeFile(wb, `${fileName}.xlsx`);
+    } else {
+        // Fallback HTML table spreadsheet
+        let tableHtml = `<table border="1"><thead><tr style="background-color: #10b981; color: white;">`;
+        Object.keys(rows[0]).forEach(k => { tableHtml += `<th>${k}</th>`; });
+        tableHtml += `</tr></thead><tbody>`;
+        rows.forEach(r => {
+            const isSudah = (r["Status Balek"] === 'SUDAH BALEK');
+            const bg = isSudah ? '#f0fdf4' : '#fff1f2';
+            tableHtml += `<tr style="background-color: ${bg};">`;
+            Object.values(r).forEach(v => { tableHtml += `<td>${v}</td>`; });
+            tableHtml += `</tr>`;
+        });
+        tableHtml += `</tbody></table>`;
+
+        const blob = new Blob([tableHtml], { type: "application/vnd.ms-excel;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${fileName}.xls`;
+        link.click();
+    }
+
+    tutupModal('modal-export-liburan');
+    showToast(`Data liburan (${rows.length} santri) berhasil diekspor ke Excel!`, "success");
+}
+
+// Handler kompatibilitas tombol export
+function exportLiburanSantriExcel() {
+    bukaModalExportLiburan();
+}
+
+// Konfirmasi Hapus Semua Data Liburan Santri Secara Ketat
+function konfirmasiHapusSemuaLiburanKetat() {
+    const list = window.liburanSantriList || [];
+    if (list.length === 0) {
+        return showToast("Tidak ada data izin liburan santri untuk dihapus!", "info");
+    }
+
+    const totalSantri = list.length;
+    const sudahBalek = list.filter(x => x.tglKembaliRealisasi || x.status === 'Kembali Tepat Waktu').length;
+    const belumBalek = list.filter(x => !x.tglKembaliRealisasi && x.status !== 'Kembali Tepat Waktu').length;
+
+    const periodeFilter = document.getElementById('filter-liburan-periode')?.value || 'all';
+    const kamarFilter = document.getElementById('filter-liburan-kamar')?.value || 'all';
+
+    let optionsHtml = `<option value="all">Hapus SELURUH Data Liburan (${totalSantri} santri - Bersih Total)</option>`;
+    if (periodeFilter !== 'all') {
+        const countPeriode = list.filter(x => x.namaLiburan === periodeFilter).length;
+        optionsHtml += `<option value="periode">Hanya Periode "${periodeFilter}" (${countPeriode} santri)</option>`;
+    }
+    if (kamarFilter !== 'all') {
+        const santriMap = new Map((window.santriData || []).map(s => [String(s.id), s]));
+        const countKamar = list.filter(x => {
+            const s = santriMap.get(String(x.santriId));
+            const kmr = (s?.kamar || s?.kamarTerakhir || x.kamar || '').trim();
+            return kmr.toLowerCase() === kamarFilter.toLowerCase();
+        }).length;
+        optionsHtml += `<option value="kamar">Hanya Santri Kamar "${kamarFilter}" (${countKamar} santri)</option>`;
+    }
+    if (sudahBalek > 0) {
+        optionsHtml += `<option value="sudah">Hanya Santri yang SUDAH Balek (${sudahBalek} santri - Bersihkan Riwayat Kedatangan)</option>`;
+    }
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'HAPUS SEMUA DATA LIBURAN?',
+            html: `
+                <div class="text-left space-y-3 text-xs leading-relaxed">
+                    <div class="p-3 bg-rose-50 border-l-4 border-rose-600 text-rose-800 rounded-xl space-y-1">
+                        <p class="font-extrabold text-rose-900 text-sm flex items-center gap-1.5">
+                            <i class="fas fa-triangle-exclamation text-rose-600"></i> PERINGATAN KETAT:
+                        </p>
+                        <p>Tindakan ini akan menghapus data izin liburan santri secara permanen dari database. Data yang dihapus tidak dapat dipulihkan kembali!</p>
+                        <p class="font-bold pt-1">Saat ini tersimpan <b>${totalSantri} data santri</b> (${sudahBalek} sudah balek, ${belumBalek} belum balek).</p>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1">Pilih Cakupan Penghapusan:</label>
+                        <select id="swal-hapus-target" class="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-xs outline-none focus:ring-2 focus:ring-rose-500 bg-white font-medium text-gray-800">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    <div class="pt-2 border-t border-gray-100">
+                        <p class="font-bold text-gray-900 mb-1">Konfirmasi Ketat (Wajib):</p>
+                        <p class="text-gray-500 mb-2">Ketik tepat kata <span class="font-mono font-extrabold text-rose-700 bg-rose-100 px-2 py-0.5 rounded border border-rose-300">HAPUS SEMUA</span> pada kolom di bawah ini:</p>
+                    </div>
+                </div>
+            `,
+            input: 'text',
+            inputPlaceholder: 'Ketik: HAPUS SEMUA',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fas fa-trash-can"></i> Ya, Hapus Secara Ketat',
+            cancelButtonText: 'Batal',
+            customClass: { popup: 'rounded-2xl' },
+            preConfirm: (inputValue) => {
+                if ((inputValue || '').trim().toUpperCase() !== 'HAPUS SEMUA') {
+                    Swal.showValidationMessage('Kata konfirmasi tidak cocok! Anda harus mengetik tepat: HAPUS SEMUA');
+                    return false;
+                }
+                const targetEl = document.getElementById('swal-hapus-target');
+                return targetEl ? targetEl.value : 'all';
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const target = result.value || 'all';
+                eksekusiHapusLiburanKetat(target);
+            }
+        });
+    } else {
+        const inputPrompt = prompt(`PERINGATAN KERAS: Yakin ingin menghapus seluruh data liburan santri (${totalSantri} data)?\n\nKetik kata HAPUS SEMUA untuk konfirmasi:`);
+        if ((inputPrompt || '').trim().toUpperCase() === 'HAPUS SEMUA') {
+            eksekusiHapusLiburanKetat('all');
+        } else {
+            showToast("Penghapusan dibatalkan (kata konfirmasi salah).", "info");
+        }
+    }
+}
+
+// Eksekusi Hapus Data Liburan Setelah Verifikasi Ketat
+function eksekusiHapusLiburanKetat(target) {
+    const list = window.liburanSantriList || [];
+    const countBefore = list.length;
+    
+    // Simpan cadangan pemulihan darurat ke localStorage
+    try {
+        localStorage.setItem('_backup_liburan_trash_' + Date.now(), JSON.stringify(list));
+    } catch(e) {
+        console.warn("Gagal simpan cadangan darurat:", e);
+    }
+
+    const periodeFilter = document.getElementById('filter-liburan-periode')?.value || 'all';
+    const kamarFilter = document.getElementById('filter-liburan-kamar')?.value || 'all';
+    const santriMap = new Map((window.santriData || []).map(s => [String(s.id), s]));
+
+    if (target === 'all') {
+        window.liburanSantriList = [];
+    } else if (target === 'periode') {
+        window.liburanSantriList = list.filter(x => x.namaLiburan !== periodeFilter);
+    } else if (target === 'kamar') {
+        window.liburanSantriList = list.filter(x => {
+            const s = santriMap.get(String(x.santriId));
+            const kmr = (s?.kamar || s?.kamarTerakhir || x.kamar || '').trim();
+            return kmr.toLowerCase() !== kamarFilter.toLowerCase();
+        });
+    } else if (target === 'sudah') {
+        window.liburanSantriList = list.filter(x => !x.tglKembaliRealisasi && x.status !== 'Kembali Tepat Waktu');
+    }
+
+    const deletedCount = countBefore - (window.liburanSantriList.length);
+
+    saveDataToStorage();
+    updateLiburanFiltersAndDropdowns();
+    renderLiburanSantriPage(true);
+
+    showToast(`Berhasil menghapus ${deletedCount} data perizinan liburan santri secara ketat!`, "success");
 }
 
 function exportPulangSantriExcel() {
@@ -3297,6 +3634,10 @@ window.switchRekapTab = switchRekapTab;
 window.renderScanBalekLists = renderScanBalekLists;
 window.cetakSuratIzinPulang = cetakSuratIzinPulang;
 window.exportLiburanSantriExcel = exportLiburanSantriExcel;
+window.bukaModalExportLiburan = bukaModalExportLiburan;
+window.eksekusiExportLiburanExcel = eksekusiExportLiburanExcel;
+window.konfirmasiHapusSemuaLiburanKetat = konfirmasiHapusSemuaLiburanKetat;
+window.eksekusiHapusLiburanKetat = eksekusiHapusLiburanKetat;
 window.exportPulangSantriExcel = exportPulangSantriExcel;
 window.onSearchSantriLiburan = onSearchSantriLiburan;
 window.onFocusSantriLiburan = onFocusSantriLiburan;

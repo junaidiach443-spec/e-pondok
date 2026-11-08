@@ -3,7 +3,7 @@
  * Mengizinkan aplikasi diinstal di HP (Add to Home Screen / Install App)
  */
 
-const CACHE_NAME = 'epondok-v3';
+const CACHE_NAME = 'epondok-v4';
 const ASSETS_TO_CACHE = [
   '/',
   './',

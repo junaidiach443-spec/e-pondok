@@ -856,21 +856,6 @@
                     </div>
                 </div>
 
-                <!-- Info Card: Syarat Pelunasan Tagihan Sebelum Boyong / GT -->
-                <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-l-4 border-amber-500 rounded-xl p-4 bg-white shadow-xs">
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="text-xs text-gray-700 leading-relaxed space-y-1">
-                            <p class="font-bold text-gray-900 text-sm">Ketentuan & Syarat Boyong maupun Alih Status ke GT (Guru Tugas / Non-Mukim):</p>
-                            <p>1. <b>Santri yang hendak Boyong maupun GT wajib melunasi seluruh tanggungan tagihan</b> (Syahriah, Pembayaran Lain, dan Tagihan Kustom) sebelum proses dapat dikonfirmasi.</p>
-                            <p>2. <b>Status Boyong:</b> Santri dinyatakan alumni/lulus/keluar permanen dari pondok pesantren dan dikeluarkan dari kamar asrama.</p>
-                            <p>3. <b>Status GT (Guru Tugas / Non-Mukim):</b> Santri tetap berstatus santri di pesantren (bertugas mengabdi di luar atau non-mukim), namun <b>dikeluarkan dari kamar asrama aktif</b> sehingga kuota kasur kamar kosong kembali dan santri tidak masuk di Data Santri Kamar.</p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Filter & Pencarian Riwayat Boyong & GT -->
                 <div class="bg-white rounded-2xl shadow-xs border border-gray-200 p-4 space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -971,8 +956,11 @@
                             <span class="w-2 h-2 rounded-full bg-emerald-200 animate-ping"></span>
                             <i class="fas fa-barcode"></i> Scan Barcode Balek Pondok
                         </button>
-                        <button onclick="exportLiburanSantriExcel()" class="bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-700 px-3 py-2.5 rounded-xl font-bold border border-gray-300 transition-colors flex items-center gap-1.5 text-xs sm:text-sm cursor-pointer">
-                            <i class="fas fa-file-excel text-emerald-600"></i> Export
+                        <button onclick="bukaModalExportLiburan()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 active:scale-95 px-3.5 py-2.5 rounded-xl font-bold shadow-2xs transition-all flex items-center gap-1.5 text-xs sm:text-sm cursor-pointer" title="Export Rekap Santri yang Sudah Balek & Belum Balek">
+                            <i class="fas fa-file-excel text-emerald-600"></i> Export Rekap Balek
+                        </button>
+                        <button onclick="konfirmasiHapusSemuaLiburanKetat()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 active:scale-95 px-3.5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs sm:text-sm cursor-pointer" title="Hapus seluruh data liburan santri secara ketat">
+                            <i class="fas fa-trash-can text-rose-600"></i> Hapus Semua
                         </button>
                     </div>
                 </div>
@@ -1021,21 +1009,6 @@
                     </div>
                 </div>
 
-                <!-- Info Ketentuan Liburan -->
-                <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-l-4 border-amber-500 rounded-xl p-4 bg-white shadow-xs">
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
-                            <i class="fas fa-bullhorn"></i>
-                        </div>
-                        <div class="text-xs text-gray-700 leading-relaxed space-y-1">
-                            <p class="font-bold text-gray-900 text-sm">Ketentuan & Tata Tertib Liburan Santri PP. AL-USYMUNI:</p>
-                            <p>1. Santri yang melaksanakan liburan wajib membawa <b>Surat Jalan & Izin Liburan</b> resmi dari pengurus ketertiban.</p>
-                            <p>2. Santri <b>wajib tiba kembali di pondok tepat waktu</b> sesuai batas tanggal wajib kembali yang tertera di surat jalan.</p>
-                            <p>3. Saat tiba kembali di pondok, santri segera melapor ke pengurus asrama untuk diverifikasi status kedatangannya.</p>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Filter & Pencarian Liburan -->
                 <div class="bg-white rounded-2xl shadow-xs border border-gray-200 p-4 space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -1046,20 +1019,21 @@
                         <div>
                             <select id="filter-liburan-status" onchange="renderLiburanSantriPage(true)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white font-medium text-gray-700">
                                 <option value="all">Semua Status Kepulangan</option>
-                                <option value="belum-kembali">⏳ Belum Kembali (Masih di Luar)</option>
-                                <option value="Sedang Libur">🟡 Sedang Libur</option>
-                                <option value="Kembali Tepat Waktu">🟢 Sudah Kembali (Tepat Waktu)</option>
-                                <option value="Terlambat Kembali">🔴 Terlambat Kembali</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="filter-liburan-periode" onchange="renderLiburanSantriPage(true)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white font-medium text-gray-700">
-                                <option value="all">Semua Periode Liburan</option>
+                                <option value="sudah-kembali">🟢 Sudah Balek / Kembali</option>
+                                <option value="belum-kembali">⏳ Belum Balek / Masih di Luar</option>
+                                <option value="Sedang Libur">🟡 Sedang Libur (Belum Batas)</option>
+                                <option value="Kembali Tepat Waktu">🟢 Kembali Tepat Waktu</option>
+                                <option value="Terlambat Kembali">🔴 Terlambat Balek</option>
                             </select>
                         </div>
                         <div>
                             <select id="filter-liburan-kamar" onchange="renderLiburanSantriPage(true)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white font-medium text-gray-700">
-                                <option value="all">Semua Kamar</option>
+                                <option value="all">🏠 Semua Kamar Santri</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filter-liburan-periode" onchange="renderLiburanSantriPage(true)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white font-medium text-gray-700">
+                                <option value="all">📅 Semua Periode Liburan</option>
                             </select>
                         </div>
                     </div>
@@ -3506,6 +3480,118 @@
                 <button onclick="tutupModal('modal-konfirmasi-kembali')" class="px-5 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-200 transition-colors text-sm cursor-pointer">Batal</button>
                 <button onclick="simpanKonfirmasiKembali()" class="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold shadow-md transition-all text-sm flex items-center gap-1.5 cursor-pointer">
                     <i class="fas fa-check-circle"></i> Konfirmasi Tiba di Pondok
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Export Rekapitulasi Liburan Santri (Excel & Cetak) -->
+    <div id="modal-export-liburan" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="modal-export-liburan-content">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg shadow-xs">
+                        <i class="fas fa-file-excel"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-gray-800">Export Rekap Liburan Santri</h3>
+                        <p class="text-xs text-gray-500">Cek santri yang sudah balek & belum balek ke pondok.</p>
+                    </div>
+                </div>
+                <button onclick="tutupModal('modal-export-liburan')" class="text-gray-400 hover:text-gray-600 transition-colors p-2 text-sm rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+                <!-- KPI Mini Ringkasan Balek -->
+                <div class="grid grid-cols-3 gap-2.5 p-3 bg-gray-50/80 border border-gray-200 rounded-xl text-center">
+                    <div class="p-1">
+                        <span class="text-[10px] uppercase font-bold text-gray-500">Total Santri</span>
+                        <div class="text-lg font-extrabold text-gray-800 font-mono" id="export-kpi-total">0</div>
+                    </div>
+                    <div class="p-1 border-x border-gray-200">
+                        <span class="text-[10px] uppercase font-bold text-emerald-600">Sudah Balek</span>
+                        <div class="text-lg font-extrabold text-emerald-600 font-mono" id="export-kpi-sudah">0</div>
+                    </div>
+                    <div class="p-1">
+                        <span class="text-[10px] uppercase font-bold text-rose-600">Belum Balek</span>
+                        <div class="text-lg font-extrabold text-rose-600 font-mono" id="export-kpi-belum">0</div>
+                    </div>
+                </div>
+
+                <!-- Pilihan Kategori Kepulangan (Balek / Belum Balek) -->
+                <div>
+                    <label class="block font-bold text-gray-700 uppercase mb-2 text-[11px] tracking-wider">
+                        Pilih Kategori Santri yang Diexport:
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-all">
+                            <input type="radio" name="export-liburan-status-filter" value="all" checked class="text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-gray-800">Semua Data Santri Liburan</div>
+                                <div class="text-[11px] text-gray-500">Mencakup santri yang sudah balek maupun belum balek (ada kolom status balek jelas)</div>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-rose-200 bg-rose-50/30 hover:bg-rose-50/70 cursor-pointer transition-all">
+                            <input type="radio" name="export-liburan-status-filter" value="belum" class="text-rose-600 focus:ring-rose-500 w-4 h-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-rose-700 flex items-center gap-1.5">
+                                    <span>⏳ Khusus Santri yang BELUM BALEK</span>
+                                    <span class="px-1.5 py-0.2 bg-rose-100 text-rose-800 rounded text-[10px]">Paling Dicari</span>
+                                </div>
+                                <div class="text-[11px] text-rose-600/80">Hanya santri yang masih libur di luar atau terlambat kembali ke pondok</div>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/30 hover:bg-emerald-50/70 cursor-pointer transition-all">
+                            <input type="radio" name="export-liburan-status-filter" value="sudah" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-emerald-700">🟢 Khusus Santri yang SUDAH BALEK</div>
+                                <div class="text-[11px] text-emerald-600/80">Hanya santri yang telah tiba dan diverifikasi di pondok pesantren</div>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-2.5 rounded-xl border border-amber-200 bg-amber-50/30 hover:bg-amber-50/70 cursor-pointer transition-all">
+                            <input type="radio" name="export-liburan-status-filter" value="terlambat" class="text-amber-600 focus:ring-amber-500 w-4 h-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-amber-800">🔴 Khusus Santri yang TERLAMBAT BALEK</div>
+                                <div class="text-[11px] text-amber-700">Santri yang melewati batas tanggal wajib kembali</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Filter Kamar & Periode Tambahan untuk Export -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1.5 text-[11px]">
+                            <i class="fas fa-door-closed text-amber-600 mr-1"></i> Filter Kamar:
+                        </label>
+                        <select id="export-liburan-kamar" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-medium text-gray-700">
+                            <option value="all">Semua Kamar Asrama</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-700 mb-1.5 text-[11px]">
+                            <i class="fas fa-calendar text-amber-600 mr-1"></i> Periode Liburan:
+                        </label>
+                        <select id="export-liburan-periode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-medium text-gray-700">
+                            <option value="all">Semua Periode Liburan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50/80 border border-amber-200 rounded-xl text-[11px] text-amber-800 flex items-start gap-2.5 leading-relaxed">
+                    <i class="fas fa-circle-info text-amber-600 mt-0.5 text-xs shrink-0"></i>
+                    <div>
+                        <b>Format Excel Terstruktur:</b> File Excel (.xlsx) akan otomatis memuat kolom status balek yang jelas, kamar, kelas, batas wajib, tanggal tiba riil, selisih keterlambatan, wali penjemput, dan no WhatsApp.
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="tutupModal('modal-export-liburan')" class="px-4 py-2 rounded-xl text-gray-600 font-medium hover:bg-gray-200 transition-colors text-xs cursor-pointer">
+                    Batal
+                </button>
+                <button type="button" onclick="eksekusiExportLiburanExcel()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-bold shadow-md transition-all text-xs flex items-center gap-2 cursor-pointer">
+                    <i class="fas fa-file-excel text-sm"></i> Download File Excel (.xlsx)
                 </button>
             </div>
         </div>
