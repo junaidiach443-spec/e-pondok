@@ -122,6 +122,11 @@ function bukaDetailSyahriah(santriId) {
     const s = santriData.find(x => x.id === santriId);
     if (!s) return;
 
+    // Cek update transaksi terbaru dari cloud di latar belakang saat membuka rincian santri
+    if (typeof pullFromCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+        pullFromCloud({ silent: true });
+    }
+
     const viewList = document.getElementById('view-syahriah-list');
     const viewDetail = document.getElementById('view-syahriah-detail');
     const headerList = document.getElementById('header-syahriah-list');
@@ -285,6 +290,9 @@ function batalBayarSyahriah(trxId, namaBulan) {
             targetTrx.amount = Math.max(0, targetTrx.amount - nominalPerBulan);
         } else {
             // Hanya 1 bulan atau tidak ada bulan lain, hapus seluruh objek transaksi
+            if (targetTrx && targetTrx.id && typeof trackDeletedTransactionId === 'function') {
+                trackDeletedTransactionId(targetTrx.id);
+            }
             transactions = transactions.filter(t => t.id !== targetTrx.id);
         }
 
@@ -295,6 +303,9 @@ function batalBayarSyahriah(trxId, namaBulan) {
                 if (t.santriId === currentDetailSantriId && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in') {
                     const descMonths = bulanIslam.filter(b => (t.desc || '').includes(b));
                     if (descMonths.length === 1 && descMonths[0] === namaBulan) {
+                        if (typeof trackDeletedTransactionId === 'function') {
+                            trackDeletedTransactionId(t.id);
+                        }
                         return false;
                     }
                     if (descMonths.includes(namaBulan)) {
@@ -310,6 +321,9 @@ function batalBayarSyahriah(trxId, namaBulan) {
 
         window.transactions = transactions;
         saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') {
+            triggerAutoSyncToCloud(true);
+        }
         updateDashboard();
         if (typeof renderSyahriah === 'function') renderSyahriah();
         bukaDetailSyahriah(currentDetailSantriId); 
@@ -377,22 +391,30 @@ function prosesBayarSyahriahSelected() {
 
         // Simpan setiap bulan secara terpisah agar masing-masing memiliki riwayat mandiri
         // dan dapat dibatalkan per bulan secara independen
+        const kasirNama = (appSettings && appSettings.adminAuth && appSettings.adminAuth.nama) || 'Bendahara';
         selectedBulanPay.forEach((bulan, idx) => {
             transactions.push({
                 id: 'TRX-' + (now + idx),
                 santriId: s.id,
+                santriNama: s.nama,
+                santriNis: s.nis,
+                santriKamar: s.kamar || s.kamarTerakhir || '-',
                 ta: taAktif,
                 kategori: 'Syahriah',
                 type: 'in',
                 amount: tarif,
                 desc: `Syahriah: ${bulan}`,
                 metode: metodeBayar,
+                kasir: kasirNama,
                 date: tglHariIni
             });
         });
         
         window.transactions = transactions;
         saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') {
+            triggerAutoSyncToCloud(true); // Kirim instan ke Google Sheets tanpa delay!
+        }
         selectedBulanPay = [];
         hideActionPanel(true);
         updateDashboard();

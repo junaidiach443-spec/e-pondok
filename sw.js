@@ -4,7 +4,7 @@
  * & Menjamin pembaruan hosting langsung tampil (Network-First untuk kode aplikasi)
  */
 
-const CACHE_NAME = 'epondok-v6';
+const CACHE_NAME = 'epondok-v7';
 const ASSETS_TO_CACHE = [
   '/',
   './',
@@ -60,8 +60,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = event.request.url;
 
-  // Lewati request API Google Apps Script & Google Sheets agar selalu live
-  if (url.includes('script.google.com') || url.includes('google.com/macros')) {
+  // Lewati seluruh request eksternal (Google Apps Script API, Google Sheets, CDN luar) agar selalu live
+  if (!url.startsWith(self.location.origin) || url.includes('google') || url.includes('script.googleusercontent.com')) {
     return;
   }
 
@@ -100,7 +100,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Aset statis (gambar, font, logo): Stale-While-Revalidate
+  // Aset statis lokal (gambar, font, logo): Stale-While-Revalidate
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)

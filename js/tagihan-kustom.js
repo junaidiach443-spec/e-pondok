@@ -237,6 +237,7 @@ function prosesBayarKustom() {
         
         window.transactions = transactions;
         saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
         updateDashboard();
         renderDetailPembayaranKustomData(); 
         if (typeof renderPembayaranKustomList === 'function') renderPembayaranKustomList();
@@ -247,9 +248,13 @@ function prosesBayarKustom() {
 // Hapus Riwayat Pembayaran Tagihan Kustom
 function hapusRiwayatKustom(trxId) {
     showConfirm("Hapus Pembayaran?", "Uang yang sudah masuk akan dihapus dari riwayat. Yakin?", () => {
+        if (typeof trackDeletedTransactionId === 'function') {
+            trackDeletedTransactionId(trxId);
+        }
         transactions = transactions.filter(t => t.id !== trxId);
         window.transactions = transactions;
         saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
         updateDashboard();
         renderDetailPembayaranKustomData(); 
         if (typeof renderPembayaranKustomList === 'function') renderPembayaranKustomList();

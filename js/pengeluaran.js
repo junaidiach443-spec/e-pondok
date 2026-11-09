@@ -421,6 +421,7 @@ function catatPengeluaran() {
     window.transactions = transactions;
 
     saveDataToStorage();
+    if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
     tutupModal('modal-pengeluaran');
     
     renderPengeluaran();
@@ -434,9 +435,13 @@ function catatPengeluaran() {
 // Hapus Catatan Transaksi
 function hapusTransaksi(id) {
     showConfirm("Hapus Transaksi", "Transaksi yang dihapus tidak bisa dikembalikan. Lanjutkan?", () => {
+        if (typeof trackDeletedTransactionId === 'function') {
+            trackDeletedTransactionId(id);
+        }
         transactions = (transactions || []).filter(t => t.id !== id);
         window.transactions = transactions;
         saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
         if (typeof renderPengeluaran === 'function') renderPengeluaran();
         if (typeof renderLaporan === 'function') renderLaporan();
         if (typeof renderPembayaranLainPage === 'function') renderPembayaranLainPage();

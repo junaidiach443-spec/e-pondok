@@ -45,6 +45,15 @@ function updateHeaderTitle(title) {
 
 // Navigasi Utama Halaman
 function navigate(pageId) {
+    // Auto-sync real-time dari cloud setiap kali berpindah halaman
+    if (typeof pullFromCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+        const now = Date.now();
+        if (!window._lastNavPull || (now - window._lastNavPull > 2500)) {
+            window._lastNavPull = now;
+            pullFromCloud({ silent: true });
+        }
+    }
+
     // Pastikan action panel syahriah tertutup & pilihan dikosongkan jika berpindah halaman
     if (typeof selectedBulanPay !== 'undefined') {
         selectedBulanPay = [];

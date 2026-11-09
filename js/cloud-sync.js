@@ -59,24 +59,42 @@ function initCloudSync() {
         renderCloudSettingsForm();
     });
 
-    // Listener saat pengguna kembali membuka tab browser
+    // Heartbeat auto-pull setiap 10 detik saat online dan tab aktif (Sinkronisasi Multi-Perangkat Live)
+    setInterval(() => {
+        if (!navigator.onLine || isSyncingActive || !cloudConfig.webAppUrl || !cloudConfig.autoSync) {
+            return;
+        }
+        if (document.visibilityState === 'hidden') {
+            return;
+        }
+        pullFromCloud({ silent: true });
+    }, 10000);
+
+    const triggerInstantPull = () => {
+        const now = Date.now();
+        if (cloudConfig.webAppUrl && cloudConfig.autoSync && !isSyncingActive && (now - lastSuccessfulPullTimestamp > 3000)) {
+            pullFromCloud({ silent: true });
+        }
+    };
+
+    // Listener saat pengguna kembali membuka tab browser atau membuka kunci layar HP
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            const now = Date.now();
-            // Hanya tarik data jika sudah lebih dari 3 menit sejak pull terakhir (mencegah beban berlebih)
-            if (cloudConfig.webAppUrl && cloudConfig.autoSync && !isSyncingActive && (now - lastSuccessfulPullTimestamp > 180000)) {
-                pullFromCloud({ silent: true });
-            }
+            triggerInstantPull();
         }
     });
 
-    // Pengecekan antrean berkala yang tenang (setiap 45 detik)
+    window.addEventListener('focus', () => {
+        triggerInstantPull();
+    });
+
+    // Pengecekan antrean pengiriman tertunda secara berkala
     setInterval(() => {
         if (hasPendingPush && navigator.onLine && !isSyncingActive && cloudConfig.webAppUrl) {
             console.log('[Cloud Sync] Mencoba mengirim ulang antrean data...');
             pushToCloud({ silent: true });
         }
-    }, 45000);
+    }, 25000);
 
     // Auto pull saat pertama kali dibuka (jika URL valid)
     if (cloudConfig.webAppUrl && cloudConfig.autoPullOnStart) {
@@ -381,6 +399,155 @@ async function testCloudConnection(silent = false) {
 }
 
 /**
+ * Pelacakan ID transaksi yang dihapus secara lokal agar tidak muncul kembali saat sync
+ */
+function trackDeletedTransactionId(trxId) {
+    if (!trxId) return;
+    try {
+        let deleted = JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
+        if (!deleted.includes(trxId)) {
+            deleted.push(trxId);
+            if (deleted.length > 500) deleted = deleted.slice(-500);
+            localStorage.setItem('epondok_deleted_trx_ids', JSON.stringify(deleted));
+        }
+    } catch (e) {}
+}
+
+function getDeletedTransactionIds() {
+    try {
+        return JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+/**
+ * Normalisasi format tanggal agar seragam YYYY-MM-DD
+ */
+function normalizeDateStr(dateVal) {
+    if (!dateVal) return new Date().toLocaleDateString('en-CA');
+    const str = String(dateVal).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-CA');
+    }
+    return str;
+}
+
+/**
+ * Penggabungan Dua Arah Cerdas untuk Transaksi (Multi-Perangkat Anti-Hilang)
+ */
+function mergeTransactionsFromCloud(cloudTransactions) {
+    if (!Array.isArray(cloudTransactions)) return { hasNewFromCloud: false, hasLocalUnpushed: false };
+
+    const deletedIds = new Set(getDeletedTransactionIds());
+    const localMap = new Map();
+    (window.transactions || transactions || []).forEach(t => {
+        if (t && t.id && !deletedIds.has(t.id)) {
+            localMap.set(t.id, t);
+        }
+    });
+
+    let hasNewFromCloud = false;
+    let hasLocalUnpushed = false;
+
+    cloudTransactions.forEach(c => {
+        if (!c || !c.id || deletedIds.has(c.id)) return;
+
+        const normalizedDate = normalizeDateStr(c.date);
+        const cleanCloudTrx = {
+            ...c,
+            amount: Number(c.amount) || 0,
+            date: normalizedDate,
+            metode: c.metode || 'Tunai',
+            type: c.type || 'in',
+            ta: c.ta || (typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : '1447/1448')
+        };
+
+        if (!localMap.has(c.id)) {
+            // Transaksi dari perangkat lain yang belum ada di HP ini!
+            localMap.set(c.id, cleanCloudTrx);
+            hasNewFromCloud = true;
+        } else {
+            // Update jika ada perubahan data
+            const existing = localMap.get(c.id);
+            localMap.set(c.id, { ...existing, ...cleanCloudTrx });
+        }
+    });
+
+    // Cek apakah ada transaksi lokal yang belum ada di cloud
+    const cloudIds = new Set(cloudTransactions.map(c => c && c.id));
+    for (const [id, t] of localMap.entries()) {
+        if (!cloudIds.has(id)) {
+            hasLocalUnpushed = true;
+        }
+    }
+
+    const mergedList = Array.from(localMap.values());
+    window.transactions = mergedList;
+    transactions = mergedList;
+    localStorage.setItem('transactions', JSON.stringify(mergedList));
+
+    return { hasNewFromCloud, hasLocalUnpushed };
+}
+
+/**
+ * Penggabungan Dua Arah Cerdas untuk Master Santri
+ */
+function mergeSantriFromCloud(cloudSantriList) {
+    if (!Array.isArray(cloudSantriList) || cloudSantriList.length === 0) return false;
+
+    const currentList = (Array.isArray(window.santriData) && window.santriData.length > 0)
+        ? window.santriData
+        : (santriData || []);
+
+    const localMap = new Map();
+    currentList.forEach(s => {
+        if (s && s.id) localMap.set(s.id, s);
+    });
+
+    let hasChanges = false;
+    cloudSantriList.forEach(cs => {
+        if (!cs || !cs.id) return;
+        if (!localMap.has(cs.id)) {
+            localMap.set(cs.id, cs);
+            hasChanges = true;
+        } else {
+            const loc = localMap.get(cs.id);
+            if (loc.status !== cs.status || loc.kamar !== cs.kamar || loc.kamarTerakhir !== cs.kamarTerakhir || loc.alasanBoyong !== cs.alasanBoyong) {
+                localMap.set(cs.id, { ...loc, ...cs });
+                hasChanges = true;
+            }
+        }
+    });
+
+    let merged = Array.from(localMap.values());
+    if (typeof sortSantriData === 'function') {
+        merged = sortSantriData(merged);
+    }
+    window.santriData = merged;
+    santriData = merged;
+    localStorage.setItem('santriData', JSON.stringify(merged));
+    return hasChanges;
+}
+
+/**
+ * Penggabungan Cerdas List Berdasarkan ID (Mutasi, Liburan, Pulang)
+ */
+function mergeListById(localList, cloudList, storageKey) {
+    if (!Array.isArray(cloudList)) return localList || [];
+    const map = new Map();
+    (localList || []).forEach(item => { if (item && item.id) map.set(item.id, item); });
+    cloudList.forEach(item => { if (item && item.id) map.set(item.id, { ...(map.get(item.id) || {}), ...item }); });
+    const merged = Array.from(map.values());
+    if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(merged));
+    }
+    return merged;
+}
+
+/**
  * Tarik Seluruh Data dari Google Sheets (Pull / Download)
  */
 async function pullFromCloud(options = {}) {
@@ -418,60 +585,49 @@ async function pullFromCloud(options = {}) {
         }
 
         const cloudData = res.data;
-
-        const cloudHasData = (Array.isArray(cloudData.santriData) && cloudData.santriData.length > 0) ||
-                             (Array.isArray(cloudData.transactions) && cloudData.transactions.length > 0);
-        const localHasData = (Array.isArray(window.santriData) && window.santriData.length > 0) ||
-                             (Array.isArray(window.transactions) && window.transactions.length > 0);
-
-        // Jika Cloud di Google Sheets masih baru/kosong tetapi di perangkat lokal sudah ada data, otomatis unggah
-        if (!cloudHasData && localHasData) {
-            isSyncingActive = false;
-            pushToCloud({ silent: true });
-            return true;
-        }
-
-        // Terapkan data dari Cloud ke memori aplikasi
         let dataUpdated = false;
 
+        // 1. SMART MERGE TRANSAKSI (Sinkronisasi Pembayaran Multi-Perangkat)
+        const trxMerge = mergeTransactionsFromCloud(cloudData.transactions);
+        if (trxMerge.hasNewFromCloud) {
+            dataUpdated = true;
+        }
+
+        // 2. SMART MERGE SANTRI DATA
         if (Array.isArray(cloudData.santriData) && cloudData.santriData.length > 0) {
-            if (typeof sortSantriData === 'function') {
-                cloudData.santriData = sortSantriData(cloudData.santriData);
-            } else {
-                cloudData.santriData.sort((a, b) => (a.nama || '').localeCompare(b.nama || '', 'id', { sensitivity: 'base' }));
-            }
-            window.santriData = cloudData.santriData;
-            santriData = cloudData.santriData;
-            dataUpdated = true;
+            const santriChanged = mergeSantriFromCloud(cloudData.santriData);
+            if (santriChanged) dataUpdated = true;
         }
 
-        if (Array.isArray(cloudData.transactions) && cloudData.transactions.length > 0) {
-            window.transactions = cloudData.transactions;
-            transactions = cloudData.transactions;
-            dataUpdated = true;
-        }
-
+        // 3. SMART MERGE MUTASI KAMAR
         if (Array.isArray(cloudData.mutasiKamarList)) {
-            window.mutasiKamarList = cloudData.mutasiKamarList;
-            mutasiKamarList = cloudData.mutasiKamarList;
+            const mutasiMerged = mergeListById(window.mutasiKamarList || mutasiKamarList, cloudData.mutasiKamarList, 'mutasiKamarList');
+            window.mutasiKamarList = mutasiMerged;
+            mutasiKamarList = mutasiMerged;
             dataUpdated = true;
         }
 
+        // 4. SMART MERGE LIBURAN SANTRI
         if (Array.isArray(cloudData.liburanSantriList)) {
-            window.liburanSantriList = cloudData.liburanSantriList;
-            liburanSantriList = cloudData.liburanSantriList;
+            const liburanMerged = mergeListById(window.liburanSantriList || liburanSantriList, cloudData.liburanSantriList, 'liburanSantriList');
+            window.liburanSantriList = liburanMerged;
+            liburanSantriList = liburanMerged;
             dataUpdated = true;
         }
 
+        // 5. SMART MERGE PULANG SANTRI
         if (Array.isArray(cloudData.pulangSantriList)) {
-            window.pulangSantriList = cloudData.pulangSantriList;
-            pulangSantriList = cloudData.pulangSantriList;
+            const pulangMerged = mergeListById(window.pulangSantriList || pulangSantriList, cloudData.pulangSantriList, 'pulangSantriList');
+            window.pulangSantriList = pulangMerged;
+            pulangSantriList = pulangMerged;
             dataUpdated = true;
         }
 
+        // 6. MERGE APP SETTINGS
         if (cloudData.appSettings && typeof cloudData.appSettings === 'object' && Object.keys(cloudData.appSettings).length > 0) {
             window.appSettings = { ...window.appSettings, ...cloudData.appSettings };
             appSettings = window.appSettings;
+            localStorage.setItem('appSettings', JSON.stringify(appSettings));
             dataUpdated = true;
         }
 
@@ -482,7 +638,7 @@ async function pullFromCloud(options = {}) {
         }
         window._isCloudUpdating = false;
 
-        // Perbarui semua antarmuka pengguna (UI)
+        // Segarkan seluruh tampilan aktif aplikasi
         refreshAllApplicationViews();
 
         cloudConfig.lastStatus = 'online';
@@ -493,7 +649,14 @@ async function pullFromCloud(options = {}) {
         if (!silent && typeof showToast === 'function') {
             const countS = (santriData || []).length;
             const countT = (transactions || []).length;
-            showToast(`Data Cloud berhasil dimuat! (${countS} Santri, ${countT} Transaksi)`, 'success');
+            showToast(`Data Cloud berhasil disinkronkan! (${countS} Santri, ${countT} Transaksi)`, 'success');
+        }
+
+        // Jika ada transaksi lokal yang belum ada di Cloud, segera kirim ke Google Sheets
+        if (trxMerge.hasLocalUnpushed) {
+            setTimeout(() => {
+                pushToCloud({ silent: true });
+            }, 500);
         }
 
         return true;
@@ -549,14 +712,15 @@ async function pushToCloud(options = {}) {
             showToast('Mengunggah data ke Google Sheets...', 'info');
         }
 
-        // Siapkan Payload Lengkap
+        // Siapkan Payload Lengkap beserta daftar ID yang dihapus
         const payloadData = {
             santriData: window.santriData || santriData || [],
             transactions: window.transactions || transactions || [],
             appSettings: window.appSettings || appSettings || {},
             mutasiKamarList: window.mutasiKamarList || mutasiKamarList || [],
             liburanSantriList: window.liburanSantriList || liburanSantriList || [],
-            pulangSantriList: window.pulangSantriList || pulangSantriList || []
+            pulangSantriList: window.pulangSantriList || pulangSantriList || [],
+            deletedTrxIds: getDeletedTransactionIds()
         };
 
         const res = await callGASApi('saveAllData', payloadData, 40000);
@@ -584,16 +748,15 @@ async function pushToCloud(options = {}) {
                 showToast('Gagal sinkronisasi ke cloud: ' + err.message, 'error');
             }
         } else {
-            // Dalam mode silent di latar belakang, jangan membuat panik pengguna
+            // Dalam mode silent di latar belakang, jadwalkan coba ulang
             hasPendingPush = true;
-            // Jadwalkan coba ulang yang tenang dalam 15 detik
             if (!retryPushTimer) {
                 retryPushTimer = setTimeout(() => {
                     retryPushTimer = null;
                     if (hasPendingPush && navigator.onLine) {
                         pushToCloud({ silent: true });
                     }
-                }, 15000);
+                }, 10000);
             }
         }
         return false;
@@ -605,37 +768,83 @@ async function pushToCloud(options = {}) {
 
 /**
  * Trigger Auto-Sync saat data lokal diubah
- * Dipanggil secara otomatis dari saveDataToStorage()
+ * Dipanggil secara otomatis dari saveDataToStorage() atau aksi bayar langsung
  */
-function triggerAutoSyncToCloud() {
+function triggerAutoSyncToCloud(immediate = false) {
     if (window._isCloudUpdating) return; // Mencegah looping saat pull
     if (!cloudConfig.webAppUrl || !cloudConfig.autoSync) return;
 
-    // Bersihkan timer debounce sebelumnya
     if (syncDebounceTimer) {
         clearTimeout(syncDebounceTimer);
+        syncDebounceTimer = null;
     }
 
-    // Debounce 1.5 detik agar transaksi cepat tidak membanjiri server
-    syncDebounceTimer = setTimeout(() => {
+    if (immediate) {
         pushToCloud({ silent: true });
-    }, 1500);
+    } else {
+        syncDebounceTimer = setTimeout(() => {
+            pushToCloud({ silent: true });
+        }, 500);
+    }
 }
 
 /**
- * Segarkan seluruh tampilan aktif aplikasi
+ * Handler klik pill indikator cloud di header
+ */
+function handleHeaderCloudClick() {
+    if (isSyncingActive) {
+        if (typeof showToast === 'function') {
+            showToast("Sedang menyinkronkan data dengan Google Sheets...", "info");
+        }
+        return;
+    }
+    pullFromCloud({ silent: false });
+}
+
+/**
+ * Segarkan seluruh tampilan aktif aplikasi secara real-time
  */
 function refreshAllApplicationViews() {
     try {
         if (typeof updateDateHeader === 'function') updateDateHeader();
         if (typeof updateFiltersAndDropdowns === 'function') updateFiltersAndDropdowns();
         if (typeof updateDashboard === 'function') updateDashboard();
+
+        // Refresh Halaman Syahriah (Tabel & Detail Santri jika sedang dibuka)
         if (typeof renderSyahriah === 'function') renderSyahriah();
+        if (typeof renderBulanSyahriah === 'function' && typeof currentDetailSantriId !== 'undefined' && currentDetailSantriId) {
+            const vd = document.getElementById('view-syahriah-detail');
+            if (vd && !vd.classList.contains('hidden')) {
+                renderBulanSyahriah();
+                if (typeof updateActionPanel === 'function') updateActionPanel();
+            }
+        }
+
+        // Refresh Halaman Pembayaran Lain
+        if (typeof renderPembayaranLainPage === 'function') renderPembayaranLainPage();
+        if (typeof renderSantriPLTable === 'function') renderSantriPLTable();
+
+        // Refresh Tagihan Kustom
+        if (typeof renderDetailPembayaranKustomData === 'function' && typeof currentTagihanKustom !== 'undefined') {
+            renderDetailPembayaranKustomData();
+        }
+        if (typeof renderPembayaranKustomList === 'function') renderPembayaranKustomList();
+
+        // Refresh Pengeluaran & Laporan
+        if (typeof renderPengeluaran === 'function') renderPengeluaran();
+        if (typeof renderPengeluaranMenu === 'function') renderPengeluaranMenu();
+        if (typeof renderLaporan === 'function') renderLaporan();
+        if (typeof renderRiwayat === 'function') renderRiwayat();
+
+        // Refresh Data Santri & Mutasi
+        if (typeof renderMasterSantriTable === 'function') renderMasterSantriTable();
+        if (typeof renderBoyongSantriTable === 'function') renderBoyongSantriTable();
         if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
         if (typeof renderMutasiKamarSection === 'function') renderMutasiKamarSection();
-        if (typeof renderPembayaranLainPage === 'function') renderPembayaranLainPage();
-        if (typeof renderPengeluaranMenu === 'function') renderPengeluaranMenu();
-        if (typeof renderBackupRestorePage === 'function') renderBackupRestorePage();
+        if (typeof renderLiburanSantriPage === 'function') renderLiburanSantriPage();
+        if (typeof renderPulangSantriPage === 'function') renderPulangSantriPage();
+
+        // Refresh Pengaturan
         if (typeof renderPengaturanTahunAjaran === 'function') renderPengaturanTahunAjaran();
         if (typeof renderPengaturanTagihan === 'function') renderPengaturanTagihan();
         if (typeof renderPengaturanPembayaranLain === 'function') renderPengaturanPembayaranLain();
@@ -773,6 +982,21 @@ function doPost(e) {
   }
 }
 
+function formatDateIso(val) {
+  if (!val) return '';
+  if (val instanceof Date) {
+    return Utilities.formatDate(val, "GMT+7", "yyyy-MM-dd");
+  }
+  var str = String(val).trim();
+  if (str.length > 10 && !str.match(/^\\d{4}-\\d{2}-\\d{2}$/)) {
+    var d = new Date(str);
+    if (!isNaN(d.getTime())) {
+      return Utilities.formatDate(d, "GMT+7", "yyyy-MM-dd");
+    }
+  }
+  return str;
+}
+
 function readAllDataFromSpreadsheet() {
   ensureAllSheetsExist();
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -804,9 +1028,12 @@ function readAllDataFromSpreadsheet() {
       type: String(r.type || 'in'),
       amount: Number(r.amount) || 0,
       desc: String(r.desc || ''),
-      date: String(r.date || '')
+      date: formatDateIso(r.date),
+      metode: String(r.metode || 'Tunai'),
+      kasir: String(r.kasir || '')
     };
     if (r.santriId) t.santriId = String(r.santriId);
+    if (r.santriNama) t.santriNama = String(r.santriNama);
     if (r.pj) t.pj = String(r.pj);
     if (r.divisi) t.divisi = String(r.divisi);
     if (r.bulan) {
@@ -933,11 +1160,35 @@ function writeAllDataToSpreadsheet(payload) {
   }
 
   var trxSheet = ss.getSheetByName(SHEET_NAMES.TRANSAKSI);
+  var existingTrxRows = getRowsAsObjects(trxSheet);
+  var trxMap = {};
+  existingTrxRows.forEach(function(r) {
+    if (r.id) {
+      trxMap[r.id] = r;
+    }
+  });
+
+  // Hapus ID yang ada di daftar deletedTrxIds
+  var deletedIds = payload.deletedTrxIds || [];
+  if (Array.isArray(deletedIds)) {
+    deletedIds.forEach(function(did) {
+      delete trxMap[did];
+    });
+  }
+
+  // Gabungkan transaksi dari payload
+  transactions.forEach(function(t) {
+    if (t && t.id && (!deletedIds.includes(t.id))) {
+      trxMap[t.id] = t;
+    }
+  });
+
+  var mergedTrxList = Object.keys(trxMap).map(function(k) { return trxMap[k]; });
   trxSheet.clearContents();
-  var trxHeaders = ['id', 'santriId', 'ta', 'kategori', 'type', 'amount', 'desc', 'date', 'pj', 'divisi', 'bulan', 'updatedAt'];
+  var trxHeaders = ['id', 'santriId', 'ta', 'kategori', 'type', 'amount', 'desc', 'date', 'pj', 'divisi', 'bulan', 'metode', 'kasir', 'updatedAt'];
   var trxRows = [trxHeaders];
 
-  transactions.forEach(function(t) {
+  mergedTrxList.forEach(function(t) {
     trxRows.push([
       String(t.id || ''),
       String(t.santriId || ''),
@@ -946,10 +1197,12 @@ function writeAllDataToSpreadsheet(payload) {
       String(t.type || 'in'),
       Number(t.amount) || 0,
       String(t.desc || ''),
-      String(t.date || ''),
+      formatDateIso(t.date),
       String(t.pj || ''),
       String(t.divisi || ''),
-      t.bulan ? JSON.stringify(t.bulan) : '',
+      t.bulan ? (typeof t.bulan === 'object' ? JSON.stringify(t.bulan) : String(t.bulan)) : '',
+      String(t.metode || 'Tunai'),
+      String(t.kasir || ''),
       nowStr
     ]);
   });
@@ -1221,6 +1474,12 @@ window.testCloudConnection = testCloudConnection;
 window.pullFromCloud = pullFromCloud;
 window.pushToCloud = pushToCloud;
 window.triggerAutoSyncToCloud = triggerAutoSyncToCloud;
+window.handleHeaderCloudClick = handleHeaderCloudClick;
+window.trackDeletedTransactionId = trackDeletedTransactionId;
+window.getDeletedTransactionIds = getDeletedTransactionIds;
+window.mergeTransactionsFromCloud = mergeTransactionsFromCloud;
+window.mergeSantriFromCloud = mergeSantriFromCloud;
+window.refreshAllApplicationViews = refreshAllApplicationViews;
 window.bukaModalCloudSync = bukaModalCloudSync;
 window.salinKodeAppsScript = salinKodeAppsScript;
 window.switchCloudTab = switchCloudTab;
