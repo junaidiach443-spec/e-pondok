@@ -315,13 +315,6 @@
                     <span id="header-tahun-ajaran-mobile" class="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 font-mono">1447/1448</span>
                 </div>
 
-                <!-- Indikator Status Cloud Sync Multi-Perangkat (Live Status & Quick Sync) -->
-                <div id="header-cloud-pill" onclick="handleHeaderCloudClick()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all cursor-pointer border border-emerald-200 shadow-2xs select-none" title="Cloud Aktif. Klik untuk menyinkronkan data sekarang.">
-                    <span id="header-cloud-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <i id="header-cloud-icon" class="fas fa-cloud-check text-emerald-600 text-xs"></i>
-                    <span id="header-cloud-text" class="hidden md:inline font-medium">Tersinkron</span>
-                </div>
-
                 <!-- Profil Administrator Finetiks Style -->
                 <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 md:pl-6 border-l border-gray-200">
                     <div class="relative">
@@ -609,37 +602,6 @@
                     </div>
                 </div>
 
-                <!-- 3 Kartu KPI Ringkasan Asrama -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Santri Aktif</p>
-                            <h3 class="text-2xl font-extrabold text-gray-800 font-mono mt-0.5" id="mutasi-kpi-santri">0</h3>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-door-open"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Kamar Terdaftar</p>
-                            <h3 class="text-2xl font-extrabold text-gray-800 font-mono mt-0.5" id="mutasi-kpi-kamar">0</h3>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-history"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Riwayat Mutasi Kamar</p>
-                            <h3 class="text-2xl font-extrabold text-teal-600 font-mono mt-0.5" id="mutasi-kpi-riwayat">0</h3>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Sebaran Kamar Saat Ini -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-3">
                     <div class="flex items-center justify-between">
@@ -797,50 +759,6 @@
                         <button onclick="exportBoyongSantriExcel()" class="bg-[#059669] hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center gap-2 text-sm cursor-pointer">
                             <i class="fas fa-file-excel"></i> Export Riwayat Boyong & GT
                         </button>
-                    </div>
-                </div>
-
-                <!-- 4 Kartu KPI Ringkasan Boyong & GT -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Santri Boyong</p>
-                            <h3 class="text-2xl font-extrabold text-gray-800 font-mono mt-0.5" id="boyong-kpi-total">0</h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Alumni / Keluar</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-clock-rotate-left"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Guru Tugas / Non-Mukim (GT)</p>
-                            <h3 class="text-2xl font-extrabold text-amber-600 font-mono mt-0.5" id="boyong-kpi-gt">0</h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Guru Tugas / Non-Mukim</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-shield-check"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Syarat Pelunasan</p>
-                            <h3 class="text-xl font-extrabold text-emerald-600 mt-0.5">Wajib Lunas</h3>
-                            <p class="text-[11px] text-emerald-700 mt-0.5 font-medium">Bebas Tanggungan</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0">
-                            <i class="fas fa-bed"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Santri Kamar Aktif</p>
-                            <h3 class="text-2xl font-extrabold text-blue-600 font-mono mt-0.5" id="boyong-kpi-santri-aktif">0</h3>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Penghuni Aktif</p>
-                        </div>
                     </div>
                 </div>
 
