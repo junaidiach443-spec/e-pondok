@@ -123,7 +123,7 @@ function doPost(e) {
       });
     }
 
-    // 3. Ambil Seluruh Data Database via POST (Fallback jika browser membatasi redirect GET)
+    // 3. Ambil Seluruh Data via POST (Fallback)
     if (action === 'getAllData' || action === 'pull') {
       var fullData = readAllDataFromSpreadsheet();
       return createJsonResponse({
@@ -133,6 +133,8 @@ function doPost(e) {
         timestamp: new Date().toISOString()
       });
     }
+
+
 
     return createJsonResponse({
       status: 'error',

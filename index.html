@@ -21,7 +21,7 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
 
@@ -400,49 +400,6 @@
                     </div>
                 </div>
 
-                <!-- 4 KPI Ringkasan Status Santri Pesantren (Total, Aktif Kamar, Boyong, GT) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div onclick="navigate('master-santri')" class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-400 transition-all cursor-pointer group flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0 border border-slate-200">
-                            <i class="fas fa-users-viewfinder"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Seluruh Santri</p>
-                            <h3 class="text-2xl font-extrabold text-slate-800 font-mono mt-0.5 tracking-tight" id="dash-kpi-total">74 Santri</h3>
-                            <p class="text-[10px] text-slate-500 font-medium truncate">Semua data terdaftar</p>
-                        </div>
-                    </div>
-                    <div onclick="navigate('santri')" class="bg-white rounded-2xl p-5 border border-emerald-100 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0 border border-emerald-100">
-                            <i class="fas fa-user-check"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-emerald-600/90 uppercase tracking-wider truncate">Santri Aktif Kamar</p>
-                            <h3 class="text-2xl font-extrabold text-emerald-700 font-mono mt-0.5 tracking-tight" id="dash-kpi-aktif">25 Santri</h3>
-                            <p class="text-[10px] text-emerald-600 font-medium truncate">Sedang menempati kamar</p>
-                        </div>
-                    </div>
-                    <div onclick="navigate('boyong-santri')" class="bg-white rounded-2xl p-5 border border-rose-100 shadow-xs hover:shadow-md hover:border-rose-300 transition-all cursor-pointer group flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0 border border-rose-100">
-                            <i class="fas fa-box-archive"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-rose-600/90 uppercase tracking-wider truncate">Santri Boyong</p>
-                            <h3 class="text-2xl font-extrabold text-rose-600 font-mono mt-0.5 tracking-tight" id="dash-kpi-boyong">36 Santri</h3>
-                            <p class="text-[10px] text-rose-700 font-medium truncate">Tetap diarsip di data master</p>
-                        </div>
-                    </div>
-                    <div onclick="navigate('boyong-santri')" class="bg-white rounded-2xl p-5 border border-amber-100 shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 group-hover:scale-105 transition-transform flex items-center justify-center text-xl shrink-0 border border-amber-100">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-amber-600/90 uppercase tracking-wider truncate">Guru Tugas / Non-Mukim (GT)</p>
-                            <h3 class="text-2xl font-extrabold text-amber-600 font-mono mt-0.5 tracking-tight" id="dash-kpi-gt">13 Santri</h3>
-                            <p class="text-[10px] text-amber-700 font-medium truncate">Santri aktif tugas / non-mukim</p>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
                     <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
@@ -4762,23 +4719,23 @@
     </div>
 
     <!-- Modular Application Scripts -->
-    <script src="js/utils.js?v=20261109"></script>
-    <script src="js/data.js?v=20261109"></script>
-    <script src="js/navigation.js?v=20261109"></script>
-    <script src="js/dashboard.js?v=20261109"></script>
-    <script src="js/santri.js?v=20261109"></script>
-    <script src="js/izin-keluar.js?v=20261109"></script>
-    <script src="js/syahriah.js?v=20261109"></script>
-    <script src="js/tagihan-kustom.js?v=20261109"></script>
-    <script src="js/pembayaran-lain.js?v=20261109"></script>
-    <script src="js/pengeluaran.js?v=20261109"></script>
-    <script src="js/cetak.js?v=20261109"></script>
-    <script src="js/laporan.js?v=20261109"></script>
-    <script src="js/pengaturan.js?v=20261109"></script>
-    <script src="js/backup-restore.js?v=20261109"></script>
-    <script src="js/auth.js?v=20261109"></script>
-    <script src="js/cloud-sync.js?v=20261109"></script>
-    <script src="js/app.js?v=20261109"></script>
+    <script src="js/utils.js?v=11"></script>
+    <script src="js/data.js?v=11"></script>
+    <script src="js/navigation.js?v=11"></script>
+    <script src="js/dashboard.js?v=11"></script>
+    <script src="js/santri.js?v=11"></script>
+    <script src="js/izin-keluar.js?v=11"></script>
+    <script src="js/syahriah.js?v=11"></script>
+    <script src="js/tagihan-kustom.js?v=11"></script>
+    <script src="js/pembayaran-lain.js?v=11"></script>
+    <script src="js/pengeluaran.js?v=11"></script>
+    <script src="js/cetak.js?v=11"></script>
+    <script src="js/laporan.js?v=11"></script>
+    <script src="js/pengaturan.js?v=11"></script>
+    <script src="js/backup-restore.js?v=11"></script>
+    <script src="js/auth.js?v=11"></script>
+    <script src="js/cloud-sync.js?v=11"></script>
+    <script src="js/app.js?v=11"></script>
 </body>
 </html>
 

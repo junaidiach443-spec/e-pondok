@@ -150,14 +150,39 @@ async function callGASApi(action, payloadData = null, timeoutMs = 30000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    const postPayload = {
-        action: action
-    };
-    if (payloadData !== null && payloadData !== undefined) {
-        postPayload.data = payloadData;
-    }
-
     try {
+        // PERHATIAN: Google Apps Script Web App menangani getAllData dan ping pada doGet(e)
+        // sedangkan saveAllData pada doPost(e).
+        if (action === 'getAllData' || action === 'ping' || action === 'pull') {
+            const sep = url.includes('?') ? '&' : '?';
+            const getUrl = `${url}${sep}action=${action}&_t=${Date.now()}`;
+            const response = await fetch(getUrl, {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow',
+                signal: controller.signal
+            });
+            clearTimeout(timer);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const json = await response.json();
+            if (json && json.status === 'error') {
+                throw new Error(json.message || 'Respon error dari Google Apps Script');
+            }
+            return json;
+        }
+
+        // Untuk aksi simpan data (saveAllData / push / sync) menggunakan POST
+        const postPayload = {
+            action: action
+        };
+        if (payloadData !== null && payloadData !== undefined) {
+            postPayload.data = payloadData;
+        }
+
         const response = await fetch(url, {
             method: 'POST',
             mode: 'cors',
@@ -175,31 +200,12 @@ async function callGASApi(action, payloadData = null, timeoutMs = 30000) {
         }
 
         const json = await response.json();
+        if (json && json.status === 'error') {
+            throw new Error(json.message || 'Respon error dari Google Apps Script');
+        }
         return json;
     } catch (err) {
         clearTimeout(timer);
-
-        // Fallback untuk ping / getAllData via GET jika ada lingkungan browser tertentu yang membatasi POST
-        if (action === 'ping' || action === 'getAllData') {
-            try {
-                const fbController = new AbortController();
-                const fbTimer = setTimeout(() => fbController.abort(), 20000);
-                const sep = url.includes('?') ? '&' : '?';
-                const getUrl = `${url}${sep}action=${action}&_t=${Date.now()}`;
-                const getRes = await fetch(getUrl, {
-                    method: 'GET',
-                    mode: 'cors',
-                    redirect: 'follow',
-                    signal: fbController.signal
-                });
-                clearTimeout(fbTimer);
-                if (getRes.ok) {
-                    return await getRes.json();
-                }
-            } catch (fbErr) {
-                // Biarkan error utama yang dilempar
-            }
-        }
         throw err;
     }
 }
