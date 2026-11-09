@@ -175,42 +175,86 @@ function renderBulanSyahriah() {
     if (!s) return;
 
     const TA = getTahunAjaranAktif();
-    const trx = transactions.filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
+    const trx = (transactions || []).filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
     
+    // Sinkronkan Ringkasan Keuangan di Kartu Detail
+    const isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
+    const totalTagihan = isBebas ? 0 : ((appSettings.tarifSyahriah || 250000) * 12);
+    const sudahDibayar = trx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+    const sisa = Math.max(0, totalTagihan - sudahDibayar);
+
+    const elTotalTagihan = document.getElementById('detail-total-tagihan');
+    const elSudahDibayar = document.getElementById('detail-sudah-dibayar');
+    const elSisa = document.getElementById('detail-sisa');
+    const badgeLunas = document.getElementById('detail-status-lunas');
+
+    if (elTotalTagihan) elTotalTagihan.innerText = isBebas ? 'Rp 0 (Bebas)' : formatRupiah(totalTagihan);
+    if (elSudahDibayar) elSudahDibayar.innerText = formatRupiah(sudahDibayar);
+    if (elSisa) elSisa.innerText = isBebas ? 'Rp 0 (Bebas)' : formatRupiah(sisa);
+
+    if (badgeLunas) {
+        if (isBebas) {
+            badgeLunas.className = "px-4 py-2 bg-emerald-100 text-emerald-800 font-bold text-sm rounded-lg border border-emerald-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
+            badgeLunas.innerHTML = '<i class="fas fa-check-circle"></i> LUNAS (BEBAS BIAYA)';
+        } else if (sisa <= 0) {
+            badgeLunas.className = "px-4 py-2 bg-emerald-100 text-emerald-800 font-bold text-sm rounded-lg border border-emerald-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
+            badgeLunas.innerHTML = '<i class="fas fa-check-circle"></i> LUNAS';
+        } else {
+            badgeLunas.className = "px-4 py-2 bg-amber-100 text-amber-800 font-bold text-sm rounded-lg border border-amber-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
+            badgeLunas.innerHTML = '<i class="fas fa-clock"></i> BELUM LUNAS';
+        }
+    }
+
     let listHtml = '';
     let unPaidCount = 0;
 
     for (let i = 0; i < 12; i++) {
         const namaBulan = bulanIslam[i];
-        const trxBulan = trx.find(t => t.desc.includes(namaBulan));
+        const trxBulan = trx.find(t => (t.desc || '').includes(namaBulan));
         const isPaid = !!trxBulan;
         const isSelected = selectedBulanPay.includes(namaBulan);
         
         if (isPaid) {
-            const tgl = new Date(trxBulan.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            let tglFormatted = '-';
+            try {
+                const rawDate = String(trxBulan.date || '');
+                const cleanDate = rawDate.split('T')[0];
+                const parts = cleanDate.split('-');
+                if (parts.length === 3) {
+                    tglFormatted = `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+                } else {
+                    const d = new Date(trxBulan.date);
+                    if (!isNaN(d.getTime())) {
+                        tglFormatted = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                    }
+                }
+            } catch (e) {
+                tglFormatted = String(trxBulan.date || '-');
+            }
+
             listHtml += `
-            <tr class="hover:bg-gray-50 transition-colors">
+            <tr class="hover:bg-emerald-50/30 transition-colors">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
                 <td class="px-6 py-4 font-bold text-gray-800">${namaBulan}</td>
-                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah)}</td>
-                <td class="px-6 py-4"><span class="px-3 py-1 bg-[#ecfdf5] text-[#059669] text-xs font-bold rounded-full border border-emerald-200 flex items-center w-max gap-1"><i class="fas fa-check"></i> Lunas</span></td>
+                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah || 250000)}</td>
+                <td class="px-6 py-4"><span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 flex items-center w-max gap-1"><i class="fas fa-check"></i> Lunas</span></td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex flex-col items-center justify-center gap-1.5">
-                        <span class="text-[10px] text-gray-400 font-medium">${tgl}</span>
-                        <button onclick="batalBayarSyahriah('${trxBulan.id}', '${namaBulan}')" class="text-gray-400 hover:text-rose-500 transition-colors" title="Batalkan Pembayaran Bulan ${namaBulan}"><i class="fas fa-times-circle text-[15px]"></i></button>
+                        <span class="text-[10px] text-gray-400 font-medium">${tglFormatted}</span>
+                        <button onclick="batalBayarSyahriah('${trxBulan.id}', '${namaBulan}')" class="text-gray-400 hover:text-rose-500 transition-colors p-1" title="Batalkan Pembayaran Bulan ${namaBulan}"><i class="fas fa-times-circle text-[15px]"></i></button>
                     </div>
                 </td>
             </tr>`;
         } else {
             unPaidCount++;
             listHtml += `
-            <tr class="hover:bg-indigo-50/20 transition-colors cursor-pointer ${isSelected ? 'bg-indigo-50/50' : ''}" onclick="toggleBulanPay('${namaBulan}')">
+            <tr class="hover:bg-emerald-50/20 transition-colors cursor-pointer ${isSelected ? 'bg-emerald-50/60' : ''}" onclick="toggleBulanPay('${namaBulan}')">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
-                <td class="px-6 py-4 font-bold ${isSelected ? 'text-[#5b52e5]' : 'text-gray-600'}">${namaBulan}</td>
-                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah)}</td>
-                <td class="px-6 py-4">-</td>
+                <td class="px-6 py-4 font-bold ${isSelected ? 'text-emerald-700' : 'text-gray-600'}">${namaBulan}</td>
+                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah || 250000)}</td>
+                <td class="px-6 py-4"><span class="text-xs text-gray-400 font-medium">Belum Bayar</span></td>
                 <td class="px-6 py-4 text-center" onclick="event.stopPropagation()">
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBulanPay('${namaBulan}')" class="w-4 h-4 rounded text-indigo-600 focus:ring-[#5b52e5] border-gray-300 cursor-pointer">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBulanPay('${namaBulan}')" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 cursor-pointer">
                 </td>
             </tr>`;
         }
@@ -393,8 +437,12 @@ function prosesBayarSyahriahSelected() {
         // dan dapat dibatalkan per bulan secara independen
         const kasirNama = (appSettings && appSettings.adminAuth && appSettings.adminAuth.nama) || 'Bendahara';
         selectedBulanPay.forEach((bulan, idx) => {
+            const uniqueTrxId = (typeof generateTrxId === 'function') 
+                ? generateTrxId('TRX') 
+                : ('TRX-' + now + '-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + idx);
+
             transactions.push({
-                id: 'TRX-' + (now + idx),
+                id: uniqueTrxId,
                 santriId: s.id,
                 santriNama: s.nama,
                 santriNis: s.nis,

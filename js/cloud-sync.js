@@ -59,7 +59,7 @@ function initCloudSync() {
         renderCloudSettingsForm();
     });
 
-    // Heartbeat auto-pull setiap 10 detik saat online dan tab aktif (Sinkronisasi Multi-Perangkat Live)
+    // Heartbeat auto-pull setiap 6 detik saat online dan tab aktif (Sinkronisasi Multi-Perangkat Live)
     setInterval(() => {
         if (!navigator.onLine || isSyncingActive || !cloudConfig.webAppUrl || !cloudConfig.autoSync) {
             return;
@@ -68,11 +68,11 @@ function initCloudSync() {
             return;
         }
         pullFromCloud({ silent: true });
-    }, 10000);
+    }, 6000);
 
     const triggerInstantPull = () => {
         const now = Date.now();
-        if (cloudConfig.webAppUrl && cloudConfig.autoSync && !isSyncingActive && (now - lastSuccessfulPullTimestamp > 3000)) {
+        if (cloudConfig.webAppUrl && cloudConfig.autoSync && !isSyncingActive && (now - lastSuccessfulPullTimestamp > 2000)) {
             pullFromCloud({ silent: true });
         }
     };
@@ -94,13 +94,13 @@ function initCloudSync() {
             console.log('[Cloud Sync] Mencoba mengirim ulang antrean data...');
             pushToCloud({ silent: true });
         }
-    }, 25000);
+    }, 20000);
 
     // Auto pull saat pertama kali dibuka (jika URL valid)
     if (cloudConfig.webAppUrl && cloudConfig.autoPullOnStart) {
         setTimeout(() => {
             pullFromCloud({ silent: true, isInitial: true });
-        }, 800);
+        }, 200);
     }
 }
 
@@ -399,7 +399,7 @@ async function testCloudConnection(silent = false) {
 }
 
 /**
- * Pelacakan ID transaksi yang dihapus secara lokal agar tidak muncul kembali saat sync
+ * Pelacakan ID transaksi yang dihapus secara lokal & sinkronisasi dengan Cloud
  */
 function trackDeletedTransactionId(trxId) {
     if (!trxId) return;
@@ -407,19 +407,52 @@ function trackDeletedTransactionId(trxId) {
         let deleted = JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
         if (!deleted.includes(trxId)) {
             deleted.push(trxId);
-            if (deleted.length > 500) deleted = deleted.slice(-500);
+            if (deleted.length > 1000) deleted = deleted.slice(-1000);
             localStorage.setItem('epondok_deleted_trx_ids', JSON.stringify(deleted));
         }
-    } catch (e) {}
+
+        // Simpan juga di appSettings.deletedTrxIds agar dikirim dan disimpan di Google Sheets Tab Pengaturan!
+        let settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
+        if (settings && typeof settings === 'object') {
+            if (!Array.isArray(settings.deletedTrxIds)) {
+                settings.deletedTrxIds = [];
+            }
+            if (!settings.deletedTrxIds.includes(trxId)) {
+                settings.deletedTrxIds.push(trxId);
+                if (settings.deletedTrxIds.length > 1000) {
+                    settings.deletedTrxIds = settings.deletedTrxIds.slice(-1000);
+                }
+            }
+            window.appSettings = settings;
+            if (typeof appSettings !== 'undefined') appSettings = settings;
+            localStorage.setItem('appSettings', JSON.stringify(settings));
+        }
+    } catch (e) {
+        console.warn('Gagal melacak ID transaksi dihapus:', e);
+    }
 }
 
 function getDeletedTransactionIds() {
     try {
-        return JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
+        const local = JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
+        const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
+        const fromSettings = (settings && Array.isArray(settings.deletedTrxIds)) ? settings.deletedTrxIds : [];
+        const combined = Array.from(new Set([...local, ...fromSettings]));
+        return combined;
     } catch (e) {
         return [];
     }
 }
+
+/**
+ * Generator ID Transaksi Unik Global (Anti-Tabrakan Antar-Perangkat)
+ */
+function generateTrxId(prefix = 'TRX') {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+    return `${prefix}-${timestamp}-${random}`;
+}
+window.generateTrxId = generateTrxId;
 
 /**
  * Normalisasi format tanggal agar seragam YYYY-MM-DD
@@ -476,10 +509,10 @@ function mergeTransactionsFromCloud(cloudTransactions) {
         }
     });
 
-    // Cek apakah ada transaksi lokal yang belum ada di cloud
+    // Cek apakah ada transaksi lokal yang belum ada di cloud (DAN BUKAN YANG DIHAPUS)
     const cloudIds = new Set(cloudTransactions.map(c => c && c.id));
     for (const [id, t] of localMap.entries()) {
-        if (!cloudIds.has(id)) {
+        if (!cloudIds.has(id) && !deletedIds.has(id)) {
             hasLocalUnpushed = true;
         }
     }
@@ -586,6 +619,28 @@ async function pullFromCloud(options = {}) {
 
         const cloudData = res.data;
         let dataUpdated = false;
+
+        // 0. SINKRONKAN DAFTAR TRANSAKSI YANG DIHAPUS DARI CLOUD TERLEBIH DAHULU
+        if (cloudData.appSettings && Array.isArray(cloudData.appSettings.deletedTrxIds)) {
+            cloudData.appSettings.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+        }
+        if (Array.isArray(cloudData.deletedTrxIds)) {
+            cloudData.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+        }
+
+        // Hapus transaksi lokal yang masuk dalam daftar deletedIds
+        const activeDeletedIds = new Set(getDeletedTransactionIds());
+        if (activeDeletedIds.size > 0) {
+            const curTrx = window.transactions || transactions || [];
+            const beforeCount = curTrx.length;
+            const filtered = curTrx.filter(t => t && t.id && !activeDeletedIds.has(t.id));
+            if (filtered.length !== beforeCount) {
+                transactions = filtered;
+                window.transactions = filtered;
+                localStorage.setItem('transactions', JSON.stringify(filtered));
+                dataUpdated = true;
+            }
+        }
 
         // 1. SMART MERGE TRANSAKSI (Sinkronisasi Pembayaran Multi-Perangkat)
         const trxMerge = mergeTransactionsFromCloud(cloudData.transactions);
@@ -712,11 +767,77 @@ async function pushToCloud(options = {}) {
             showToast('Mengunggah data ke Google Sheets...', 'info');
         }
 
+        // 1. PRE-PULL & MERGE sebelum push ke Google Sheets
+        // Langkah ini menjamin bahwa pembayaran yang baru saja dicatat di perangkat lain
+        // TIDAK AKAN PERNAH tertimpa atau terhapus oleh pengiriman dari perangkat ini!
+        try {
+            const prePullRes = await callGASApi('getAllData', null, 25000);
+            if (prePullRes && prePullRes.status === 'success' && prePullRes.data) {
+                const cloudData = prePullRes.data;
+
+                // A. Sinkronkan deletedTrxIds dari cloud
+                if (cloudData.appSettings && Array.isArray(cloudData.appSettings.deletedTrxIds)) {
+                    cloudData.appSettings.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+                }
+                if (Array.isArray(cloudData.deletedTrxIds)) {
+                    cloudData.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+                }
+
+                // B. Bersihkan data lokal dari transaksi yang telah dihapus
+                const activeDeleted = new Set(getDeletedTransactionIds());
+                if (activeDeleted.size > 0) {
+                    transactions = (transactions || []).filter(t => t && t.id && !activeDeleted.has(t.id));
+                    window.transactions = transactions;
+                }
+
+                // C. Merge transaksi dari Cloud ke Lokal
+                mergeTransactionsFromCloud(cloudData.transactions);
+
+                // D. Merge santriData
+                if (Array.isArray(cloudData.santriData) && cloudData.santriData.length > 0) {
+                    mergeSantriFromCloud(cloudData.santriData);
+                }
+
+                // E. Merge mutasi, liburan, pulang
+                if (Array.isArray(cloudData.mutasiKamarList)) {
+                    const mergedMutasi = mergeListById(window.mutasiKamarList || mutasiKamarList, cloudData.mutasiKamarList, 'mutasiKamarList');
+                    window.mutasiKamarList = mergedMutasi;
+                    mutasiKamarList = mergedMutasi;
+                }
+                if (Array.isArray(cloudData.liburanSantriList)) {
+                    const mergedLiburan = mergeListById(window.liburanSantriList || liburanSantriList, cloudData.liburanSantriList, 'liburanSantriList');
+                    window.liburanSantriList = mergedLiburan;
+                    liburanSantriList = mergedLiburan;
+                }
+                if (Array.isArray(cloudData.pulangSantriList)) {
+                    const mergedPulang = mergeListById(window.pulangSantriList || pulangSantriList, cloudData.pulangSantriList, 'pulangSantriList');
+                    window.pulangSantriList = mergedPulang;
+                    pulangSantriList = mergedPulang;
+                }
+            }
+        } catch (prePullErr) {
+            console.warn('[Cloud Sync] Pre-pull sebelum push dilewati/gagal:', prePullErr.message);
+        }
+
+        // Pastikan appSettings.deletedTrxIds selalu up-to-date di payload
+        let currentSettings = window.appSettings || appSettings || {};
+        if (!Array.isArray(currentSettings.deletedTrxIds)) {
+            currentSettings.deletedTrxIds = [];
+        }
+        getDeletedTransactionIds().forEach(id => {
+            if (!currentSettings.deletedTrxIds.includes(id)) {
+                currentSettings.deletedTrxIds.push(id);
+            }
+        });
+        window.appSettings = currentSettings;
+        if (typeof appSettings !== 'undefined') appSettings = currentSettings;
+        localStorage.setItem('appSettings', JSON.stringify(currentSettings));
+
         // Siapkan Payload Lengkap beserta daftar ID yang dihapus
         const payloadData = {
             santriData: window.santriData || santriData || [],
             transactions: window.transactions || transactions || [],
-            appSettings: window.appSettings || appSettings || {},
+            appSettings: currentSettings,
             mutasiKamarList: window.mutasiKamarList || mutasiKamarList || [],
             liburanSantriList: window.liburanSantriList || liburanSantriList || [],
             pulangSantriList: window.pulangSantriList || pulangSantriList || [],
@@ -730,6 +851,9 @@ async function pushToCloud(options = {}) {
             cloudConfig.lastStatus = 'online';
             cloudConfig.lastSyncTime = new Date().toISOString();
             saveCloudConfig();
+
+            // Segarkan tampilan lokal setelah push sukses
+            refreshAllApplicationViews();
 
             if (!silent && typeof showToast === 'function') {
                 showToast('Semua data berhasil disinkronkan ke Google Spreadsheet!', 'success');
@@ -812,10 +936,14 @@ function refreshAllApplicationViews() {
 
         // Refresh Halaman Syahriah (Tabel & Detail Santri jika sedang dibuka)
         if (typeof renderSyahriah === 'function') renderSyahriah();
-        if (typeof renderBulanSyahriah === 'function' && typeof currentDetailSantriId !== 'undefined' && currentDetailSantriId) {
+        if (typeof currentDetailSantriId !== 'undefined' && currentDetailSantriId) {
             const vd = document.getElementById('view-syahriah-detail');
             if (vd && !vd.classList.contains('hidden')) {
-                renderBulanSyahriah();
+                if (typeof bukaDetailSyahriah === 'function') {
+                    bukaDetailSyahriah(currentDetailSantriId);
+                } else if (typeof renderBulanSyahriah === 'function') {
+                    renderBulanSyahriah();
+                }
                 if (typeof updateActionPanel === 'function') updateActionPanel();
             }
         }

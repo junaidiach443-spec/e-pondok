@@ -399,7 +399,7 @@ function catatPengeluaran() {
     const metodeBayar = elMetode ? elMetode.value : 'Tunai';
 
     const newTx = {
-        id: 'TRX-' + Date.now(),
+        id: (typeof generateTrxId === 'function') ? generateTrxId('TRX') : ('TRX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase()),
         ta: getTahunAjaranAktif(),
         kategori: kategori,
         type: 'out',

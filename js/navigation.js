@@ -77,14 +77,14 @@ function navigate(pageId) {
 
     // Reset dan atur highlight link sidebar aktif
     document.querySelectorAll('nav a').forEach(el => {
-        el.classList.remove('bg-indigo-50', 'text-indigo-700', 'text-[#3b28cc]', 'font-bold', 'border-l-4', 'border-[#4d38f5]', 'shadow-xs');
+        el.classList.remove('bg-emerald-50', 'text-emerald-800', 'font-bold', 'border-l-4', 'border-emerald-600', 'shadow-2xs', 'bg-indigo-50', 'text-indigo-700', 'text-[#3b28cc]', 'border-[#4d38f5]', 'shadow-xs');
         el.classList.add('text-gray-600');
     });
 
     const activeNav = document.getElementById('nav-' + (targetPageId === 'pembayaran-kustom' ? 'syahriah' : targetPageId));
     if (activeNav && targetPageId !== 'pembayaran-kustom') {
         activeNav.classList.remove('text-gray-600');
-        activeNav.classList.add('bg-indigo-50', 'text-[#3b28cc]', 'font-bold', 'border-l-4', 'border-[#4d38f5]', 'shadow-xs');
+        activeNav.classList.add('bg-emerald-50', 'text-emerald-800', 'font-bold', 'border-l-4', 'border-emerald-600', 'shadow-2xs');
     }
 
     // Pastikan menu izin keluar terbuka jika membuka subhalaman izin keluar

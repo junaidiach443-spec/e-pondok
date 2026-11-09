@@ -481,7 +481,9 @@ function simpanBayarSantriPL() {
     const ket = inputKet.value.trim();
     const descText = ket ? `${jenisAktif}: ${ket}` : jenisAktif;
 
-    const newTrxId = 'TRX-' + (1000 + transactions.length + 1);
+    const newTrxId = (typeof generateTrxId === 'function') 
+        ? generateTrxId('TRX') 
+        : ('TRX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase());
 
     const elMetode = document.getElementById('bayar-pl-metode');
     const metodeBayar = elMetode ? elMetode.value : 'Tunai';
@@ -915,7 +917,9 @@ function simpanPembayaranUmumPL() {
 
     const jenisAktif = window.currentSelectedJenisPL;
     const descText = ket ? `${jenisAktif}: ${ket}` : jenisAktif;
-    const newTrxId = 'TRX-' + (1000 + transactions.length + 1);
+    const newTrxId = (typeof generateTrxId === 'function') 
+        ? generateTrxId('TRX') 
+        : ('TRX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase());
 
     const elMetode = document.getElementById('umum-pl-metode');
     const metodeBayar = elMetode ? elMetode.value : 'Tunai';

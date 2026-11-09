@@ -224,7 +224,7 @@ function prosesBayarKustom() {
 
     showConfirm("Konfirmasi Bayar", `Simpan pembayaran ${window.currentTagihanKustom} sebesar ${formatRupiah(nom)} (${metodeBayar}) untuk ${s.nama}?`, () => {
         transactions.push({
-            id: 'TRX-' + Date.now(),
+            id: (typeof generateTrxId === 'function') ? generateTrxId('TRX') : ('TRX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase()),
             santriId: s.id,
             ta: getTahunAjaranAktif(),
             kategori: window.currentTagihanKustom,

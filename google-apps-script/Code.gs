@@ -220,9 +220,10 @@ function readAllDataFromSpreadsheet() {
     };
   });
 
-  // 4. Baca Pengaturan Sistem
+  // 4. Baca Pengaturan Sistem & Riwayat Hapus
   var settingsSheet = ss.getSheetByName(SHEET_NAMES.PENGATURAN);
   var appSettings = null;
+  var deletedTrxIds = [];
   if (settingsSheet) {
     var data = settingsSheet.getDataRange().getValues();
     for (var i = 0; i < data.length; i++) {
@@ -232,9 +233,26 @@ function readAllDataFromSpreadsheet() {
         } catch (e) {
           appSettings = null;
         }
-        break;
+      }
+      if (data[i][0] === 'DELETED_TRX_IDS' && data[i][1]) {
+        try {
+          deletedTrxIds = JSON.parse(data[i][1]);
+        } catch (e) {
+          deletedTrxIds = [];
+        }
       }
     }
+  }
+
+  if (appSettings && Array.isArray(appSettings.deletedTrxIds) && deletedTrxIds.length === 0) {
+    deletedTrxIds = appSettings.deletedTrxIds;
+  }
+
+  // Filter keluar transaksi yang telah dihapus
+  if (deletedTrxIds && deletedTrxIds.length > 0) {
+    var delSet = {};
+    deletedTrxIds.forEach(function(id) { delSet[id] = true; });
+    transactions = transactions.filter(function(t) { return !delSet[t.id]; });
   }
 
   // Jika belum ada pengaturan, beri null agar client menggunakan default atau fallback
@@ -242,7 +260,8 @@ function readAllDataFromSpreadsheet() {
     santriData: santriData,
     transactions: transactions,
     appSettings: appSettings,
-    mutasiKamarList: mutasiKamarList
+    mutasiKamarList: mutasiKamarList,
+    deletedTrxIds: deletedTrxIds
   };
 }
 
@@ -294,7 +313,16 @@ function writeAllDataToSpreadsheet(payload) {
   var trxHeaders = ['id', 'santriId', 'ta', 'kategori', 'subJenis', 'type', 'amount', 'metode', 'pembayar', 'desc', 'date', 'pj', 'divisi', 'bulan', 'updatedAt'];
   var trxRows = [trxHeaders];
 
+  // Kumpulkan set ID yang dihapus
+  var delIds = Array.isArray(payload.deletedTrxIds) ? payload.deletedTrxIds : [];
+  if (appSettings && Array.isArray(appSettings.deletedTrxIds)) {
+    delIds = delIds.concat(appSettings.deletedTrxIds);
+  }
+  var delIdSet = {};
+  delIds.forEach(function(id) { if (id) delIdSet[id] = true; });
+
   transactions.forEach(function(t) {
+    if (!t || !t.id || delIdSet[t.id]) return; // Lewati transaksi yang dihapus
     trxRows.push([
       String(t.id || ''),
       String(t.santriId || ''),
@@ -315,7 +343,7 @@ function writeAllDataToSpreadsheet(payload) {
   });
   if (trxRows.length > 0) {
     trxSheet.getRange(1, 1, trxRows.length, trxHeaders.length).setValues(trxRows);
-    formatHeaderRow(trxSheet, '#2563eb'); // Biru
+    formatHeaderRow(trxSheet, '#059669'); // Emerald
   }
 
   // 3. Tulis Sheet Mutasi Kamar
@@ -338,7 +366,7 @@ function writeAllDataToSpreadsheet(payload) {
   });
   if (mutasiRows.length > 0) {
     mutasiSheet.getRange(1, 1, mutasiRows.length, mutasiHeaders.length).setValues(mutasiRows);
-    formatHeaderRow(mutasiSheet, '#7c3aed'); // Ungu
+    formatHeaderRow(mutasiSheet, '#0f766e'); // Teal
   }
 
   // 4. Tulis Sheet Pengaturan
@@ -347,6 +375,7 @@ function writeAllDataToSpreadsheet(payload) {
   var settingsRows = [
     ['Key', 'Value', 'Keterangan'],
     ['FULL_SETTINGS_JSON', JSON.stringify(appSettings), 'Cadangan utuh format JSON Pengaturan Sistem'],
+    ['DELETED_TRX_IDS', JSON.stringify(delIds), 'Daftar ID transaksi yang dihapus'],
     ['TarifSyahriah', appSettings.tarifSyahriah || 0, 'Nominal Syahriah Bulanan'],
     ['TahunAjaranAktif', (function() {
       var active = (appSettings.tahunAjaranList || []).find(function(t) { return t.aktif; });

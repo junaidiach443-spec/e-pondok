@@ -8,12 +8,16 @@
 :root {
     --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
-    --color-primary: #3b28cc;
-    --color-primary-dark: #1e1b4b;
-    --color-finetiks-blue: #4d38f5;
-    --color-finetiks-orange: #ff6b00;
+    --color-primary: #059669; /* Emerald 600 */
+    --color-primary-dark: #047857; /* Emerald 700 */
+    --color-primary-hover: #065f46; /* Emerald 800 */
+    --color-primary-light: #ecfdf5; /* Emerald 50 */
+    --color-primary-border: #a7f3d0; /* Emerald 200 */
+    --color-slate-900: #0f172a;
+    --color-slate-800: #1e293b;
+    --color-slate-700: #334155;
     --card-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 6px 16px -2px rgba(15, 23, 42, 0.03);
-    --card-shadow-hover: 0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+    --card-shadow-hover: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
 }
 
 * {
@@ -22,7 +26,7 @@
 }
 
 html {
-    font-size: 14.5px; /* Skala font & rem diturunkan dari 16px ke 14.5px agar lebih ramping, padat, dan nyaman dipandang */
+    font-size: 14.5px; /* Skala font & rem nyaman dipandang */
 }
 
 body {
@@ -77,13 +81,27 @@ body {
 }
 
 .bg-white.rounded-2xl:hover {
-    border-color: rgba(203, 213, 225, 0.9);
+    border-color: rgba(203, 213, 225, 0.95);
 }
 
 /* Interactive Clickable Cards Hover */
 .cursor-pointer.bg-white.rounded-2xl:hover {
     transform: translateY(-2px);
     box-shadow: var(--card-shadow-hover);
+}
+
+/* KPI Card Base Styling */
+.kpi-card {
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -3px rgba(15, 23, 42, 0.07);
 }
 
 /* Modern Form Controls & Inputs */
@@ -102,8 +120,8 @@ input[type="number"]:focus,
 input[type="date"]:focus,
 select:focus,
 textarea:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.15);
+    border-color: #059669;
+    box-shadow: 0 0 0 3.5px rgba(5, 150, 105, 0.15);
     background-color: #ffffff;
 }
 
@@ -118,15 +136,15 @@ span.font-mono {
 
 /* Table Aesthetics & Compact Proportions */
 table th {
-    padding-top: 0.7rem !important;
-    padding-bottom: 0.7rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
     font-size: 0.75rem !important;
     letter-spacing: 0.04em !important;
 }
 
 table td {
-    padding-top: 0.65rem !important;
-    padding-bottom: 0.65rem !important;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
     font-size: 0.84rem !important;
 }
 
@@ -180,11 +198,11 @@ table tbody tr:hover {
 }
 
 .pagination-btn.active {
-    background-color: #3b28cc;
-    border-color: #3b28cc;
+    background-color: #059669;
+    border-color: #059669;
     color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(59, 40, 204, 0.3);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
 }
 
 .pagination-btn:disabled {
@@ -281,9 +299,20 @@ button:active {
     position: absolute;
     top: -40px;
     right: -40px;
-    width: 180px;
-    height: 180px;
+    width: 190px;
+    height: 190px;
     background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
+.hero-glow-slate {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 190px;
+    height: 190px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(15, 23, 42, 0) 70%);
     border-radius: 9999px;
     pointer-events: none;
 }
@@ -292,9 +321,9 @@ button:active {
     position: absolute;
     top: -40px;
     right: -40px;
-    width: 180px;
-    height: 180px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(99, 102, 241, 0) 70%);
+    width: 190px;
+    height: 190px;
+    background: radial-gradient(circle, rgba(5, 150, 105, 0.25) 0%, rgba(5, 150, 105, 0) 70%);
     border-radius: 9999px;
     pointer-events: none;
 }

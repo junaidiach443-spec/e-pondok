@@ -17,7 +17,7 @@ function initAuth() {
             nama: (appSettings.adminAuth && appSettings.adminAuth.nama) || 'Administrator',
             role: (appSettings.adminAuth && appSettings.adminAuth.role) || 'Bendahara Utama'
         };
-        saveDataToStorage();
+        localStorage.setItem('appSettings', JSON.stringify(appSettings));
     }
 
     // Perbarui profil pengurus di header aplikasi
