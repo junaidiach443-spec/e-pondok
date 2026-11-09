@@ -1,12 +1,12 @@
 {
-  "name": "e-Pondok PP. AL-USYMUNI",
-  "short_name": "e-Pondok",
+  "name": "E - PONDOK PP. AL-USYMUNI",
+  "short_name": "E - PONDOK",
   "description": "Sistem Manajemen Keuangan & Administrasi PP. Al-Usymuni",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#1e1b4b",
-  "theme_color": "#3b28cc",
+  "background_color": "#0f172a",
+  "theme_color": "#1e3a8a",
   "orientation": "portrait-primary",
   "icons": [
     {

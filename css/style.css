@@ -8,11 +8,11 @@
 :root {
     --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'Courier New', Courier, monospace;
-    --color-primary: #059669; /* Emerald 600 */
-    --color-primary-dark: #047857; /* Emerald 700 */
-    --color-primary-hover: #065f46; /* Emerald 800 */
-    --color-primary-light: #ecfdf5; /* Emerald 50 */
-    --color-primary-border: #a7f3d0; /* Emerald 200 */
+    --color-primary: #1d4ed8; /* Blue 700 */
+    --color-primary-dark: #1e40af; /* Blue 800 */
+    --color-primary-hover: #1e3a8a; /* Blue 900 */
+    --color-primary-light: #eff6ff; /* Blue 50 */
+    --color-primary-border: #bfdbfe; /* Blue 200 */
     --color-slate-900: #0f172a;
     --color-slate-800: #1e293b;
     --color-slate-700: #334155;
@@ -120,8 +120,8 @@ input[type="number"]:focus,
 input[type="date"]:focus,
 select:focus,
 textarea:focus {
-    border-color: #059669;
-    box-shadow: 0 0 0 3.5px rgba(5, 150, 105, 0.15);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.15);
     background-color: #ffffff;
 }
 
@@ -198,11 +198,11 @@ table tbody tr:hover {
 }
 
 .pagination-btn.active {
-    background-color: #059669;
-    border-color: #059669;
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
     color: #ffffff;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
 }
 
 .pagination-btn:disabled {
@@ -295,13 +295,35 @@ button:active {
 }
 
 /* Ambient glow accents for dashboard hero cards */
+.hero-glow-blue {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, rgba(30, 58, 138, 0) 70%);
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
+.hero-glow-navy {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(15, 23, 42, 0) 70%);
+    border-radius: 9999px;
+    pointer-events: none;
+}
+
 .hero-glow-emerald {
     position: absolute;
     top: -40px;
     right: -40px;
     width: 190px;
     height: 190px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(30, 64, 175, 0) 70%);
     border-radius: 9999px;
     pointer-events: none;
 }
@@ -312,7 +334,7 @@ button:active {
     right: -40px;
     width: 190px;
     height: 190px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, rgba(15, 23, 42, 0) 70%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(15, 23, 42, 0) 70%);
     border-radius: 9999px;
     pointer-events: none;
 }
@@ -323,7 +345,7 @@ button:active {
     right: -40px;
     width: 190px;
     height: 190px;
-    background: radial-gradient(circle, rgba(5, 150, 105, 0.25) 0%, rgba(5, 150, 105, 0) 70%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(30, 58, 138, 0) 70%);
     border-radius: 9999px;
     pointer-events: none;
 }

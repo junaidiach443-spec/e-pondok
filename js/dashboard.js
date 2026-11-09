@@ -61,14 +61,14 @@ function updateDashboard() {
 
     if (dashboardPeriodFilter === 'ta') {
         if (btnTa) {
-            btnTa.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-indigo-700";
+            btnTa.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-blue-700";
         }
         if (btnAll) {
             btnAll.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-900 transition-all bg-transparent shadow-none";
         }
         if (elFilterBadge) {
             elFilterBadge.innerText = `T.A ${TA}`;
-            elFilterBadge.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono";
+            elFilterBadge.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono";
         }
         if (elFilterDesc) {
             elFilterDesc.innerHTML = `Menampilkan data pembukuan khusus <b>Tahun Ajaran ${TA}</b>. Otomatis mulai Rp 0 saat pindah tahun ajaran baru.`;
@@ -78,11 +78,11 @@ function updateDashboard() {
             btnTa.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-900 transition-all bg-transparent shadow-none";
         }
         if (btnAll) {
-            btnAll.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-indigo-700";
+            btnAll.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-blue-700";
         }
         if (elFilterBadge) {
             elFilterBadge.innerText = "Semua Waktu (Kas Riil)";
-            elFilterBadge.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono";
+            elFilterBadge.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono";
         }
         if (elFilterDesc) {
             elFilterDesc.innerHTML = `Menampilkan akumulasi seluruh kas riil pesantren (brankas tunai & rekening bank) <b>sepanjang masa</b>.`;
@@ -261,7 +261,7 @@ function updateDashboard() {
                     <div class="${color.bg} h-2.5 rounded-full progress-bar-fill transition-all duration-700" style="width: 0%" data-target="${percentProgress}%"></div>
                 </div>
                 <div class="flex justify-between text-xs text-gray-400 font-medium font-mono">
-                    <span>Terkumpul: <b class="text-emerald-600">${formatRupiah(totalMasuk)}</b></span>
+                    <span>Terkumpul: <b class="text-blue-600">${formatRupiah(totalMasuk)}</b></span>
                     <span>Target: ${formatRupiah(totalTarget)}</span>
                 </div>
             </div>
@@ -280,9 +280,9 @@ function updateDashboard() {
                 </div>
                 <div class="space-y-1.5 font-mono">
                     <div class="flex justify-between text-xs"><span class="text-gray-500 font-sans">Target Global</span><span class="font-bold text-gray-800">${formatRupiah(totalTarget)}</span></div>
-                    <div class="flex justify-between text-xs"><span class="text-gray-500 font-sans">Pemasukan</span><span class="font-bold text-emerald-600">${formatRupiah(totalMasuk)}</span></div>
+                    <div class="flex justify-between text-xs"><span class="text-gray-500 font-sans">Pemasukan</span><span class="font-bold text-blue-600">${formatRupiah(totalMasuk)}</span></div>
                     <div class="flex justify-between text-xs"><span class="text-gray-500 font-sans">Pengeluaran</span><span class="font-bold text-rose-600">${formatRupiah(totalKeluar)}</span></div>
-                    <div class="pt-2 mt-2 border-t border-gray-100 flex justify-between text-sm"><span class="font-bold text-gray-800 font-sans">Sisa Kas</span><span class="font-extrabold text-[#5b52e5]">${formatRupiah(sisaKas)}</span></div>
+                    <div class="pt-2 mt-2 border-t border-gray-100 flex justify-between text-sm"><span class="font-bold text-gray-800 font-sans">Sisa Kas</span><span class="font-extrabold text-blue-700">${formatRupiah(sisaKas)}</span></div>
                 </div>
             </div>
         `;

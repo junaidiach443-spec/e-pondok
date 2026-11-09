@@ -2366,13 +2366,13 @@ var mutasiKamarList = []; // Riwayat mutasi / perpindahan kamar santri
 var liburanSantriList = []; // Perizinan & riwayat liburan masal santri
 var pulangSantriList = [];  // Perizinan & riwayat pulang insidentil santri
 
-// Palette Warna untuk Progress Bar Dashboard & Kartu
+// Palette Nuansa Biru Harmonis untuk Progress Bar Dashboard & Kartu
 const colorPalette = [
-    { bg: 'bg-[#10b981]', bar: 'bg-[#34d399]' }, 
-    { bg: 'bg-[#f59e0b]', bar: 'bg-[#fbbf24]' }, 
-    { bg: 'bg-[#06b6d4]', bar: 'bg-[#22d3ee]' }, 
-    { bg: 'bg-[#f43f5e]', bar: 'bg-[#fb7185]' }, 
-    { bg: 'bg-[#8b5cf6]', bar: 'bg-[#a78bfa]' }  
+    { bg: 'bg-blue-600', bar: 'bg-blue-500', hex: '#2563eb' }, 
+    { bg: 'bg-indigo-600', bar: 'bg-indigo-500', hex: '#4f46e5' }, 
+    { bg: 'bg-sky-600', bar: 'bg-sky-500', hex: '#0284c7' }, 
+    { bg: 'bg-blue-700', bar: 'bg-blue-600', hex: '#1d4ed8' }, 
+    { bg: 'bg-slate-700', bar: 'bg-slate-600', hex: '#334155' }  
 ];
 
 // 12 Bulan Kalender Hijriah untuk Syahriah Pesantren

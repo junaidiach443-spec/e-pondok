@@ -77,14 +77,14 @@ function navigate(pageId) {
 
     // Reset dan atur highlight link sidebar aktif
     document.querySelectorAll('nav a').forEach(el => {
-        el.classList.remove('bg-emerald-50', 'text-emerald-800', 'font-bold', 'border-l-4', 'border-emerald-600', 'shadow-2xs', 'bg-indigo-50', 'text-indigo-700', 'text-[#3b28cc]', 'border-[#4d38f5]', 'shadow-xs');
+        el.classList.remove('bg-emerald-50', 'text-emerald-800', 'bg-blue-50', 'text-blue-700', 'font-bold', 'border-l-4', 'border-blue-600', 'border-emerald-600', 'shadow-2xs', 'bg-indigo-50', 'text-indigo-700', 'text-[#3b28cc]', 'border-[#4d38f5]', 'shadow-xs');
         el.classList.add('text-gray-600');
     });
 
     const activeNav = document.getElementById('nav-' + (targetPageId === 'pembayaran-kustom' ? 'syahriah' : targetPageId));
     if (activeNav && targetPageId !== 'pembayaran-kustom') {
         activeNav.classList.remove('text-gray-600');
-        activeNav.classList.add('bg-emerald-50', 'text-emerald-800', 'font-bold', 'border-l-4', 'border-emerald-600', 'shadow-2xs');
+        activeNav.classList.add('bg-blue-50', 'text-blue-700', 'font-bold', 'border-l-4', 'border-blue-600', 'shadow-2xs');
     }
 
     // Pastikan menu izin keluar terbuka jika membuka subhalaman izin keluar
@@ -113,7 +113,7 @@ function navigate(pageId) {
         'backup-restore': 'Backup & Restore Database',
         'pembayaran-kustom': 'Pembayaran ' + (window.currentTagihanKustom || '')
     };
-    updateHeaderTitle(titles[targetPageId] || 'e-Pondok');
+    updateHeaderTitle(titles[targetPageId] || 'E - PONDOK');
 
     // Auto-tutup sidebar mobile setelah navigasi
     if (window.innerWidth < 1024 && document.getElementById('sidebar') && !document.getElementById('sidebar').classList.contains('-translate-x-full')) {

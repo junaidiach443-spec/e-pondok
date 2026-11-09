@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Keuangan PP. AL-USYMUNI</title>
-    <link rel="icon" type="image/png" href="assets/favicon.png?v=2">
-    <link rel="apple-touch-icon" href="assets/logo.png?v=2">
+    <title>E - PONDOK PP. AL-USYMUNI</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png?v=12">
+    <link rel="apple-touch-icon" href="assets/logo.png?v=12">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3b28cc">
+    <meta name="theme-color" content="#1e3a8a">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="e-Pondok">
+    <meta name="apple-mobile-web-app-title" content="E - PONDOK">
 
     <!-- External Libraries & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,39 +21,39 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css?v=11">
+    <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body class="flex h-screen overflow-hidden text-gray-800">
 
     <!-- Layar Kunci Keamanan Pengurus (Lock Screen Overlay) -->
-    <div id="screen-auth-lock" class="fixed inset-0 z-[100] w-full h-full min-h-screen bg-gradient-to-b from-[#1e1b4b] via-[#312e81] to-[#3b28cc] md:bg-white transition-all duration-300 hidden opacity-0 pointer-events-none overflow-y-auto">
+    <div id="screen-auth-lock" class="fixed inset-0 z-[100] w-full h-full min-h-screen bg-gradient-to-b from-[#0f172a] via-[#1e293b] to-[#1e3a8a] md:bg-white transition-all duration-300 hidden opacity-0 pointer-events-none overflow-y-auto">
         <div id="auth-card-box" class="w-full min-h-screen flex flex-col md:flex-row transition-all duration-300">
             
             <!-- KOLOM KIRI / HEADER BANNER DI HP: Branding & Identitas -->
-            <div class="w-full md:w-5/12 lg:w-5/12 bg-gradient-to-b from-[#1e1b4b] via-[#28216b] to-[#3730a3] md:bg-gradient-to-br md:from-[#0c1222] md:via-[#141d33] md:to-[#1c183a] p-6 sm:p-8 md:p-12 lg:p-16 text-white flex flex-col justify-between relative overflow-hidden shrink-0">
+            <div class="w-full md:w-5/12 lg:w-5/12 bg-gradient-to-b from-[#0f172a] via-[#172554] to-[#1e3a8a] md:bg-gradient-to-br md:from-[#0c1222] md:via-[#141d33] md:to-[#1e3a8a] p-6 sm:p-8 md:p-12 lg:p-16 text-white flex flex-col justify-between relative overflow-hidden shrink-0">
                 <!-- Glow Accents -->
-                <div class="absolute -top-24 -left-24 w-72 h-72 bg-[#4d38f5]/25 rounded-full blur-3xl pointer-events-none"></div>
-                <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-[#ff6b00]/15 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -top-24 -left-24 w-72 h-72 bg-blue-500/25 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-sky-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
                 <!-- TAMPILAN MOBILE: Compact Centered Brand Pill Persis Gambar Referensi -->
                 <div class="relative z-10 flex flex-col items-center justify-center text-center pt-8 pb-6 md:hidden">
                     <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-sm">
-                        <img src="assets/logo.png?v=2" alt="Logo" class="w-7 h-7 rounded-lg object-cover">
-                        <span class="text-xl font-black text-white tracking-wider">E-PONDOK</span>
+                        <img src="assets/logo.png?v=12" alt="Logo E - PONDOK" class="w-7 h-7 rounded-lg object-cover">
+                        <span class="text-xl font-black text-white tracking-wider">E - PONDOK</span>
                     </div>
-                    <p class="text-xs font-semibold text-indigo-200 mt-2 tracking-widest uppercase">PP. AL-USYMUNI</p>
+                    <p class="text-xs font-semibold text-blue-200 mt-2 tracking-widest uppercase">PP. AL-USYMUNI</p>
                 </div>
 
                 <!-- TAMPILAN DESKTOP: Branding Lengkap & 3 Kartu Fitur (Disembunyikan di HP agar tidak terlalu ramai) -->
                 <div class="relative z-10 my-auto py-4 hidden md:block">
                     <!-- Brand Logo & Nama -->
                     <div class="flex items-center gap-4 mb-5">
-                        <img src="assets/logo.png?v=2" alt="Logo e-Pondok" class="w-14 h-14 rounded-2xl object-cover shadow-xl shadow-indigo-600/40 border border-white/20 shrink-0">
+                        <img src="assets/logo.png?v=12" alt="Logo E - PONDOK" class="w-14 h-14 rounded-2xl object-cover shadow-xl shadow-blue-900/40 border border-white/20 shrink-0">
                         <div>
                             <h1 class="text-2xl font-black text-white tracking-tight">
-                                E-PONDOK
+                                E - PONDOK
                             </h1>
-                            <p class="text-xs font-semibold text-indigo-300 tracking-wider">PP. AL-USYMUNI</p>
+                            <p class="text-xs font-semibold text-blue-200 tracking-wider">PP. AL-USYMUNI</p>
                         </div>
                     </div>
 
@@ -170,23 +170,23 @@
 
     <!-- Sidebar Navigation -->
     <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 z-50 fixed lg:static h-full transform -translate-x-full lg:translate-x-0 shadow-2xl lg:shadow-none">
-        <!-- Logo Finetiks Style (Royal Electric Blue / Indigo Gradient) -->
-        <div class="h-16 lg:h-20 bg-gradient-to-r from-[#1e1b4b] via-[#312e81] to-[#3730a3] flex items-center px-6 shrink-0 shadow-sm border-b border-indigo-900/40">
+        <!-- Logo Style (Royal Blue / Dark Navy Theme) -->
+        <div class="h-16 lg:h-20 bg-gradient-to-r from-[#0f172a] via-[#172554] to-[#1e3a8a] flex items-center px-6 shrink-0 shadow-sm border-b border-blue-900/40">
             <div class="flex items-center gap-3">
-                <img src="assets/logo.png?v=2" alt="Logo e-Pondok" class="w-11 h-11 rounded-xl object-cover border border-white/20 shadow-md shadow-indigo-950/40 shrink-0">
+                <img src="assets/logo.png?v=12" alt="Logo E - PONDOK" class="w-11 h-11 rounded-xl object-cover border border-white/20 shadow-md shadow-blue-950/40 shrink-0">
                 <div>
                     <h1 class="text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
-                        <span>e-Pondok</span>
-                        <span class="w-2 h-2 rounded-full bg-[#ff6b00] animate-pulse shadow-sm shadow-orange-500/50"></span>
+                        <span>E - PONDOK</span>
+                        <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse shadow-sm shadow-sky-400/50"></span>
                     </h1>
-                    <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mt-0.5">PP. AL-USYMUNI</p>
+                    <p class="text-[10px] font-bold text-blue-200 uppercase tracking-widest mt-0.5">PP. AL-USYMUNI</p>
                 </div>
             </div>
         </div>
 
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
-            <a href="#" onclick="navigate('dashboard')" id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#3b28cc] bg-indigo-50 font-bold transition-all shadow-xs border-l-4 border-[#4d38f5]">
-                <i class="fas fa-chart-pie w-5 text-[#4d38f5]"></i> Dashboard
+            <a href="#" onclick="navigate('dashboard')" id="nav-dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-blue-700 bg-blue-50 font-bold transition-all shadow-xs border-l-4 border-blue-600">
+                <i class="fas fa-chart-pie w-5 text-blue-600"></i> Dashboard
             </a>
             
             <div class="pt-4 pb-2 px-4">
@@ -288,8 +288,8 @@
                     <i class="fas fa-bars text-lg"></i>
                 </button>
                 <div class="flex items-center gap-2 md:hidden">
-                    <img src="assets/logo.png?v=2" alt="Logo e-Pondok" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover">
-                    <span class="font-extrabold text-gray-800 text-sm sm:text-base tracking-tight">e-Pondok</span>
+                    <img src="assets/logo.png?v=12" alt="Logo E - PONDOK" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg object-cover">
+                    <span class="font-extrabold text-gray-800 text-sm sm:text-base tracking-tight">E - PONDOK</span>
                 </div>
                 <div class="hidden md:block">
                     <h2 class="text-xl font-extrabold text-gray-800 leading-tight tracking-tight" id="header-page-title">Dashboard</h2>
@@ -301,18 +301,18 @@
                 <!-- Tanggal Hijriah & Tahun Ajaran (Di HP disederhanakan agar tidak padat) -->
                 <div class="hidden sm:flex flex-col items-end justify-center">
                     <div class="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
-                        <i class="far fa-calendar-alt text-emerald-600 text-xs"></i>
+                        <i class="far fa-calendar-alt text-blue-600 text-xs"></i>
                         <span id="tanggal-hari-ini" class="text-gray-700 font-medium">Memuat Tanggal...</span>
                     </div>
                     <div class="flex items-center gap-1.5 mt-0.5">
                         <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">TA:</span>
-                        <span id="header-tahun-ajaran" class="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 font-mono">Memuat...</span>
+                        <span id="header-tahun-ajaran" class="text-xs font-bold text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200 font-mono">Memuat...</span>
                     </div>
                 </div>
 
                 <!-- Badge Tahun Ajaran di Layar HP -->
                 <div class="sm:hidden flex items-center">
-                    <span id="header-tahun-ajaran-mobile" class="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 font-mono">1447/1448</span>
+                    <span id="header-tahun-ajaran-mobile" class="text-[11px] font-bold text-blue-800 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 font-mono">1447/1448</span>
                 </div>
 
                 <!-- Profil Administrator Finetiks Style -->
@@ -341,13 +341,13 @@
                     <div>
                         <div class="flex items-center gap-2.5">
                             <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800 tracking-tight">Dashboard Keuangan</h2>
-                            <span id="dash-filter-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">T.A Aktif</span>
+                            <span id="dash-filter-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-mono">T.A Aktif</span>
                         </div>
                         <p class="text-xs sm:text-sm text-gray-500 mt-1" id="dash-filter-desc">Menampilkan pembukuan khusus Tahun Ajaran aktif.</p>
                     </div>
                     <div class="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl border border-gray-200 w-full sm:w-auto">
-                        <button type="button" id="btn-dash-ta" onclick="setDashboardPeriodFilter('ta')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-emerald-800">
-                            <i class="fas fa-calendar-alt mr-1.5 text-emerald-600"></i>T.A Aktif (<span id="dash-ta-label">-</span>)
+                        <button type="button" id="btn-dash-ta" onclick="setDashboardPeriodFilter('ta')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm bg-white text-blue-800">
+                            <i class="fas fa-calendar-alt mr-1.5 text-blue-600"></i>T.A Aktif (<span id="dash-ta-label">-</span>)
                         </button>
                         <button type="button" id="btn-dash-all" onclick="setDashboardPeriodFilter('all')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-900 transition-all bg-transparent shadow-none">
                             <i class="fas fa-history mr-1.5 text-gray-400"></i>Semua Waktu (Kas Riil)
@@ -355,45 +355,45 @@
                     </div>
                 </div>
 
-                <!-- 2 Kartu Hero Saldo Kas & Pemasukan Utama -->
+                <!-- 2 Kartu Hero Saldo Kas & Pemasukan Utama (Nuansa Biru Elegan) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <!-- Kartu 1: Saldo Kas Pesantren Saat Ini (Kas Masuk - Kas Keluar) -->
-                    <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-slate-700/60 flex flex-col justify-between">
-                        <div class="hero-glow-slate"></div>
+                    <div class="bg-gradient-to-br from-[#0c1e3d] via-[#102a54] to-[#1e3a8a] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-blue-900/60 flex flex-col justify-between">
+                        <div class="hero-glow-navy"></div>
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-300 border border-white/10 shadow-inner">
+                                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-sky-300 border border-white/10 shadow-inner">
                                     <i class="fas fa-vault text-base"></i>
                                 </div>
-                                <span id="dash-kas-badge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 font-mono">
+                                <span id="dash-kas-badge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-sky-300 border border-blue-400/30 font-mono">
                                     Kas Riil
                                 </span>
                             </div>
-                            <h3 id="dash-kas-title" class="text-xs font-bold text-slate-300 uppercase tracking-widest mb-1">Total Saldo Kas Pondok</h3>
-                            <div class="text-3xl lg:text-4xl font-extrabold tracking-tight font-mono text-emerald-400 mb-2" id="dash-saldo-kas">Rp 0</div>
+                            <h3 id="dash-kas-title" class="text-xs font-bold text-blue-200 uppercase tracking-widest mb-1">Total Saldo Kas Pondok</h3>
+                            <div class="text-3xl lg:text-4xl font-extrabold tracking-tight font-mono text-sky-300 mb-2" id="dash-saldo-kas">Rp 0</div>
                         </div>
                         <div class="relative z-10 text-[11px] font-medium pt-3 border-t border-white/10 flex items-center justify-between">
-                            <span class="text-slate-300"><i class="fas fa-money-bill-wave text-emerald-400 mr-1"></i> Tunai: <b class="text-white font-mono" id="dash-saldo-tunai">Rp 0</b></span>
-                            <span class="text-slate-300"><i class="fas fa-university text-teal-300 mr-1"></i> Bank: <b class="text-white font-mono" id="dash-saldo-transfer">Rp 0</b></span>
+                            <span class="text-blue-100"><i class="fas fa-money-bill-wave text-sky-400 mr-1"></i> Tunai: <b class="text-white font-mono" id="dash-saldo-tunai">Rp 0</b></span>
+                            <span class="text-blue-100"><i class="fas fa-university text-sky-300 mr-1"></i> Bank: <b class="text-white font-mono" id="dash-saldo-transfer">Rp 0</b></span>
                         </div>
                     </div>
 
                     <!-- Kartu 2: Pemasukan Hari Ini -->
-                    <div class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-emerald-700/50 flex flex-col justify-between">
-                        <div class="hero-glow-emerald"></div>
+                    <div class="bg-gradient-to-br from-[#1e3a8a] via-[#1d4ed8] to-[#2563eb] rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group border border-blue-400/30 flex flex-col justify-between">
+                        <div class="hero-glow-blue"></div>
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-3">
-                                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-200 border border-white/10 shadow-inner">
+                                <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white border border-white/10 shadow-inner">
                                     <i class="fas fa-wallet text-base"></i>
                                 </div>
                                 <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-white/20 text-white border border-white/30 font-mono" id="dash-trx-today">
                                     0 Transaksi
                                 </span>
                             </div>
-                            <h3 id="dash-income-title" class="text-xs font-bold text-emerald-200 uppercase tracking-widest mb-1">Pemasukan Hari Ini</h3>
+                            <h3 id="dash-income-title" class="text-xs font-bold text-blue-100 uppercase tracking-widest mb-1">Pemasukan Hari Ini</h3>
                             <div class="text-3xl lg:text-4xl font-extrabold tracking-tight font-mono mb-2" id="dash-income-today">Rp 0</div>
                         </div>
-                        <div class="relative z-10 text-[11px] text-emerald-200/90 font-medium flex items-center justify-between pt-3 border-t border-white/10">
+                        <div class="relative z-10 text-[11px] text-blue-100/90 font-medium flex items-center justify-between pt-3 border-t border-white/10">
                             <span id="dash-income-sub-left"><i class="fas fa-clock mr-1"></i> Hari ini</span>
                             <span class="text-rose-200">Keluar: <b class="text-white font-mono" id="dash-expense-today">Rp 0</b></span>
                         </div>
@@ -4704,13 +4704,13 @@
             <!-- Modal Footer -->
             <div class="p-4 sm:p-5 border-t border-gray-100 bg-gray-50 flex items-center justify-between shrink-0">
                 <span class="text-xs text-gray-400 font-medium hidden sm:inline">
-                    <i class="fas fa-shield-alt text-emerald-600 mr-1"></i> Data aman tersimpan di Google Drive pesantren
+                    <i class="fas fa-shield-alt text-blue-600 mr-1"></i> Data aman tersimpan di Google Drive pesantren
                 </span>
                 <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
                     <button type="button" onclick="tutupModal('modal-cloud-sync')" class="px-5 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-200 transition-colors text-xs">
                         Tutup Jendela
                     </button>
-                    <button type="button" onclick="pullFromCloud({ silent: false })" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-1.5">
+                    <button type="button" onclick="pullFromCloud({ silent: false })" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-1.5">
                         <i class="fas fa-sync-alt"></i> Sinkronkan Sekarang
                     </button>
                 </div>
@@ -4719,23 +4719,23 @@
     </div>
 
     <!-- Modular Application Scripts -->
-    <script src="js/utils.js?v=11"></script>
-    <script src="js/data.js?v=11"></script>
-    <script src="js/navigation.js?v=11"></script>
-    <script src="js/dashboard.js?v=11"></script>
-    <script src="js/santri.js?v=11"></script>
-    <script src="js/izin-keluar.js?v=11"></script>
-    <script src="js/syahriah.js?v=11"></script>
-    <script src="js/tagihan-kustom.js?v=11"></script>
-    <script src="js/pembayaran-lain.js?v=11"></script>
-    <script src="js/pengeluaran.js?v=11"></script>
-    <script src="js/cetak.js?v=11"></script>
-    <script src="js/laporan.js?v=11"></script>
-    <script src="js/pengaturan.js?v=11"></script>
-    <script src="js/backup-restore.js?v=11"></script>
-    <script src="js/auth.js?v=11"></script>
-    <script src="js/cloud-sync.js?v=11"></script>
-    <script src="js/app.js?v=11"></script>
+    <script src="js/utils.js?v=12"></script>
+    <script src="js/data.js?v=12"></script>
+    <script src="js/navigation.js?v=12"></script>
+    <script src="js/dashboard.js?v=12"></script>
+    <script src="js/santri.js?v=12"></script>
+    <script src="js/izin-keluar.js?v=12"></script>
+    <script src="js/syahriah.js?v=12"></script>
+    <script src="js/tagihan-kustom.js?v=12"></script>
+    <script src="js/pembayaran-lain.js?v=12"></script>
+    <script src="js/pengeluaran.js?v=12"></script>
+    <script src="js/cetak.js?v=12"></script>
+    <script src="js/laporan.js?v=12"></script>
+    <script src="js/pengaturan.js?v=12"></script>
+    <script src="js/backup-restore.js?v=12"></script>
+    <script src="js/auth.js?v=12"></script>
+    <script src="js/cloud-sync.js?v=12"></script>
+    <script src="js/app.js?v=12"></script>
 </body>
 </html>
 
