@@ -103,13 +103,38 @@ function startAppOnce() {
     appInitialized = true;
     initApp();
 
-    // Registrasi Service Worker untuk PWA (Instalasi Aplikasi di HP & Auto-Update)
+    // Registrasi Service Worker untuk PWA (Instalasi Aplikasi di HP & Auto-Update Otomatis)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then((reg) => {
-            // Segera cek pembaruan file di hosting setiap kali aplikasi dibuka
-            if (reg) {
-                reg.update().catch(() => {});
+        let hadController = !!navigator.serviceWorker.controller;
+        let isRefreshing = false;
+
+        // Muat ulang otomatis saat versi baru Service Worker mengambil alih agar tampilan langsung terupdate tanpa uninstall
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!hadController || isRefreshing) {
+                hadController = true;
+                return;
             }
+            const hasOpenModal = !!document.querySelector('[id^="modal-"]:not(.hidden)');
+            if (hasOpenModal) {
+                if (typeof showToast === 'function') {
+                    showToast('Pembaruan aplikasi siap. Tutup jendela & muat ulang.', 'info');
+                }
+                return;
+            }
+            isRefreshing = true;
+            window.location.reload();
+        });
+
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then((reg) => {
+            if (!reg) return;
+            reg.update().catch(() => {});
+
+            // Cek pembaruan setiap kali pengguna membuka kembali aplikasi dari layar/background HP
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    reg.update().catch(() => {});
+                }
+            });
         }).catch(() => {});
     }
 }

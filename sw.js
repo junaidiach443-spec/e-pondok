@@ -4,9 +4,8 @@
  * & Menjamin pembaruan hosting langsung tampil (Network-First untuk kode aplikasi)
  */
 
-const CACHE_NAME = 'epondok-v13';
+const CACHE_NAME = 'epondok-v14';
 const ASSETS_TO_CACHE = [
-  '/',
   './',
   './index.html',
   './css/style.css',
@@ -36,7 +35,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return Promise.allSettled(
-        ASSETS_TO_CACHE.map((url) => cache.add(url).catch(() => {}))
+        ASSETS_TO_CACHE.map((url) =>
+          fetch(url, { cache: 'reload' })
+            .then((res) => (res && res.status === 200 ? cache.put(url, res) : null))
+            .catch(() => {})
+        )
       );
     })
   );
@@ -65,18 +68,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // File kode aplikasi & navigasi: NETWORK-FIRST
-  // Memastikan perubahan kode di hosting selalu segera diambil tanpa tertahan cache lawas
+  // File aplikasi, manifest, & navigasi: NETWORK-FIRST dengan validasi server (no-cache)
+  // Memastikan perubahan kode, ikon, & manifest di hosting langsung terambil tanpa uninstall
   const isApplicationCode = event.request.mode === 'navigate' ||
                             event.request.destination === 'script' ||
                             event.request.destination === 'style' ||
+                            event.request.destination === 'manifest' ||
                             url.includes('/js/') ||
                             url.includes('/css/') ||
-                            url.endsWith('.html');
+                            url.endsWith('.html') ||
+                            url.endsWith('manifest.json') ||
+                            url.includes('/assets/logo') ||
+                            url.includes('/assets/favicon');
 
   if (isApplicationCode) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request.url, { cache: 'no-cache' })
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const resClone = networkResponse.clone();
@@ -90,7 +97,6 @@ self.addEventListener('fetch', (event) => {
             if (cached) return cached;
             if (event.request.mode === 'navigate') {
               return caches.match('./index.html')
-                .then((res) => res || caches.match('/'))
                 .then((res) => res || caches.match('./'));
             }
             return caches.match('./index.html');
