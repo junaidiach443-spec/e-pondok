@@ -990,12 +990,16 @@ function lunasiSemuaTanggunganSantri(santriId) {
             const kasir = currentUser ? (currentUser.nama || currentUser.username) : 'Admin';
 
             // Catat pembayaran untuk setiap item tunggakan
+            const makeTrxId = () => (typeof generateTrxId === 'function')
+                ? generateTrxId('TRX')
+                : ('TRX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase());
+
             res.items.forEach(item => {
                 if (item.actionType === 'syahriah') {
                     const listBln = item.bulanBelumBayar || [];
                     listBln.forEach(bln => {
                         transactions.push({
-                            id: (typeof generateId === 'function') ? generateId('TRX') : 'TRX-' + Date.now() + Math.random().toString(36).substr(2, 4),
+                            id: makeTrxId(),
                             type: 'in',
                             kategori: 'Syahriah',
                             santriId: s.id,
@@ -1004,16 +1008,16 @@ function lunasiSemuaTanggunganSantri(santriId) {
                             santriKamar: s.kamar || s.kamarTerakhir || '-',
                             amount: (appSettings && appSettings.tarifSyahriah) || 0,
                             date: today,
-                            desc: `Syahriah Bulan ${bln} (${TA}) - Pelunasan ${labelProses}`,
+                            desc: `Syahriah: ${bln} (${TA}) - Pelunasan ${labelProses}`,
                             ta: TA,
-                            metode: 'Cash',
+                            metode: 'Tunai',
                             kasir: kasir,
                             createdAt: new Date().toISOString()
                         });
                     });
                 } else if (item.actionType === 'pembayaran-lain') {
                     transactions.push({
-                        id: (typeof generateId === 'function') ? generateId('TRX') : 'TRX-' + Date.now() + Math.random().toString(36).substr(2, 4),
+                        id: makeTrxId(),
                         type: 'in',
                         kategori: 'Pembayaran Lain',
                         subJenis: item.subJenis,
@@ -1023,15 +1027,15 @@ function lunasiSemuaTanggunganSantri(santriId) {
                         santriKamar: s.kamar || s.kamarTerakhir || '-',
                         amount: item.tunggakan,
                         date: today,
-                        desc: `${item.subJenis} (${TA}) - Pelunasan ${labelProses}`,
+                        desc: `${item.subJenis}: Pelunasan ${labelProses}`,
                         ta: TA,
-                        metode: 'Cash',
+                        metode: 'Tunai',
                         kasir: kasir,
                         createdAt: new Date().toISOString()
                     });
                 } else {
                     transactions.push({
-                        id: (typeof generateId === 'function') ? generateId('TRX') : 'TRX-' + Date.now() + Math.random().toString(36).substr(2, 4),
+                        id: makeTrxId(),
                         type: 'in',
                         kategori: item.kategori,
                         santriId: s.id,
@@ -1042,14 +1046,16 @@ function lunasiSemuaTanggunganSantri(santriId) {
                         date: today,
                         desc: `${item.nama} - Pelunasan ${labelProses}`,
                         ta: TA,
-                        metode: 'Cash',
+                        metode: 'Tunai',
                         kasir: kasir,
                         createdAt: new Date().toISOString()
                     });
                 }
             });
 
+            window.transactions = transactions;
             saveDataToStorage();
+            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
             if (typeof updateDashboard === 'function') updateDashboard();
             if (typeof renderSyahriah === 'function') renderSyahriah();
             if (typeof renderPembayaranLainPage === 'function') renderPembayaranLainPage();

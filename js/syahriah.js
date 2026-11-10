@@ -324,14 +324,31 @@ function batalBayarSyahriah(trxId, namaBulan) {
         // Cek daftar bulan yang ada di deskripsi transaksi
         const monthsInTrx = bulanIslam.filter(b => (targetTrx.desc || '').includes(b));
 
+        const replaceBundledTrx = (trxObj, remainingMonthsList, newAmount) => {
+            if (trxObj && trxObj.id && typeof trackDeletedTransactionId === 'function') {
+                trackDeletedTransactionId(trxObj.id);
+            }
+            const newId = (typeof generateTrxId === 'function')
+                ? generateTrxId('TRX')
+                : ('TRX-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase());
+            return {
+                ...trxObj,
+                id: newId,
+                desc: 'Syahriah: ' + remainingMonthsList.join(', '),
+                amount: Math.max(0, newAmount)
+            };
+        };
+
         if (monthsInTrx.length > 1 && namaBulan) {
             // Transaksi ini menggabungkan beberapa bulan sekaligus!
-            // HANYA kurangi bulan yang dipilih agar bulan lainnya TETAP LUNAS
+            // Hapus ID lama & buat ID baru hanya untuk sisa bulan agar Pre-Pull Cloud tidak menimpa pembatalan ini
             const remainingMonths = monthsInTrx.filter(b => b !== namaBulan);
             const nominalPerBulan = Math.round(targetTrx.amount / monthsInTrx.length);
-
-            targetTrx.desc = 'Syahriah: ' + remainingMonths.join(', ');
-            targetTrx.amount = Math.max(0, targetTrx.amount - nominalPerBulan);
+            const replacement = replaceBundledTrx(targetTrx, remainingMonths, targetTrx.amount - nominalPerBulan);
+            transactions = transactions.filter(t => t.id !== targetTrx.id);
+            if (remainingMonths.length > 0) {
+                transactions.push(replacement);
+            }
         } else {
             // Hanya 1 bulan atau tidak ada bulan lain, hapus seluruh objek transaksi
             if (targetTrx && targetTrx.id && typeof trackDeletedTransactionId === 'function') {
@@ -343,24 +360,29 @@ function batalBayarSyahriah(trxId, namaBulan) {
         // Pastikan juga jika ada duplikat/sisa transaksi untuk santri dan bulan yang sama
         if (namaBulan && currentDetailSantriId) {
             const TA = getTahunAjaranAktif();
-            transactions = transactions.filter(t => {
+            const updatedList = [];
+            transactions.forEach(t => {
                 if (t.santriId === currentDetailSantriId && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in') {
                     const descMonths = bulanIslam.filter(b => (t.desc || '').includes(b));
                     if (descMonths.length === 1 && descMonths[0] === namaBulan) {
                         if (typeof trackDeletedTransactionId === 'function') {
                             trackDeletedTransactionId(t.id);
                         }
-                        return false;
+                        return;
                     }
                     if (descMonths.includes(namaBulan)) {
                         const rem = descMonths.filter(b => b !== namaBulan);
-                        t.desc = 'Syahriah: ' + rem.join(', ');
-                        t.amount = Math.max(0, Math.round(t.amount * rem.length / descMonths.length));
-                        return rem.length > 0;
+                        if (rem.length > 0) {
+                            updatedList.push(replaceBundledTrx(t, rem, Math.round(t.amount * rem.length / descMonths.length)));
+                        } else if (typeof trackDeletedTransactionId === 'function') {
+                            trackDeletedTransactionId(t.id);
+                        }
+                        return;
                     }
                 }
-                return true;
+                updatedList.push(t);
             });
+            transactions = updatedList;
         }
 
         window.transactions = transactions;

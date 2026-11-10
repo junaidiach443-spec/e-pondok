@@ -2344,14 +2344,8 @@ var santriData = [
     }
 ];
 
-// Data Awal Transaksi Keuangan
-var transactions = [
-    { id: 'TRX-1001', santriId: 'S-1005', ta: '1447/1448', kategori: 'Syahriah', type: 'in', amount: 250000, desc: 'Syahriah: Muharram', date: new Date().toLocaleDateString('en-CA') },
-    { id: 'TRX-1002', santriId: 'S-1008', ta: '1447/1448', kategori: 'Syahriah', type: 'in', amount: 250000, desc: 'Syahriah: Muharram', date: new Date().toLocaleDateString('en-CA') },
-    { id: 'TRX-1003', santriId: 'S-1009', ta: '1447/1448', kategori: 'Syahriah', type: 'in', amount: 250000, desc: 'Syahriah: Muharram', date: new Date().toLocaleDateString('en-CA') },
-    { id: 'TRX-1004', santriId: 'S-1010', ta: '1447/1448', kategori: 'Ikhtibar PPU', type: 'in', amount: 150000, desc: 'Lunas Ikhtibar', date: new Date().toLocaleDateString('en-CA') },
-    { id: 'TRX-1005', ta: '1447/1448', kategori: 'Ikhtibar PPU', type: 'out', amount: 50000, desc: 'Beli Kertas & Tinta', pj: 'UST. AHMAD', divisi: 'KESEKRETARIATAN', date: new Date().toLocaleDateString('en-CA') }
-];
+// Data Awal Transaksi Keuangan (Bersih 0 pemasukan/transaksi awal, data riil disinkronkan dari Cloud)
+var transactions = [];
 
 // Variabel State Global
 var currentKategoriPengeluaran = 'Syahriah';
@@ -2563,6 +2557,14 @@ function loadDataFromStorage() {
         santriData = sortSantriData(santriData);
         localStorage.setItem('santriData', JSON.stringify(santriData));
         localStorage.setItem('santriDataVersion', DATA_VERSION);
+    }
+
+    // Reset satu kali data transaksi percobaan lama agar seluruh perangkat mulai bersih Rp 0
+    const TRX_RESET_VERSION = '2026-11-10-clean-v15';
+    if (localStorage.getItem('epondok_trx_reset_version') !== TRX_RESET_VERSION) {
+        transactions = [];
+        localStorage.setItem('transactions', JSON.stringify([]));
+        localStorage.setItem('epondok_trx_reset_version', TRX_RESET_VERSION);
     }
 
     const savedTrx = localStorage.getItem('transactions');

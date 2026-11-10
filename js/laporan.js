@@ -261,7 +261,9 @@ function renderIsiLaporanDetail(resetPage = false) {
                     t.santriId === s.id && 
                     t.type === 'in' && 
                     t.ta === TA && 
-                    (t.subJenis === fPosPL || (t.kategori === 'Pembayaran Lain' && t.subJenis === fPosPL) || t.kategori === fPosPL)
+                    (typeof isTrxMatchingJenisPL === 'function'
+                        ? isTrxMatchingJenisPL(t, fPosPL)
+                        : (t.subJenis === fPosPL || (t.kategori === 'Pembayaran Lain' && t.subJenis === fPosPL) || t.kategori === fPosPL))
                 );
                 totalBayar = trx.reduce((sum, t) => sum + t.amount, 0);
                 tunggakan = isBebas ? 0 : Math.max(0, nominalTarget - totalBayar);

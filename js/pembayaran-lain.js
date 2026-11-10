@@ -9,6 +9,17 @@
 // Tab aktif saat ini: 'santri' (Daftar Santri) atau 'riwayat' (Riwayat Transaksi)
 let currentTabPL = 'santri';
 
+// Helper pencocokan jenis Pembayaran Lain (termasuk fallback dari desc saat sinkronisasi Cloud)
+function isTrxMatchingJenisPL(t, jenisAktif) {
+    if (!t || !jenisAktif) return false;
+    if (t.subJenis === jenisAktif || t.kategori === jenisAktif) return true;
+    if (t.kategori === 'Pembayaran Lain' && !t.subJenis && t.desc) {
+        const d = String(t.desc).trim();
+        return d === jenisAktif || d.startsWith(jenisAktif + ':') || d.startsWith(jenisAktif + ' (');
+    }
+    return false;
+}
+
 // Render Utama Halaman Pembayaran Lain
 function renderPembayaranLainPage() {
     // 1. Sinkronisasi dropdown jenis pembayaran yang aktif
@@ -210,7 +221,7 @@ function renderSantriPLTable() {
             t.santriId === s.id && 
             t.type === 'in' && 
             t.ta === TA &&
-            (t.subJenis === jenisAktif || t.kategori === jenisAktif || (t.kategori === 'Pembayaran Lain' && t.subJenis === jenisAktif))
+            isTrxMatchingJenisPL(t, jenisAktif)
         );
 
         const sudahBayar = trx.reduce((sum, t) => sum + t.amount, 0);
@@ -436,7 +447,7 @@ function bukaModalBayarSantriPL(santriId) {
         t.santriId === s.id && 
         t.type === 'in' && 
         t.ta === TA &&
-        (t.subJenis === jenisAktif || t.kategori === jenisAktif || (t.kategori === 'Pembayaran Lain' && t.subJenis === jenisAktif))
+        isTrxMatchingJenisPL(t, jenisAktif)
     );
 
     const sudahBayar = trx.reduce((sum, t) => sum + t.amount, 0);
@@ -502,6 +513,7 @@ function simpanBayarSantriPL() {
     };
 
     transactions.push(newTrx);
+    window.transactions = transactions;
     saveDataToStorage();
     if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
 
@@ -679,7 +691,7 @@ function renderRiwayatPLTable() {
     let data = transactions.filter(t => 
         t.type === 'in' && 
         t.ta === TA &&
-        (t.subJenis === jenisAktif || t.kategori === jenisAktif || (t.kategori === 'Pembayaran Lain' && t.subJenis === jenisAktif))
+        isTrxMatchingJenisPL(t, jenisAktif)
     );
 
     if (tglMulai) data = data.filter(t => t.date >= tglMulai);
@@ -939,6 +951,7 @@ function simpanPembayaranUmumPL() {
     };
 
     transactions.push(newTrx);
+    window.transactions = transactions;
     saveDataToStorage();
     if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
 
@@ -978,6 +991,7 @@ function hapusPembayaranLain(trxId) {
                 trackDeletedTransactionId(trxId);
             }
             transactions.splice(idx, 1);
+            window.transactions = transactions;
             saveDataToStorage();
             if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
             renderPembayaranLainPage();
@@ -993,7 +1007,7 @@ function exportExcelPembayaranLain() {
     const jenisAktif = window.currentSelectedJenisPL;
     let data = transactions.filter(t => 
         t.type === 'in' && 
-        (t.subJenis === jenisAktif || t.kategori === jenisAktif || (t.kategori === 'Pembayaran Lain' && t.subJenis === jenisAktif))
+        isTrxMatchingJenisPL(t, jenisAktif)
     );
 
     if (data.length === 0) {

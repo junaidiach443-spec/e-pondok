@@ -439,9 +439,22 @@ function bersihkanTransaksiPercobaan() {
             // Otomatis unduh cadangan dulu sebelum dibersihkan demi keamanan bendahara
             downloadBackupJSON();
 
+            // Tandai seluruh ID transaksi lama sebagai terhapus agar tidak tertarik kembali dari perangkat/Cloud lain
+            if (typeof trackDeletedTransactionId === 'function' && Array.isArray(transactions)) {
+                transactions.forEach(t => { if (t && t.id) trackDeletedTransactionId(t.id); });
+            }
+            const resetTs = Date.now();
+            if (typeof appSettings === 'object' && appSettings) {
+                appSettings.trxResetTimestamp = resetTs;
+                appSettings._cloudTrxExtras = {};
+                window.appSettings = appSettings;
+            }
+            localStorage.setItem('epondok_last_trx_reset_ts', String(resetTs));
+
             transactions = [];
             window.transactions = [];
             saveDataToStorage();
+            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
 
             if (typeof updateDashboard === 'function') updateDashboard();
             if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
