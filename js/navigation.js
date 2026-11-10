@@ -77,7 +77,7 @@ function navigate(pageId) {
 
     // Reset dan atur highlight link sidebar aktif
     document.querySelectorAll('nav a').forEach(el => {
-        el.classList.remove('bg-emerald-50', 'text-emerald-800', 'bg-blue-50', 'text-blue-700', 'font-bold', 'border-l-4', 'border-blue-600', 'border-emerald-600', 'shadow-2xs', 'bg-indigo-50', 'text-indigo-700', 'text-[#3b28cc]', 'border-[#4d38f5]', 'shadow-xs');
+        el.classList.remove('bg-blue-50', 'text-blue-800', 'bg-blue-50', 'text-blue-700', 'font-bold', 'border-l-4', 'border-blue-600', 'border-blue-600', 'shadow-2xs', 'bg-indigo-50', 'text-indigo-700', 'text-blue-700', 'border-blue-600', 'shadow-xs');
         el.classList.add('text-gray-600');
     });
 

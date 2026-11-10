@@ -69,7 +69,7 @@ function renderSyahriah(resetPage = false) {
             
             let statusBadge = '';
             if (isBebas) {
-                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-emerald-50 text-emerald-700 rounded font-bold border border-emerald-200 ml-1.5"><i class="fas fa-gift mr-1"></i>Bebas Syahriah</span>`;
+                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-blue-50 text-blue-700 rounded font-bold border border-blue-200 ml-1.5"><i class="fas fa-gift mr-1"></i>Bebas Syahriah</span>`;
             } else if (s.status !== 'Aktif') {
                 statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-gray-100 text-gray-500 rounded font-semibold border border-gray-200 ml-1.5">${s.status}</span>`;
             }
@@ -86,13 +86,13 @@ function renderSyahriah(resetPage = false) {
                 <td class="px-6 py-4 text-gray-600 font-medium">${s.kamar || '-'}</td>
                 <td class="px-6 py-4 w-52">
                     <div class="flex justify-between items-center text-xs mb-1.5">
-                        <span class="${progress === 100 ? 'text-emerald-600 font-bold' : 'text-gray-600 font-semibold'}">${progress}%</span>
-                        <span class="text-[11px] font-bold ${progress === 100 ? 'text-emerald-600' : (bulanLunasCount > 0 ? 'text-indigo-600' : 'text-gray-400')}">
+                        <span class="${progress === 100 ? 'text-blue-600 font-bold' : 'text-gray-600 font-semibold'}">${progress}%</span>
+                        <span class="text-[11px] font-bold ${progress === 100 ? 'text-blue-600' : (bulanLunasCount > 0 ? 'text-indigo-600' : 'text-gray-400')}">
                             ${isBebas ? '12/12 Bln (Bebas)' : `${bulanLunasCount}/12 Bulan`}
                         </span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div class="${progress === 100 ? 'bg-emerald-500' : 'bg-indigo-500'} h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                        <div class="${progress === 100 ? 'bg-blue-500' : 'bg-indigo-500'} h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
                     </div>
                 </td>
                 <td class="px-6 py-4 text-center">
@@ -155,10 +155,10 @@ function bukaDetailSyahriah(santriId) {
     const badgeLunas = document.getElementById('detail-status-lunas');
     if (badgeLunas) {
         if (isBebas) {
-            badgeLunas.className = "px-4 py-2 bg-[#d1fae5] text-[#059669] font-bold text-sm rounded-lg border border-emerald-200 uppercase tracking-wider";
+            badgeLunas.className = "px-4 py-2 bg-blue-100 text-blue-700 font-bold text-sm rounded-lg border border-blue-200 uppercase tracking-wider";
             badgeLunas.innerText = "LUNAS (BEBAS BIAYA)";
         } else if (sisa <= 0) {
-            badgeLunas.className = "px-4 py-2 bg-[#d1fae5] text-[#059669] font-bold text-sm rounded-lg border border-emerald-200 uppercase tracking-wider";
+            badgeLunas.className = "px-4 py-2 bg-blue-100 text-blue-700 font-bold text-sm rounded-lg border border-blue-200 uppercase tracking-wider";
             badgeLunas.innerText = "LUNAS";
         } else {
             badgeLunas.className = "px-4 py-2 bg-[#fef3c7] text-[#b45309] font-bold text-sm rounded-lg border border-[#fde68a] uppercase tracking-wider";
@@ -194,10 +194,10 @@ function renderBulanSyahriah() {
 
     if (badgeLunas) {
         if (isBebas) {
-            badgeLunas.className = "px-4 py-2 bg-emerald-100 text-emerald-800 font-bold text-sm rounded-lg border border-emerald-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
+            badgeLunas.className = "px-4 py-2 bg-blue-100 text-blue-800 font-bold text-sm rounded-lg border border-blue-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
             badgeLunas.innerHTML = '<i class="fas fa-check-circle"></i> LUNAS (BEBAS BIAYA)';
         } else if (sisa <= 0) {
-            badgeLunas.className = "px-4 py-2 bg-emerald-100 text-emerald-800 font-bold text-sm rounded-lg border border-emerald-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
+            badgeLunas.className = "px-4 py-2 bg-blue-100 text-blue-800 font-bold text-sm rounded-lg border border-blue-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
             badgeLunas.innerHTML = '<i class="fas fa-check-circle"></i> LUNAS';
         } else {
             badgeLunas.className = "px-4 py-2 bg-amber-100 text-amber-800 font-bold text-sm rounded-lg border border-amber-300 uppercase tracking-wider flex items-center gap-1.5 shadow-2xs";
@@ -233,11 +233,11 @@ function renderBulanSyahriah() {
             }
 
             listHtml += `
-            <tr class="hover:bg-emerald-50/30 transition-colors">
+            <tr class="hover:bg-blue-50/30 transition-colors">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
                 <td class="px-6 py-4 font-bold text-gray-800">${namaBulan}</td>
                 <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah || 250000)}</td>
-                <td class="px-6 py-4"><span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-200 flex items-center w-max gap-1"><i class="fas fa-check"></i> Lunas</span></td>
+                <td class="px-6 py-4"><span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-200 flex items-center w-max gap-1"><i class="fas fa-check"></i> Lunas</span></td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex flex-col items-center justify-center gap-1.5">
                         <span class="text-[10px] text-gray-400 font-medium">${tglFormatted}</span>
@@ -248,13 +248,13 @@ function renderBulanSyahriah() {
         } else {
             unPaidCount++;
             listHtml += `
-            <tr class="hover:bg-emerald-50/20 transition-colors cursor-pointer ${isSelected ? 'bg-emerald-50/60' : ''}" onclick="toggleBulanPay('${namaBulan}')">
+            <tr class="hover:bg-blue-50/20 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50/60' : ''}" onclick="toggleBulanPay('${namaBulan}')">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
-                <td class="px-6 py-4 font-bold ${isSelected ? 'text-emerald-700' : 'text-gray-600'}">${namaBulan}</td>
+                <td class="px-6 py-4 font-bold ${isSelected ? 'text-blue-700' : 'text-gray-600'}">${namaBulan}</td>
                 <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah || 250000)}</td>
                 <td class="px-6 py-4"><span class="text-xs text-gray-400 font-medium">Belum Bayar</span></td>
                 <td class="px-6 py-4 text-center" onclick="event.stopPropagation()">
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBulanPay('${namaBulan}')" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 cursor-pointer">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBulanPay('${namaBulan}')" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer">
                 </td>
             </tr>`;
         }

@@ -11,7 +11,7 @@ function renderPengeluaranMenu() {
     const pMenuPemasukan = document.getElementById('menu-tagihan-kustom-pemasukan');
     if (pMenuPemasukan) {
         pMenuPemasukan.innerHTML = (appSettings.tagihanKustom || []).map(t => 
-            `<a href="#" onclick="bukaHalamanPembayaranKustom('${t.nama}')" class="block px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 font-medium transition-colors">Pembayaran ${t.nama}</a>`
+            `<a href="#" onclick="bukaHalamanPembayaranKustom('${t.nama}')" class="block px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 font-medium transition-colors">Pembayaran ${t.nama}</a>`
         ).join('');
     }
     const pMenuPengeluaran = document.getElementById('menu-tagihan-kustom-pengeluaran');
@@ -212,7 +212,7 @@ function renderPengeluaran() {
         tb.innerHTML = paged.items.length ? paged.items.map((t, i) => {
             let badgeDivisiOrPos = '';
             if (t.subJenis) {
-                badgeDivisiOrPos = `<div class="text-[10px] bg-emerald-50 text-emerald-700 font-bold inline-block px-2 py-0.5 rounded mt-1 border border-emerald-200"><i class="fas fa-tag text-[9px] mr-1"></i>${t.subJenis}</div>`;
+                badgeDivisiOrPos = `<div class="text-[10px] bg-blue-50 text-blue-700 font-bold inline-block px-2 py-0.5 rounded mt-1 border border-blue-200"><i class="fas fa-tag text-[9px] mr-1"></i>${t.subJenis}</div>`;
             } else if (t.divisi) {
                 badgeDivisiOrPos = `<div class="text-[10px] bg-indigo-50 text-indigo-600 font-bold inline-block px-2 py-0.5 rounded mt-1 border border-indigo-100">${t.divisi}</div>`;
             }

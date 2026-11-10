@@ -40,7 +40,7 @@ function showConfirm(title, text, confirmCallback, isDanger = true) {
             text: text,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: isDanger ? '#e11d48' : '#5b52e5',
+            confirmButtonColor: isDanger ? '#e11d48' : '#1d4ed8',
             cancelButtonColor: '#94a3b8',
             confirmButtonText: 'Ya, Lanjutkan!',
             cancelButtonText: 'Batal',

@@ -229,7 +229,7 @@ function simpanPengaturanAuth() {
             icon: 'success',
             title: 'Kredensial Berhasil Disimpan!',
             text: `Username sekarang: "${newUsername}". Gunakan informasi ini saat membuka kunci sistem.`,
-            confirmButtonColor: '#059669'
+            confirmButtonColor: '#1d4ed8'
         });
     } else if (typeof showToast === 'function') {
         showToast("Pengaturan keamanan berhasil diperbarui!");

@@ -15,7 +15,7 @@ function renderPengaturanTahunAjaran() {
             <td class="px-6 py-4 font-bold text-gray-800 text-base">${t.ta}</td>
             <td class="px-6 py-4">
                 ${t.aktif 
-                    ? `<span class="inline-flex items-center gap-2 px-4 py-1.5 bg-[#d1fae5] text-[#059669] text-xs font-bold rounded-full shadow-sm"><div class="w-2 h-2 rounded-full bg-[#059669]"></div> Aktif</span>`
+                    ? `<span class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full shadow-sm"><div class="w-2 h-2 rounded-full bg-blue-700"></div> Aktif</span>`
                     : `<span class="inline-flex px-4 py-1.5 bg-gray-100 text-gray-500 text-xs font-medium rounded-full">Tidak Aktif</span>`
                 }
             </td>
@@ -132,14 +132,14 @@ function renderDaftarBebasSyahriah() {
                     <div class="text-[10px] text-gray-400 font-mono mt-0.5">Ditetapkan: ${tgl}</div>
                 </td>
                 <td class="px-4 py-3 font-mono text-gray-600">
-                    <div class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block text-[11px]">
+                    <div class="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-block text-[11px]">
                         Kamar ${s.kamar || s.kamarTerakhir || '-'}
                     </div>
                     <div class="text-[10px] text-gray-400 mt-0.5">NIS: ${s.nis || '-'}</div>
                 </td>
                 <td class="px-4 py-3">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        <i class="fas fa-gift text-emerald-600 text-[10px]"></i> ${alasan}
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                        <i class="fas fa-gift text-blue-600 text-[10px]"></i> ${alasan}
                     </span>
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -221,9 +221,9 @@ function onSearchSantriBebas(query) {
     }
 
     dropdown.innerHTML = candidates.map(s => `
-        <div onclick="pilihSantriBebas('${s.id}')" class="p-3 hover:bg-emerald-50 cursor-pointer flex items-center justify-between transition-colors">
+        <div onclick="pilihSantriBebas('${s.id}')" class="p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between transition-colors">
             <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
+                <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
                     ${(s.nama || '?').charAt(0).toUpperCase()}
                 </div>
                 <div class="truncate">
@@ -231,7 +231,7 @@ function onSearchSantriBebas(query) {
                     <div class="text-[10px] text-gray-500 font-mono mt-0.5">NIS: ${s.nis || '-'}</div>
                 </div>
             </div>
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-white text-emerald-800 border border-emerald-200 shrink-0 font-mono">
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-white text-blue-800 border border-blue-200 shrink-0 font-mono">
                 Kamar ${s.kamar || '-'}
             </span>
         </div>
@@ -492,8 +492,8 @@ function renderPengaturanPembayaranLain() {
         } else if (item.targetTipe === 'santri_baru') {
             const angkatan = item.targetAngkatan || (typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : '-');
             targetBadge = `<div class="flex items-center gap-1.5">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    <i class="fas fa-user-plus text-emerald-600"></i> Santri Baru (${angkatan})
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                    <i class="fas fa-user-plus text-blue-600"></i> Santri Baru (${angkatan})
                 </span>
                 <button onclick="aturTargetSantriPL(${index})" class="text-xs text-indigo-600 hover:text-indigo-800 hover:underline font-bold cursor-pointer" title="Ubah sasaran santri baru">Ubah</button>
             </div>`;
@@ -523,7 +523,7 @@ function renderPengaturanPembayaranLain() {
             </td>
             <td class="px-6 py-4 text-center">
                 <div class="flex items-center justify-center gap-1">
-                    <button onclick="aturTargetSantriPL(${index})" class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-600 hover:text-white transition-colors flex items-center justify-center shadow-sm cursor-pointer" title="Atur Sasaran Santri"><i class="fas fa-users-gear text-xs"></i></button>
+                    <button onclick="aturTargetSantriPL(${index})" class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white transition-colors flex items-center justify-center shadow-sm cursor-pointer" title="Atur Sasaran Santri"><i class="fas fa-users-gear text-xs"></i></button>
                     <button onclick="editJenisPembayaranLain(${index})" class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors flex items-center justify-center shadow-sm cursor-pointer" title="Edit"><i class="fas fa-edit text-xs"></i></button>
                     <button onclick="hapusJenisPembayaranLain(${index})" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-colors flex items-center justify-center shadow-sm cursor-pointer" title="Hapus"><i class="fas fa-trash-alt text-xs"></i></button>
                 </div>
@@ -759,8 +759,8 @@ function onTargetPLTipeChanged(type) {
 
     if (optSantriBaru) {
         optSantriBaru.className = isSantriBaru
-            ? "relative flex flex-col p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/60 cursor-pointer transition-all shadow-xs"
-            : "relative flex flex-col p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-emerald-300 cursor-pointer transition-all";
+            ? "relative flex flex-col p-3 rounded-xl border-2 border-blue-500 bg-blue-50/60 cursor-pointer transition-all shadow-xs"
+            : "relative flex flex-col p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-300 cursor-pointer transition-all";
     }
 
     if (optKustom) {
@@ -1105,7 +1105,7 @@ function renderListPilihSantriIkhtibar() {
         let tarifBadge = '';
         if (infoTarif.isKhusus) {
             if (infoTarif.bebas) {
-                tarifBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full"><i class="fas fa-gift text-[9px]"></i> Bebas (Rp 0)</span>`;
+                tarifBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full"><i class="fas fa-gift text-[9px]"></i> Bebas (Rp 0)</span>`;
             } else {
                 tarifBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full"><i class="fas fa-tag text-[9px]"></i> Khusus: ${formatRupiah(infoTarif.nominal)}</span>`;
             }
@@ -1282,7 +1282,7 @@ function renderTableSantriKhususIkhtibarSaved() {
                 <td class="px-5 py-3 text-gray-700 font-semibold text-xs">${item.tagihanNama || 'Ikhtibar PPU'}</td>
                 <td class="px-5 py-3 text-right font-mono font-bold text-sm">
                     ${item.bebas 
-                        ? '<span class="inline-flex px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">Bebas Biaya (Rp 0)</span>' 
+                        ? '<span class="inline-flex px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">Bebas Biaya (Rp 0)</span>' 
                         : `<span class="text-indigo-600">${formatRupiah(item.nominal)}</span>`
                     }
                 </td>
@@ -1412,7 +1412,7 @@ function renderPengaturanKamar() {
         if (penghuniCount >= kapasitas) {
             badgeStatus = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700 border border-rose-200">Penuh (${penghuniCount}/${kapasitas})</span>`;
         } else if (penghuniCount > 0) {
-            badgeStatus = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Terisi (${penghuniCount}/${kapasitas})</span>`;
+            badgeStatus = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">Terisi (${penghuniCount}/${kapasitas})</span>`;
         } else {
             badgeStatus = `<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">Kosong (0/${kapasitas})</span>`;
         }
@@ -1422,7 +1422,7 @@ function renderPengaturanKamar() {
                 <td class="px-5 py-3 text-center text-gray-400 text-xs">${idx + 1}</td>
                 <td class="px-5 py-3 font-bold text-gray-800 uppercase font-mono text-sm">
                     <div class="flex items-center gap-2">
-                        <span class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-xs shrink-0">
+                        <span class="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-xs shrink-0">
                             <i class="fas fa-door-closed"></i>
                         </span>
                         <span>${namaKamar}</span>
@@ -1431,7 +1431,7 @@ function renderPengaturanKamar() {
                 <td class="px-5 py-3 text-center font-mono text-xs text-gray-600 font-bold">
                     ${kapasitas} Santri
                 </td>
-                <td class="px-5 py-3 text-center font-mono text-sm font-extrabold text-teal-700">
+                <td class="px-5 py-3 text-center font-mono text-sm font-extrabold text-sky-700">
                     ${penghuniCount} Santri
                 </td>
                 <td class="px-5 py-3 text-center">
@@ -1527,7 +1527,7 @@ function editKamarMaster(kamarId) {
             showCancelButton: true,
             confirmButtonText: 'Simpan Perubahan',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#059669',
+            confirmButtonColor: '#1d4ed8',
             preConfirm: () => {
                 const newName = document.getElementById('swal-edit-kamar-nama').value.trim().toUpperCase();
                 const newKap = parseInt(document.getElementById('swal-edit-kamar-kap').value) || 20;

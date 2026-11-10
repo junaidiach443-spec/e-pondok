@@ -342,7 +342,7 @@ function renderLiburanSantriPage(resetPage = false) {
         // Badge Status Kepulangan Libur
         let statusBadge = '';
         if (item.status === 'Kembali Tepat Waktu') {
-            statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-emerald-50 text-emerald-700 border-emerald-300 inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[10px]"></i> Kembali di Pondok</span>`;
+            statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-blue-50 text-blue-700 border-blue-300 inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[10px]"></i> Kembali di Pondok</span>`;
         } else if (item.status === 'Terlambat Kembali') {
             statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-rose-50 text-rose-700 border-rose-300 inline-flex items-center gap-1.5 animate-pulse"><i class="fas fa-triangle-exclamation text-[10px]"></i> Terlambat Kembali</span>`;
         } else if (item.status === 'Sedang Libur') {
@@ -357,7 +357,7 @@ function renderLiburanSantriPage(resetPage = false) {
         if (financialInfo.totalTunggakan > 0) {
             tanggunganBadge = `<span class="px-2 py-0.5 text-[10px] rounded-md font-bold bg-rose-100 text-rose-800 font-mono" title="Ada tanggungan ${formatRupiah(financialInfo.totalTunggakan)}">⚠️ Tunggakan ${formatRupiah(financialInfo.totalTunggakan)}</span>`;
         } else {
-            tanggunganBadge = `<span class="px-2 py-0.5 text-[10px] rounded-md font-bold bg-emerald-100 text-emerald-800 inline-flex items-center gap-1"><i class="fas fa-check text-[9px]"></i> Lunas</span>`;
+            tanggunganBadge = `<span class="px-2 py-0.5 text-[10px] rounded-md font-bold bg-blue-100 text-blue-800 inline-flex items-center gap-1"><i class="fas fa-check text-[9px]"></i> Lunas</span>`;
         }
 
         const tglMulaiFmt = formatTanggalIndo(item.tglMulai);
@@ -389,7 +389,7 @@ function renderLiburanSantriPage(resetPage = false) {
                 <td class="py-3 px-3">
                     <div class="space-y-0.5">
                         <div class="flex items-center gap-1 text-gray-700 font-medium">
-                            <i class="far fa-calendar-check text-emerald-600 text-[11px] w-4"></i> Mulai: <b>${tglMulaiFmt}</b>
+                            <i class="far fa-calendar-check text-blue-600 text-[11px] w-4"></i> Mulai: <b>${tglMulaiFmt}</b>
                         </div>
                         <div class="flex items-center gap-1 text-gray-700 font-medium">
                             <i class="far fa-calendar-times text-rose-600 text-[11px] w-4"></i> Wajib: <b>${tglKembaliFmt}</b>
@@ -414,7 +414,7 @@ function renderLiburanSantriPage(resetPage = false) {
                 <td class="py-3 px-3 text-center">
                     <div class="flex items-center justify-center gap-1">
                         ${!item.tglKembaliRealisasi ? `
-                            <button type="button" onclick="bukaModalKonfirmasiKembali('liburan', '${item.id}')" title="Konfirmasi Santri Kembali ke Pondok" class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all shadow-2xs">
+                            <button type="button" onclick="bukaModalKonfirmasiKembali('liburan', '${item.id}')" title="Konfirmasi Santri Kembali ke Pondok" class="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-all shadow-2xs">
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : ''}
@@ -790,15 +790,15 @@ function onLiburanSantriChanged() {
                         <i class="fas fa-exclamation-circle text-amber-600 text-sm"></i>
                         <span>Santri ini masih memiliki tanggungan tagihan sebesar <b>${formatRupiah(financialInfo.totalTunggakan)}</b>.</span>
                     </div>
-                    <button type="button" onclick="lunasiSemuaTanggunganSantri('${sId}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shrink-0">
+                    <button type="button" onclick="lunasiSemuaTanggunganSantri('${sId}')" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold shrink-0">
                         Lunasi Sekarang
                     </button>
                 </div>
             `;
         } else {
             infoBox.innerHTML = `
-                <div class="p-2.5 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center gap-2 text-xs text-emerald-800 font-medium">
-                    <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
+                <div class="p-2.5 bg-blue-50 border border-blue-300 rounded-xl flex items-center gap-2 text-xs text-blue-800 font-medium">
+                    <i class="fas fa-check-circle text-blue-600 text-sm"></i>
                     <span>Administrasi Keuangan Santri: <b>Bebas Tanggungan (Lunas)</b></span>
                 </div>
             `;
@@ -1194,7 +1194,7 @@ function renderPulangSantriPage(resetPage = false) {
         // Badge Status Pulang
         let statusBadge = '';
         if (item.status === 'Kembali Tepat Waktu') {
-            statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-emerald-50 text-emerald-700 border-emerald-300 inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[10px]"></i> Sudah Kembali</span>`;
+            statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-blue-50 text-blue-700 border-blue-300 inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[10px]"></i> Sudah Kembali</span>`;
         } else if (item.status === 'Terlambat Kembali') {
             statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-rose-50 text-rose-700 border-rose-300 inline-flex items-center gap-1.5 animate-pulse"><i class="fas fa-triangle-exclamation text-[10px]"></i> Terlambat</span>`;
         } else {
@@ -1209,11 +1209,11 @@ function renderPulangSantriPage(resetPage = false) {
         const cleanPhone = (item.noHpPenjemput || '').replace(/\D/g, '').replace(/^0/, '62');
 
         rowsHtml += `
-            <tr class="hover:bg-emerald-50/20 transition-colors border-b border-gray-100 text-xs">
+            <tr class="hover:bg-blue-50/20 transition-colors border-b border-gray-100 text-xs">
                 <td class="py-3 px-3 text-center text-gray-500 font-mono font-medium">${rowNum}</td>
                 <td class="py-3 px-3">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs shrink-0">
                             ${s.nama ? s.nama.charAt(0) : '?'}
                         </div>
                         <div>
@@ -1237,7 +1237,7 @@ function renderPulangSantriPage(resetPage = false) {
                 <td class="py-3 px-3">
                     <div class="space-y-0.5">
                         <div class="flex items-center gap-1 text-gray-700 font-medium">
-                            <i class="far fa-calendar-check text-emerald-600 text-[11px] w-4"></i> Keluar: <b>${tglMulaiFmt}</b> ${item.jamMulai ? `(${item.jamMulai})` : ''}
+                            <i class="far fa-calendar-check text-blue-600 text-[11px] w-4"></i> Keluar: <b>${tglMulaiFmt}</b> ${item.jamMulai ? `(${item.jamMulai})` : ''}
                         </div>
                         <div class="flex items-center gap-1 text-gray-700 font-medium">
                             <i class="far fa-calendar-times text-rose-600 text-[11px] w-4"></i> Batas: <b>${tglKembaliFmt}</b>
@@ -1253,7 +1253,7 @@ function renderPulangSantriPage(resetPage = false) {
                     <div class="font-bold text-gray-800">${item.namaPenjemput || '-'} <span class="text-gray-400 font-normal">(${item.hubunganPenjemput || 'Wali'})</span></div>
                     <div class="mt-0.5">
                         ${cleanPhone ? `
-                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-mono text-[11px] font-bold">
+                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-mono text-[11px] font-bold">
                                 <i class="fab fa-whatsapp"></i> ${item.noHpPenjemput}
                             </a>
                         ` : `<span class="text-gray-400 text-[11px] font-mono">-</span>`}
@@ -1265,7 +1265,7 @@ function renderPulangSantriPage(resetPage = false) {
                 <td class="py-3 px-3 text-center">
                     <div class="flex items-center justify-center gap-1">
                         ${!item.tglKembaliRealisasi ? `
-                            <button type="button" onclick="bukaModalKonfirmasiKembali('pulang', '${item.id}')" title="Konfirmasi Santri Tiba Kembali di Pondok" class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all shadow-2xs">
+                            <button type="button" onclick="bukaModalKonfirmasiKembali('pulang', '${item.id}')" title="Konfirmasi Santri Tiba Kembali di Pondok" class="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-all shadow-2xs">
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : ''}
@@ -1312,7 +1312,7 @@ function renderPulangPaginationControls(pData) {
         if (i === 1 || i === tot || (i >= cur - 1 && i <= cur + 1)) {
             const isAct = i === cur;
             buttonsHtml += `
-                <button onclick="pindahHalamanPulang(${i})" class="px-2.5 py-1 text-xs rounded-lg font-bold transition-all ${isAct ? 'bg-emerald-600 text-white shadow-xs' : 'border border-gray-300 text-gray-700 hover:bg-gray-100'}">
+                <button onclick="pindahHalamanPulang(${i})" class="px-2.5 py-1 text-xs rounded-lg font-bold transition-all ${isAct ? 'bg-blue-600 text-white shadow-xs' : 'border border-gray-300 text-gray-700 hover:bg-gray-100'}">
                     ${i}
                 </button>
             `;
@@ -1578,7 +1578,7 @@ function bukaModalKonfirmasiKembali(type, id) {
                         <i class="fas fa-triangle-exclamation"></i> Melewati batas waktu target (Terlambat). Masukkan catatan pembinaan/takzir jika ada.
                     </div>
                 ` : `
-                    <div class="text-emerald-700 font-bold text-[11px] pt-1 border-t border-emerald-100 flex items-center gap-1">
+                    <div class="text-blue-700 font-bold text-[11px] pt-1 border-t border-blue-100 flex items-center gap-1">
                         <i class="fas fa-check-circle"></i> Tiba kembali tepat waktu (Sesuai jadwal).
                     </div>
                 `}
@@ -1687,7 +1687,7 @@ function peringatanTunggakanLiburan(santriId) {
             `,
             showCancelButton: true,
             confirmButtonText: '<i class="fas fa-wallet mr-1"></i> Buka Menu Pembayaran',
-            confirmButtonColor: '#059669',
+            confirmButtonColor: '#1d4ed8',
             cancelButtonText: 'Tutup',
             cancelButtonColor: '#6b7280'
         }).then((result) => {
@@ -1905,7 +1905,7 @@ function getSuratLiburPrintStyles() {
             align-items: center;
             justify-content: center;
             border: 1px solid #15803d;
-            background: #f0fdf4;
+            background: #eff6ff;
             border-radius: 4px;
             padding: 2px 6px;
             width: 130px;
@@ -2128,7 +2128,7 @@ function getSuratLiburPrintStyles() {
             border-radius: 8px;
         }
         .btn-print-action {
-            background: #16a34a;
+            background: #2563eb;
             color: white;
             padding: 8px 18px;
             border: none;
@@ -2423,7 +2423,7 @@ function onKamarMassalChanged() {
 
         let tanggunganHtml = '';
         if (isLunas) {
-            tanggunganHtml = `<span class="text-emerald-700 font-bold flex items-center justify-center gap-1"><i class="fas fa-check-circle text-emerald-500"></i> Bebas Tanggungan</span>`;
+            tanggunganHtml = `<span class="text-blue-700 font-bold flex items-center justify-center gap-1"><i class="fas fa-check-circle text-blue-500"></i> Bebas Tanggungan</span>`;
         } else {
             const itemsText = (info.items || []).map(i => i.nama || i.kategori).join(', ');
             tanggunganHtml = `
@@ -2434,7 +2434,7 @@ function onKamarMassalChanged() {
 
         let statusHtml = '';
         if (isLunas) {
-            statusHtml = `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center gap-1"><i class="fas fa-print"></i> Siap Dicetak</span>`;
+            statusHtml = `<span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300 inline-flex items-center gap-1"><i class="fas fa-print"></i> Siap Dicetak</span>`;
         } else {
             statusHtml = `<button type="button" onclick="peringatanTunggakanLiburan('${s.id}')" title="Lihat Rincian Tanggungan" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition-colors inline-flex items-center gap-1 cursor-pointer"><i class="fas fa-lock"></i> DITAHAN</button>`;
         }
@@ -2635,7 +2635,7 @@ function switchScanTab(tab) {
         if (paneGun) paneGun.classList.remove('hidden');
         if (paneCam) paneCam.classList.add('hidden');
         if (tabGun) {
-            tabGun.className = "px-3.5 py-1.5 font-bold text-xs rounded-xl bg-emerald-600 text-white shadow-xs transition-all flex items-center gap-1.5";
+            tabGun.className = "px-3.5 py-1.5 font-bold text-xs rounded-xl bg-blue-600 text-white shadow-xs transition-all flex items-center gap-1.5";
         }
         if (tabCam) {
             tabCam.className = "px-3.5 py-1.5 font-semibold text-xs rounded-xl text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1.5";
@@ -2649,7 +2649,7 @@ function switchScanTab(tab) {
             tabGun.className = "px-3.5 py-1.5 font-semibold text-xs rounded-xl text-gray-600 hover:bg-gray-200 transition-all flex items-center gap-1.5";
         }
         if (tabCam) {
-            tabCam.className = "px-3.5 py-1.5 font-bold text-xs rounded-xl bg-emerald-600 text-white shadow-xs transition-all flex items-center gap-1.5";
+            tabCam.className = "px-3.5 py-1.5 font-bold text-xs rounded-xl bg-blue-600 text-white shadow-xs transition-all flex items-center gap-1.5";
         }
     }
 }
@@ -2795,26 +2795,26 @@ function prosesScanBarcodeBalek(scannedCode) {
         resultCard.classList.remove('hidden');
         if (!isLate) {
             resultCard.innerHTML = `
-                <div class="p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/15 border-2 border-emerald-500 rounded-2xl flex items-center gap-4 shadow-sm animate-fade-in">
-                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-3xl shrink-0 shadow-lg shadow-emerald-500/20">
+                <div class="p-4 bg-gradient-to-r from-blue-500/10 to-sky-500/15 border-2 border-blue-500 rounded-2xl flex items-center gap-4 shadow-sm animate-fade-in">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-600 text-white flex items-center justify-center text-3xl shrink-0 shadow-lg shadow-blue-500/20">
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase bg-emerald-600 text-white tracking-wider flex items-center gap-1">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase bg-blue-600 text-white tracking-wider flex items-center gap-1">
                                 <i class="fas fa-badge-check"></i> KEMBALI TEPAT WAKTU
                             </span>
-                            <span class="text-xs text-emerald-800 font-mono font-bold">${nowTimeStr}</span>
+                            <span class="text-xs text-blue-800 font-mono font-bold">${nowTimeStr}</span>
                         </div>
                         <h4 class="text-base sm:text-lg font-black text-gray-900 mt-1 truncate">${santri.nama}</h4>
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 mt-1 font-mono">
-                            <span>NIS: <b class="text-emerald-800">${santri.nis || '-'}</b></span>
+                            <span>NIS: <b class="text-blue-800">${santri.nis || '-'}</b></span>
                             <span>•</span>
                             <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold border border-indigo-200">Kamar ${santri.kamar || santri.kamarTerakhir || '-'}</span>
                             <span>•</span>
                             <span>Periode: <b>${libItem.namaLiburan}</b></span>
                         </div>
-                        <p class="text-[11px] text-emerald-700 mt-1">Alhamdulillah, santri tiba sesuai batas waktu (${formatTanggalIndo(libItem.tglKembali)}).</p>
+                        <p class="text-[11px] text-blue-700 mt-1">Alhamdulillah, santri tiba sesuai batas waktu (${formatTanggalIndo(libItem.tglKembali)}).</p>
                     </div>
                 </div>
             `;
@@ -2880,7 +2880,7 @@ function toggleCameraScanner() {
         (decodedText, decodedResult) => {
             console.log("Barcode Kamera Terdeteksi:", decodedText);
             prosesScanBarcodeBalek(decodedText);
-            if (btn) btn.innerHTML = `<i class="fas fa-check text-emerald-300"></i> Terbaca: ${decodedText}`;
+            if (btn) btn.innerHTML = `<i class="fas fa-check text-blue-300"></i> Terbaca: ${decodedText}`;
             setTimeout(() => {
                 if (btn && html5QrScannerInstance) {
                     btn.innerHTML = `<i class="fas fa-stop"></i> Matikan Kamera`;
@@ -2902,7 +2902,7 @@ function toggleCameraScanner() {
         if (btn) {
             btn.innerHTML = `<i class="fas fa-video"></i> Aktifkan Kamera`;
             btn.disabled = false;
-            btn.className = "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all";
+            btn.className = "px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all";
         }
         if (readerDiv) {
             readerDiv.innerHTML = `<span class="text-rose-400 p-4 text-center">Gagal mengakses kamera. Pastikan izin kamera aktif atau gunakan mode Scanner Gun / NIS.</span>`;
@@ -2928,7 +2928,7 @@ function stopCameraScanner() {
     if (btn) {
         btn.innerHTML = `<i class="fas fa-video"></i> Aktifkan Kamera`;
         btn.disabled = false;
-        btn.className = "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all";
+        btn.className = "px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all";
     }
     if (readerDiv) {
         readerDiv.innerHTML = `<span>Kamera non-aktif. Klik "Aktifkan Kamera" di atas.</span>`;
@@ -2941,7 +2941,7 @@ function switchRekapTab(tab) {
     const tabBelum = document.getElementById('tab-rekap-belum');
 
     if (tab === 'sudah') {
-        if (tabSudah) tabSudah.className = "px-3 py-1 rounded-lg text-xs font-bold bg-white text-emerald-800 shadow-xs border border-emerald-300";
+        if (tabSudah) tabSudah.className = "px-3 py-1 rounded-lg text-xs font-bold bg-white text-blue-800 shadow-xs border border-blue-300";
         if (tabBelum) tabBelum.className = "px-3 py-1 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-900";
     } else {
         if (tabSudah) tabSudah.className = "px-3 py-1 rounded-lg text-xs font-medium text-gray-600 hover:text-gray-900";
@@ -2981,9 +2981,9 @@ function renderScanBalekLists() {
             const isLate = item.status === 'Terlambat Kembali';
 
             html += `
-                <div class="p-2.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between gap-2 hover:border-emerald-300 transition-colors">
+                <div class="p-2.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between gap-2 hover:border-blue-300 transition-colors">
                     <div class="flex items-center gap-2.5 min-w-0">
-                        <div class="w-8 h-8 rounded-lg ${isLate ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'} flex items-center justify-center font-bold text-xs shrink-0">
+                        <div class="w-8 h-8 rounded-lg ${isLate ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'} flex items-center justify-center font-bold text-xs shrink-0">
                             <i class="fas ${isLate ? 'fa-clock' : 'fa-check'}"></i>
                         </div>
                         <div class="min-w-0">
@@ -2994,7 +2994,7 @@ function renderScanBalekLists() {
                         </div>
                     </div>
                     <div class="text-right shrink-0">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isLate ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isLate ? 'bg-rose-100 text-rose-800' : 'bg-blue-100 text-blue-800'}">
                             ${isLate ? `Terlambat ${item.hariTerlambat ? `${item.hariTerlambat}h` : ''}` : 'Tepat Waktu'}
                         </span>
                         <div class="text-[10px] text-gray-400 mt-0.5 font-mono">${item.jamKembaliRealisasi || formatTanggalIndo(item.tglKembaliRealisasi)}</div>
@@ -3005,7 +3005,7 @@ function renderScanBalekLists() {
         container.innerHTML = html;
     } else {
         if (belumList.length === 0) {
-            container.innerHTML = `<div class="py-6 text-center text-emerald-600 font-bold"><i class="fas fa-check-circle mr-1"></i> Seluruh santri sudah kembali ke pondok!</div>`;
+            container.innerHTML = `<div class="py-6 text-center text-blue-600 font-bold"><i class="fas fa-check-circle mr-1"></i> Seluruh santri sudah kembali ke pondok!</div>`;
             return;
         }
 
@@ -3034,7 +3034,7 @@ function renderScanBalekLists() {
                             </span>
                             <div class="text-[10px] text-gray-500 mt-0.5 font-mono">Batas: ${formatTanggalIndo(item.tglKembali)}</div>
                         </div>
-                        <button type="button" onclick="prosesScanBarcodeBalek('${s.nis}')" title="Catat Kembali Cepat" class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all text-xs cursor-pointer">
+                        <button type="button" onclick="prosesScanBarcodeBalek('${s.nis}')" title="Catat Kembali Cepat" class="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition-all text-xs cursor-pointer">
                             <i class="fas fa-check"></i>
                         </button>
                     </div>
@@ -3084,7 +3084,7 @@ function cetakSuratIzinPulang(id) {
             .footer-sign { width: 100%; margin-top: 40px; font-size: 14px; border-collapse: collapse; }
             .footer-sign td { width: 33.3%; text-align: center; vertical-align: top; }
             .space-sign { height: 70px; }
-            .btn-print { position: fixed; top: 15px; right: 15px; background: #059669; color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+            .btn-print { position: fixed; top: 15px; right: 15px; background: #1d4ed8; color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
             @media print {
                 .btn-print { display: none; }
                 body { padding: 0; }
@@ -3358,12 +3358,12 @@ function eksekusiExportLiburanExcel() {
         XLSX.writeFile(wb, `${fileName}.xlsx`);
     } else {
         // Fallback HTML table spreadsheet
-        let tableHtml = `<table border="1"><thead><tr style="background-color: #10b981; color: white;">`;
+        let tableHtml = `<table border="1"><thead><tr style="background-color: #2563eb; color: white;">`;
         Object.keys(rows[0]).forEach(k => { tableHtml += `<th>${k}</th>`; });
         tableHtml += `</tr></thead><tbody>`;
         rows.forEach(r => {
             const isSudah = (r["Status Balek"] === 'SUDAH BALEK');
-            const bg = isSudah ? '#f0fdf4' : '#fff1f2';
+            const bg = isSudah ? '#eff6ff' : '#fff1f2';
             tableHtml += `<tr style="background-color: ${bg};">`;
             Object.values(r).forEach(v => { tableHtml += `<td>${v}</td>`; });
             tableHtml += `</tr>`;
@@ -3522,7 +3522,7 @@ function exportPulangSantriExcel() {
     let tableHtml = `
         <table border="1">
             <thead>
-                <tr style="background-color: #10b981; color: white;">
+                <tr style="background-color: #2563eb; color: white;">
                     <th>No</th>
                     <th>Nama Santri</th>
                     <th>NIS</th>

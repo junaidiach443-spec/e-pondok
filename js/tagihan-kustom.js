@@ -64,7 +64,7 @@ function renderPembayaranKustomList(resetPage = false) {
             let tarifBadge = '';
             if (infoTarif.isKhusus) {
                 if (infoTarif.bebas) {
-                    tarifBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full ml-1.5"><i class="fas fa-gift text-[9px]"></i> Bebas</span>`;
+                    tarifBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full ml-1.5"><i class="fas fa-gift text-[9px]"></i> Bebas</span>`;
                 } else {
                     tarifBadge = `<span class="inline-flex items-center gap-1 text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full ml-1.5"><i class="fas fa-tag text-[9px]"></i> Khusus: ${formatRupiah(santriNominal)}</span>`;
                 }
@@ -81,11 +81,11 @@ function renderPembayaranKustomList(resetPage = false) {
                 </td>
                 <td class="px-6 py-4 text-gray-600 font-medium">${s.kamar || '-'}</td>
                 <td class="px-6 py-4 w-48">
-                    <div class="flex justify-between text-xs mb-1.5"><span class="${progress === 100 ? 'text-[#0ca678] font-bold' : 'text-gray-500 font-medium'}">${progress}%</span></div>
-                    <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-[#0ca678] h-2 rounded-full" style="width: ${progress}%"></div></div>
+                    <div class="flex justify-between text-xs mb-1.5"><span class="${progress === 100 ? 'text-blue-600 font-bold' : 'text-gray-500 font-medium'}">${progress}%</span></div>
+                    <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-blue-600 h-2 rounded-full" style="width: ${progress}%"></div></div>
                 </td>
                 <td class="px-6 py-4 text-center">
-                    <button onclick="bukaDetailPembayaranKustom('${s.id}')" class="bg-emerald-50 border border-emerald-100 hover:bg-[#0ca678] hover:text-white text-emerald-700 px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors">Kelola Tagihan</button>
+                    <button onclick="bukaDetailPembayaranKustom('${s.id}')" class="bg-blue-50 border border-blue-100 hover:bg-blue-600 hover:text-white text-blue-700 px-5 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors">Kelola Tagihan</button>
                 </td>
             </tr>`;
         }).join('');
@@ -178,12 +178,12 @@ function renderDetailPembayaranKustomData() {
 
     if (badgeLunas && inputBayar) {
         if (infoTarif.bebas) {
-            badgeLunas.className = "px-4 py-2 bg-emerald-100 text-emerald-800 font-bold text-sm rounded-lg border border-emerald-300 uppercase tracking-wider";
+            badgeLunas.className = "px-4 py-2 bg-blue-100 text-blue-800 font-bold text-sm rounded-lg border border-blue-300 uppercase tracking-wider";
             badgeLunas.innerText = "BEBAS BIAYA";
             inputBayar.value = 0;
             inputBayar.disabled = true;
         } else if (sisa <= 0) {
-            badgeLunas.className = "px-4 py-2 bg-[#d1fae5] text-[#059669] font-bold text-sm rounded-lg border border-emerald-200 uppercase tracking-wider";
+            badgeLunas.className = "px-4 py-2 bg-blue-100 text-blue-700 font-bold text-sm rounded-lg border border-blue-200 uppercase tracking-wider";
             badgeLunas.innerText = "LUNAS";
             inputBayar.value = 0;
             inputBayar.disabled = true;
@@ -202,7 +202,7 @@ function renderDetailPembayaranKustomData() {
             <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
                 <td class="px-6 py-4 font-medium text-gray-800">${new Date(t.date).toLocaleDateString('id-ID')}</td>
-                <td class="px-6 py-4 text-[#0ca678] font-bold text-sm">${formatRupiah(t.amount)}</td>
+                <td class="px-6 py-4 text-blue-600 font-bold text-sm">${formatRupiah(t.amount)}</td>
                 <td class="px-6 py-4 text-center">
                     <button onclick="hapusRiwayatKustom('${t.id}')" class="text-rose-400 hover:text-rose-600 transition-colors" title="Batalkan"><i class="fas fa-trash-alt text-[15px]"></i></button>
                 </td>

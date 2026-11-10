@@ -55,7 +55,7 @@ function switchTabPL(tabName) {
 
     if (tabName === 'santri') {
         if (tabSantriBtn) {
-            tabSantriBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 text-white shadow-sm flex items-center gap-2 transition-all";
+            tabSantriBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600 text-white shadow-sm flex items-center gap-2 transition-all";
         }
         if (tabRiwayatBtn) {
             tabRiwayatBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center gap-2 transition-all";
@@ -68,7 +68,7 @@ function switchTabPL(tabName) {
             tabSantriBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center gap-2 transition-all";
         }
         if (tabRiwayatBtn) {
-            tabRiwayatBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 text-white shadow-sm flex items-center gap-2 transition-all";
+            tabRiwayatBtn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-blue-600 text-white shadow-sm flex items-center gap-2 transition-all";
         }
         if (viewSantri) viewSantri.classList.add('hidden');
         if (viewRiwayat) viewRiwayat.classList.remove('hidden');
@@ -228,7 +228,7 @@ function renderSantriPLTable() {
         } else if (tagihan > 0 && sudahBayar >= tagihan) {
             statusCode = 'lunas';
             countLunas++;
-            statusBadge = `<span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[11px]"></i> Lunas</span>`;
+            statusBadge = `<span class="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold rounded-lg inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[11px]"></i> Lunas</span>`;
         } else if (sudahBayar > 0) {
             statusCode = 'cicil';
             statusBadge = `<span class="px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg inline-flex items-center gap-1.5"><i class="fas fa-clock text-[11px]"></i> Belum Lunas</span>`;
@@ -361,7 +361,7 @@ function renderSantriPLTable() {
             <tr class="hover:bg-gray-50/80 transition-colors border-b border-gray-100">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl ${info.tidakDitargetkan ? 'bg-gray-100 text-gray-400' : (info.isKhusus ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700')} flex items-center justify-center font-bold text-sm shrink-0">
+                        <div class="w-9 h-9 rounded-xl ${info.tidakDitargetkan ? 'bg-gray-100 text-gray-400' : (info.isKhusus ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-700')} flex items-center justify-center font-bold text-sm shrink-0">
                             ${s.nama.charAt(0)}
                         </div>
                         <div>
@@ -379,7 +379,7 @@ function renderSantriPLTable() {
                     ${tagihanHtml}
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="font-bold ${item.sudahBayar > 0 ? 'text-emerald-600' : 'text-gray-400'} text-sm font-mono">
+                    <span class="font-bold ${item.sudahBayar > 0 ? 'text-blue-600' : 'text-gray-400'} text-sm font-mono">
                         ${formatRupiah(item.sudahBayar)}
                     </span>
                 </td>
@@ -394,7 +394,7 @@ function renderSantriPLTable() {
                 <td class="px-6 py-4 text-center">
                     <div class="flex items-center justify-center gap-1.5">
                         <!-- Tombol Bayar -->
-                        <button onclick="bukaModalBayarSantriPL('${s.id}')" class="px-3 py-1.5 rounded-lg ${info.tidakDitargetkan ? 'bg-gray-100 hover:bg-gray-200 text-gray-600' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5" title="Catat Pembayaran">
+                        <button onclick="bukaModalBayarSantriPL('${s.id}')" class="px-3 py-1.5 rounded-lg ${info.tidakDitargetkan ? 'bg-gray-100 hover:bg-gray-200 text-gray-600' : 'bg-blue-600 hover:bg-blue-700 text-white'} font-bold text-xs shadow-sm transition-colors flex items-center gap-1.5" title="Catat Pembayaran">
                             <i class="fas fa-hand-holding-usd text-xs"></i> Bayar
                         </button>
                         <!-- Tombol Edit Khusus -->
@@ -517,14 +517,14 @@ function simpanBayarSantriPL() {
             <div class="text-sm text-gray-600 space-y-1 mt-2">
                 <p><b>Santri:</b> ${s.nama}</p>
                 <p><b>Jenis:</b> ${jenisAktif}</p>
-                <p><b>Nominal:</b> <span class="text-emerald-600 font-bold font-mono">${formatRupiah(nominal)}</span></p>
+                <p><b>Nominal:</b> <span class="text-blue-600 font-bold font-mono">${formatRupiah(nominal)}</span></p>
                 <p class="text-xs text-gray-400 mt-2">Apakah Anda ingin mencetak struk thermal 58mm?</p>
             </div>
         `,
         showCancelButton: true,
         confirmButtonText: '<i class="fas fa-print mr-1"></i> Cetak Struk',
         cancelButtonText: 'Selesai',
-        confirmButtonColor: '#059669',
+        confirmButtonColor: '#1d4ed8',
         cancelButtonColor: '#64748b'
     }).then((res) => {
         if (res.isConfirmed) {
@@ -758,14 +758,14 @@ function renderRiwayatPLTable() {
                 </td>
                 <td class="px-6 py-4">${pembayarHtml}</td>
                 <td class="px-6 py-4 text-right">
-                    <span class="font-extrabold text-emerald-600 text-sm font-mono">+ ${formatRupiah(t.amount)}</span>
+                    <span class="font-extrabold text-blue-600 text-sm font-mono">+ ${formatRupiah(t.amount)}</span>
                 </td>
                 <td class="px-6 py-4 text-xs text-gray-600 max-w-xs truncate" title="${t.desc || '-'}">
                     ${t.desc || '-'}
                 </td>
                 <td class="px-6 py-4 text-center">
-                    <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-100">Lunas</span>
-                    <div class="text-[10px] font-semibold ${t.metode === 'Transfer' ? 'text-blue-600' : 'text-emerald-600'} flex items-center justify-center gap-1 mt-0.5">
+                    <span class="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100">Lunas</span>
+                    <div class="text-[10px] font-semibold ${t.metode === 'Transfer' ? 'text-blue-600' : 'text-blue-600'} flex items-center justify-center gap-1 mt-0.5">
                         <i class="fas ${t.metode === 'Transfer' ? 'fa-university' : 'fa-money-bill-wave'} text-[9px]"></i> ${t.metode || 'Tunai'}
                     </div>
                 </td>
@@ -864,7 +864,7 @@ function tampilkanStateBelumAdaJenisPL() {
                     </div>
                     <p class="font-bold text-gray-700 text-base">Belum Ada Jenis Pembayaran Lain</p>
                     <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">Silakan tambahkan jenis pembayaran lain terlebih dahulu melalui menu Pengaturan.</p>
-                    <button onclick="navigate('pengaturan')" class="mt-4 bg-[#059669] hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-colors inline-flex items-center gap-2">
+                    <button onclick="navigate('pengaturan')" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-colors inline-flex items-center gap-2">
                         <i class="fas fa-cog"></i> Buka Pengaturan Sistem
                     </button>
                 </td>
@@ -954,13 +954,13 @@ function simpanPembayaranUmumPL() {
             <div class="text-sm text-gray-600 space-y-1 mt-2">
                 <p><b>Pembayar:</b> ${nama.toUpperCase()}</p>
                 <p><b>Jenis:</b> ${jenisAktif}</p>
-                <p><b>Nominal:</b> <span class="text-emerald-600 font-bold font-mono">${formatRupiah(nominal)}</span></p>
+                <p><b>Nominal:</b> <span class="text-blue-600 font-bold font-mono">${formatRupiah(nominal)}</span></p>
             </div>
         `,
         showCancelButton: true,
         confirmButtonText: '<i class="fas fa-print mr-1"></i> Cetak Struk',
         cancelButtonText: 'Selesai',
-        confirmButtonColor: '#059669',
+        confirmButtonColor: '#1d4ed8',
         cancelButtonColor: '#64748b'
     }).then((res) => {
         if (res.isConfirmed) {

@@ -52,7 +52,7 @@ function renderBackupRestorePage() {
     if (elLastDate) {
         if (lastDate) {
             const d = new Date(lastDate);
-            elLastDate.innerHTML = `<i class="fas fa-calendar-check text-emerald-600 mr-1.5"></i> ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} pk ${d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`;
+            elLastDate.innerHTML = `<i class="fas fa-calendar-check text-blue-600 mr-1.5"></i> ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} pk ${d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB`;
         } else {
             elLastDate.innerHTML = `<span class="text-amber-600 font-semibold"><i class="fas fa-exclamation-circle mr-1"></i> Belum pernah dicadangkan</span>`;
         }
@@ -128,7 +128,7 @@ function downloadBackupJSON() {
                 html: `
                     <div class="text-sm text-gray-600 space-y-2 mt-2 text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
                         <div class="flex items-center gap-2 text-gray-800 font-bold">
-                            <i class="fas fa-file-code text-emerald-600 text-lg"></i>
+                            <i class="fas fa-file-code text-blue-600 text-lg"></i>
                             <span class="font-mono text-xs break-all">${filename}</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-200 text-xs">
@@ -137,13 +137,13 @@ function downloadBackupJSON() {
                             <div><span class="text-gray-400">Tahun Ajaran:</span> <b>${TA}</b></div>
                             <div><span class="text-gray-400">Ukuran File:</span> <b>${(blob.size / 1024).toFixed(1)} KB</b></div>
                         </div>
-                        <div class="pt-2 border-t border-gray-200 text-[11px] text-emerald-800 font-medium">
+                        <div class="pt-2 border-t border-gray-200 text-[11px] text-blue-800 font-medium">
                             <i class="fas fa-shield-alt mr-1"></i> Simpan file ini di flashdisk bendahara atau Google Drive pesantren sebagai arsip aman.
                         </div>
                     </div>
                 `,
                 confirmButtonText: '<i class="fas fa-check mr-1"></i> Selesai',
-                confirmButtonColor: '#059669'
+                confirmButtonColor: '#1d4ed8'
             });
         } else if (typeof showToast === 'function') {
             showToast("Cadangan database berhasil diunduh!");
@@ -315,7 +315,7 @@ function prosesRestoreData() {
             html: pesanKonfirmasi,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#059669',
+            confirmButtonColor: '#1d4ed8',
             cancelButtonColor: '#64748b',
             confirmButtonText: '<i class="fas fa-upload mr-1"></i> Ya, Pulihkan Database',
             cancelButtonText: 'Batalkan',
@@ -380,10 +380,10 @@ function eksekusiSimpanRestore(payload) {
                 html: `
                     <div class="text-sm text-gray-600 mt-2 space-y-1">
                         <p>Seluruh data santri, riwayat transaksi, dan pengaturan telah berhasil diperbarui sesuai file cadangan.</p>
-                        <p class="text-xs text-emerald-700 font-bold mt-2">Aplikasi siap digunakan kembali.</p>
+                        <p class="text-xs text-blue-700 font-bold mt-2">Aplikasi siap digunakan kembali.</p>
                     </div>
                 `,
-                confirmButtonColor: '#059669',
+                confirmButtonColor: '#1d4ed8',
                 confirmButtonText: '<i class="fas fa-check mr-1"></i> Selesai'
             });
         } else if (typeof showToast === 'function') {
@@ -457,7 +457,7 @@ function bersihkanTransaksiPercobaan() {
                 icon: 'success',
                 title: 'Transaksi Percobaan Dibersihkan!',
                 text: 'Seluruh riwayat transaksi telah dikosongkan. File cadangan otomatis telah diunduh sebagai arsip keselamatan.',
-                confirmButtonColor: '#059669'
+                confirmButtonColor: '#1d4ed8'
             });
         }
     });

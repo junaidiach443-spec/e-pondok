@@ -306,7 +306,7 @@ function writeAllDataToSpreadsheet(payload) {
   });
   if (santriRows.length > 0) {
     santriSheet.getRange(1, 1, santriRows.length, santriHeaders.length).setValues(santriRows);
-    formatHeaderRow(santriSheet, '#059669'); // Hijau Emerald
+    formatHeaderRow(santriSheet, '#1d4ed8'); // Hijau Emerald
   }
 
   // 2. Tulis Sheet Transaksi
@@ -345,7 +345,7 @@ function writeAllDataToSpreadsheet(payload) {
   });
   if (trxRows.length > 0) {
     trxSheet.getRange(1, 1, trxRows.length, trxHeaders.length).setValues(trxRows);
-    formatHeaderRow(trxSheet, '#059669'); // Emerald
+    formatHeaderRow(trxSheet, '#1d4ed8'); // Emerald
   }
 
   // 3. Tulis Sheet Mutasi Kamar
@@ -368,7 +368,7 @@ function writeAllDataToSpreadsheet(payload) {
   });
   if (mutasiRows.length > 0) {
     mutasiSheet.getRange(1, 1, mutasiRows.length, mutasiHeaders.length).setValues(mutasiRows);
-    formatHeaderRow(mutasiSheet, '#0f766e'); // Teal
+    formatHeaderRow(mutasiSheet, '#0369a1'); // Teal
   }
 
   // 4. Tulis Sheet Pengaturan
@@ -483,7 +483,7 @@ function formatHeaderRow(sheet, hexColor) {
     var lastCol = sheet.getLastColumn();
     if (lastCol > 0) {
       var headerRange = sheet.getRange(1, 1, 1, lastCol);
-      headerRange.setBackground(hexColor || '#059669');
+      headerRange.setBackground(hexColor || '#1d4ed8');
       headerRange.setFontColor('#ffffff');
       headerRange.setFontWeight('bold');
       headerRange.setFontFamily('Arial');

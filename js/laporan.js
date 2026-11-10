@@ -80,7 +80,7 @@ function renderLaporan(resetPage = false) {
                 const s = santriData.find(x => x.id === t.santriId);
                 if (s) pihakTerkait = `<span class="font-bold text-gray-800 uppercase">${s.nama}</span><div class="text-[10px] text-gray-500 font-mono mt-0.5">${s.nis} (Santri)</div>`;
             } else if (t.pembayar) {
-                pihakTerkait = `<span class="font-bold text-gray-800 uppercase">${t.pembayar}</span><div class="text-[10px] text-emerald-600 font-semibold mt-0.5">Umum / Wali</div>`;
+                pihakTerkait = `<span class="font-bold text-gray-800 uppercase">${t.pembayar}</span><div class="text-[10px] text-blue-600 font-semibold mt-0.5">Umum / Wali</div>`;
             }
         } else if (t.type === 'out') {
             pihakTerkait = `<span class="font-bold text-gray-800 uppercase">${t.pj || '-'}</span><div class="text-[10px] bg-indigo-50 text-indigo-600 inline-block px-1.5 py-0.5 rounded mt-1 font-bold">${t.divisi || (t.subJenis ? 'Pos ' + t.subJenis : 'Umum')}</div>`;
@@ -88,21 +88,21 @@ function renderLaporan(resetPage = false) {
 
         let badgeSubKategori = '';
         if (t.subJenis) {
-            badgeSubKategori = `<span class="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold border border-emerald-200 ml-1.5">${t.subJenis}</span>`;
+            badgeSubKategori = `<span class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold border border-blue-200 ml-1.5">${t.subJenis}</span>`;
         }
 
         const isTransfer = (t.metode === 'Transfer');
         const badgeMetode = isTransfer 
             ? `<span class="px-2.5 py-1 text-[11px] rounded-lg font-bold bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1.5"><i class="fas fa-university text-[10px]"></i> Transfer</span>`
-            : `<span class="px-2.5 py-1 text-[11px] rounded-lg font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5"><i class="fas fa-money-bill-wave text-[10px]"></i> Tunai</span>`;
+            : `<span class="px-2.5 py-1 text-[11px] rounded-lg font-bold bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1.5"><i class="fas fa-money-bill-wave text-[10px]"></i> Tunai</span>`;
 
         return `<tr class="hover:bg-gray-50 border-b border-gray-50 transition-colors">
             <td class="p-4 text-gray-600"><div class="font-bold text-gray-800">${new Date(t.date).toLocaleDateString('id-ID')}</div><div class="font-mono text-[10px] text-gray-400 mt-0.5">${t.id}</div></td>
             <td class="p-4 uppercase">${pihakTerkait}</td>
             <td class="p-4 text-sm"><div class="font-bold text-gray-700 flex items-center">${t.kategori}${badgeSubKategori}</div><div class="uppercase text-gray-500 text-xs mt-0.5">${t.desc}</div></td>
-            <td class="p-4 text-center"><span class="px-3 py-1 text-[10px] border rounded-lg font-bold uppercase tracking-widest ${t.type === 'in' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-200'}">${t.type === 'in' ? 'Masuk' : 'Keluar'}</span></td>
+            <td class="p-4 text-center"><span class="px-3 py-1 text-[10px] border rounded-lg font-bold uppercase tracking-widest ${t.type === 'in' ? 'text-blue-600 bg-blue-50 border-blue-200' : 'text-rose-600 bg-rose-50 border-rose-200'}">${t.type === 'in' ? 'Masuk' : 'Keluar'}</span></td>
             <td class="p-4 text-center">${badgeMetode}</td>
-            <td class="p-4 text-right font-extrabold text-lg font-mono ${t.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}">${t.type === 'in' ? '+' : '-'} ${formatRupiah(t.amount)}</td>
+            <td class="p-4 text-right font-extrabold text-lg font-mono ${t.type === 'in' ? 'text-blue-600' : 'text-rose-600'}">${t.type === 'in' ? '+' : '-'} ${formatRupiah(t.amount)}</td>
             <td class="p-4 text-center"><button onclick="hapusTransaksi('${t.id}')" class="text-gray-400 hover:text-rose-600 p-2 transition-colors" title="Hapus"><i class="fas fa-trash-alt"></i></button></td>
         </tr>`;
     }).join('') : '<tr><td colspan="7" class="p-10 text-center text-gray-400"><i class="fas fa-history text-3xl mb-2 text-gray-300"></i><p>Tidak ada riwayat transaksi yang cocok</p></td></tr>'; 
@@ -137,12 +137,12 @@ function renderLaporanRekap() {
 
         <!-- Kartu Laporan Pembayaran Lain -->
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all cursor-pointer relative overflow-hidden group" onclick="bukaHalamanLaporanDetail('Pembayaran Lain')">
-            <div class="absolute -right-6 -top-6 w-32 h-32 bg-emerald-50 rounded-full group-hover:scale-150 transition-transform duration-700 z-0"></div>
+            <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-50 rounded-full group-hover:scale-150 transition-transform duration-700 z-0"></div>
             <div class="relative z-10">
-                <div class="w-14 h-14 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mb-4 shadow-sm"><i class="fas fa-hand-holding-dollar"></i></div>
+                <div class="w-14 h-14 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mb-4 shadow-sm"><i class="fas fa-hand-holding-dollar"></i></div>
                 <h3 class="text-xl font-bold text-gray-800">Laporan Pembayaran Lain</h3>
                 <p class="text-sm text-gray-500 mt-1">Rekap Kitab, Seragam, Pendaftaran, Infaq dll per santri.</p>
-                <div class="mt-6 text-sm font-bold text-emerald-600 group-hover:translate-x-2 transition-transform flex items-center gap-2">Buka Laporan <i class="fas fa-arrow-right"></i></div>
+                <div class="mt-6 text-sm font-bold text-blue-600 group-hover:translate-x-2 transition-transform flex items-center gap-2">Buka Laporan <i class="fas fa-arrow-right"></i></div>
             </div>
         </div>
     `;
@@ -353,7 +353,7 @@ function renderIsiLaporanDetail(resetPage = false) {
         if (s.isBebas) {
             badgeStatus = `<span class="px-3 py-1.5 text-[10px] border border-purple-200 text-purple-700 bg-purple-50 rounded-lg font-bold uppercase tracking-wider inline-flex items-center gap-1"><i class="fas fa-gift text-[9px]"></i> Bebas</span>`;
         } else if (s.statusLunas) {
-            badgeStatus = `<span class="px-3 py-1.5 text-[10px] border border-emerald-200 text-emerald-700 bg-emerald-50 rounded-lg font-bold uppercase tracking-wider inline-flex items-center gap-1"><i class="fas fa-check-circle text-[9px]"></i> Lunas</span>`;
+            badgeStatus = `<span class="px-3 py-1.5 text-[10px] border border-blue-200 text-blue-700 bg-blue-50 rounded-lg font-bold uppercase tracking-wider inline-flex items-center gap-1"><i class="fas fa-check-circle text-[9px]"></i> Lunas</span>`;
         } else if (s.totalBayar > 0) {
             badgeStatus = `<span class="px-3 py-1.5 text-[10px] border border-amber-200 text-amber-700 bg-amber-50 rounded-lg font-bold uppercase tracking-wider inline-flex items-center gap-1"><i class="fas fa-clock text-[9px]"></i> Cicilan</span>`;
         } else {
@@ -375,11 +375,11 @@ function renderIsiLaporanDetail(resetPage = false) {
                 ${formatRupiah(s.nominalTarget)}
                 ${s.infoKhusus ? `<div class="text-[10px] text-amber-600 font-bold mt-0.5">${s.infoKhusus}</div>` : ''}
             </td>
-            <td class="px-6 py-4 font-mono font-bold text-emerald-600 text-sm">
+            <td class="px-6 py-4 font-mono font-bold text-blue-600 text-sm">
                 ${formatRupiah(s.totalBayar)}
             </td>
             <td class="px-6 py-4 font-mono font-bold ${s.tunggakan > 0 ? 'text-rose-600' : 'text-gray-400'} text-sm">
-                ${s.tunggakan > 0 ? formatRupiah(s.tunggakan) : '<span class="text-emerald-500 font-normal">Rp 0</span>'}
+                ${s.tunggakan > 0 ? formatRupiah(s.tunggakan) : '<span class="text-blue-500 font-normal">Rp 0</span>'}
                 ${s.blnNunggakInfo || ''}
             </td>
             <td class="px-6 py-4 text-center">
@@ -387,7 +387,7 @@ function renderIsiLaporanDetail(resetPage = false) {
             </td>
             <td class="px-6 py-4 text-center whitespace-nowrap">
                 ${s.tunggakan > 0 ? `
-                    <button type="button" onclick="kirimPengingatTagihanWA('${s.id}', '${window.currentKategoriLaporan}', ${s.tunggakan})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Kirim Tagihan via WhatsApp">
+                    <button type="button" onclick="kirimPengingatTagihanWA('${s.id}', '${window.currentKategoriLaporan}', ${s.tunggakan})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Kirim Tagihan via WhatsApp">
                         <i class="fab fa-whatsapp text-sm"></i> Tagih WA
                     </button>
                 ` : `<span class="text-xs text-gray-300">-</span>`}

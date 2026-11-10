@@ -118,8 +118,8 @@ function renderSemuaTabel(resetPage = false) {
                 waLinkHtml = `
                     <div class="space-y-1">
                         ${waliText ? `<div class="text-[11px] leading-tight text-gray-600 font-medium">${s.namaWali}</div>` : ''}
-                        <a href="https://wa.me/${cleanPhone}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 hover:text-emerald-900 font-bold bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 transition-colors shadow-2xs" title="Chat WhatsApp Wali">
-                            <i class="fab fa-whatsapp text-emerald-600"></i> ${s.noHpWali}
+                        <a href="https://wa.me/${cleanPhone}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] text-blue-700 hover:text-blue-900 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-lg border border-blue-200 transition-colors shadow-2xs" title="Chat WhatsApp Wali">
+                            <i class="fab fa-whatsapp text-blue-600"></i> ${s.noHpWali}
                         </a>
                     </div>
                 `;
@@ -146,19 +146,19 @@ function renderSemuaTabel(resetPage = false) {
                     </div>
                 </td>
                 <td class="px-6 py-4 text-gray-800 font-bold font-mono">
-                    <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs">
+                    <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 text-xs">
                         Kamar ${s.kamar || '-'}
                     </span>
                 </td>
                 <td class="px-6 py-4">${waLinkHtml}</td>
                 <td class="px-6 py-4">
-                    <span class="px-3 py-1 text-[10px] border rounded-lg font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 border-emerald-200">
+                    <span class="px-3 py-1 text-[10px] border rounded-lg font-bold uppercase tracking-wider text-blue-600 bg-blue-50 border-blue-200">
                         ${s.status}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right whitespace-nowrap">
-                    ${s.noHpWali ? `<button onclick="bukaChatWaliSantri('${s.id}')" class="text-emerald-600 hover:text-emerald-800 p-2 transition-colors cursor-pointer" title="Kirim Pesan WhatsApp"><i class="fab fa-whatsapp text-lg"></i></button>` : ''}
-                    <button onclick="siapkanMutasiKamar('${s.id}')" class="text-teal-600 hover:text-teal-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Mutasi / Pindah Kamar"><i class="fas fa-exchange-alt"></i></button>
+                    ${s.noHpWali ? `<button onclick="bukaChatWaliSantri('${s.id}')" class="text-blue-600 hover:text-blue-800 p-2 transition-colors cursor-pointer" title="Kirim Pesan WhatsApp"><i class="fab fa-whatsapp text-lg"></i></button>` : ''}
+                    <button onclick="siapkanMutasiKamar('${s.id}')" class="text-sky-600 hover:text-sky-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Mutasi / Pindah Kamar"><i class="fas fa-exchange-alt"></i></button>
                     <button onclick="bukaModalBoyongSantri('${s.id}')" class="text-amber-600 hover:text-amber-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Proses Boyong / GT (Keluarkan dari Kamar)"><i class="fas fa-sign-out-alt"></i></button>
                     <button onclick="editSantri('${s.id}')" class="text-indigo-600 hover:text-indigo-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Edit Data"><i class="fas fa-edit"></i></button>
                     <button onclick="hapusSantri('${s.id}')" class="text-rose-400 hover:text-rose-600 p-2 ml-0.5 transition-colors cursor-pointer" title="Hapus"><i class="fas fa-trash-alt"></i></button>
@@ -304,7 +304,7 @@ function renderMasterSantriTable(resetPage = false) {
                 // Status Badge
                 let statusBadge = '';
                 if (isAktif) {
-                    statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-emerald-50 text-emerald-700 border-emerald-200 inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[10px]"></i> Aktif</span>`;
+                    statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-blue-50 text-blue-700 border-blue-200 inline-flex items-center gap-1.5"><i class="fas fa-check-circle text-[10px]"></i> Aktif</span>`;
                 } else if (isBoyong) {
                     statusBadge = `<span class="px-2.5 py-1 text-[11px] border rounded-lg font-bold bg-rose-50 text-rose-700 border-rose-200 inline-flex items-center gap-1.5"><i class="fas fa-box-archive text-[10px]"></i> Boyong</span>`;
                 } else {
@@ -314,7 +314,7 @@ function renderMasterSantriTable(resetPage = false) {
                 // Kamar Display
                 let kamarDisplay = '';
                 if (isAktif && (s.kamar || s.kamarTerakhir)) {
-                    kamarDisplay = `<span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold font-mono border border-emerald-200 text-xs">Kamar ${s.kamar || s.kamarTerakhir}</span>`;
+                    kamarDisplay = `<span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold font-mono border border-blue-200 text-xs">Kamar ${s.kamar || s.kamarTerakhir}</span>`;
                 } else {
                     const eksKmr = s.kamarTerakhir || s.kamar || '-';
                     kamarDisplay = `<span class="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-0.5 rounded border border-gray-200" title="Kamar terakhir">Eks: ${eksKmr}</span>`;
@@ -354,8 +354,8 @@ function renderMasterSantriTable(resetPage = false) {
                     waliDisplay = `
                         <div class="space-y-0.5">
                             <div class="text-xs font-medium text-gray-800 truncate max-w-[170px]" title="Ayah: ${s.ayah || '-'} | Ibu: ${s.ibu || '-'}">${namaOrtu}</div>
-                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold hover:underline">
-                                <i class="fab fa-whatsapp text-emerald-600"></i> ${s.noHpWali || s.hp}
+                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-blue-700 font-bold hover:underline">
+                                <i class="fab fa-whatsapp text-blue-600"></i> ${s.noHpWali || s.hp}
                             </a>
                         </div>
                     `;
@@ -373,7 +373,7 @@ function renderMasterSantriTable(resetPage = false) {
                 if (!isAktif) {
                     actionStatusBtn = `
                         <button onclick="bukaModalAktifkanSantri('${s.id}')" 
-                                class="text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-1 rounded-lg text-xs font-bold transition-all shadow-2xs inline-flex items-center gap-1" 
+                                class="text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded-lg text-xs font-bold transition-all shadow-2xs inline-flex items-center gap-1" 
                                 title="Aktifkan Kembali ke Kamar (Mondok Lagi)">
                             <i class="fas fa-door-closed text-[10px]"></i> Aktifkan
                         </button>
@@ -921,7 +921,7 @@ function updateBoyongStatusTanggungan(santriId) {
 
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 border-t border-rose-200/60">
                     <span class="text-[11px] text-rose-800 italic">Selesaikan pelunasan sebelum konfirmasi ${labelProses}:</span>
-                    <button type="button" onclick="lunasiSemuaTanggunganSantri('${santriId}')" class="w-full sm:w-auto px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                    <button type="button" onclick="lunasiSemuaTanggunganSantri('${santriId}')" class="w-full sm:w-auto px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                         <i class="fas fa-check-double"></i> Lunasi Semua Tanggungan Sekarang
                     </button>
                 </div>
@@ -939,19 +939,19 @@ function updateBoyongStatusTanggungan(santriId) {
         const submitLabel = (tipeChecked === 'GT') ? 'Konfirmasi Status Guru Tugas (GT)' : 'Konfirmasi Boyong Santri';
 
         container.innerHTML = `
-            <div class="p-4 bg-emerald-50 border-2 border-emerald-300 rounded-xl flex items-center justify-between gap-3">
+            <div class="p-4 bg-blue-50 border-2 border-blue-300 rounded-xl flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shrink-0 shadow-xs">
+                    <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shrink-0 shadow-xs">
                         <i class="fas fa-check"></i>
                     </div>
                     <div>
-                        <h4 class="font-extrabold text-emerald-800 text-xs tracking-wide uppercase">Bebas Tanggungan (Lunas)</h4>
-                        <p class="text-[11px] text-emerald-700">Tidak ada tanggungan tagihan apapun. Syarat pelunasan 100% terpenuhi, santri siap diproses ${labelProses}.</p>
+                        <h4 class="font-extrabold text-blue-800 text-xs tracking-wide uppercase">Bebas Tanggungan (Lunas)</h4>
+                        <p class="text-[11px] text-blue-700">Tidak ada tanggungan tagihan apapun. Syarat pelunasan 100% terpenuhi, santri siap diproses ${labelProses}.</p>
                     </div>
                 </div>
                 <div class="text-right shrink-0">
-                    <span class="text-[10px] text-emerald-600 uppercase font-bold block">Tunggakan</span>
-                    <span class="text-base font-extrabold font-mono text-emerald-700">Rp 0</span>
+                    <span class="text-[10px] text-blue-600 uppercase font-bold block">Tunggakan</span>
+                    <span class="text-base font-extrabold font-mono text-blue-700">Rp 0</span>
                 </div>
             </div>`;
 
@@ -1110,7 +1110,7 @@ function onSearchSantriBoyong(query) {
                     <div class="text-[10px] text-gray-500 font-mono mt-0.5">NIS: ${s.nis || '-'}</div>
                 </div>
             </div>
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-white text-emerald-800 border border-emerald-200 shrink-0 font-mono">
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-white text-blue-800 border border-blue-200 shrink-0 font-mono">
                 Kamar ${s.kamar || '-'}
             </span>
         </div>
@@ -1659,7 +1659,7 @@ function renderBoyongSantriTable(resetPage = false) {
                     </div>
                 </td>
                 <td class="px-5 py-3.5 text-center">
-                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1">
                         <i class="fas fa-shield-check text-xs"></i> Lunas (Bebas)
                     </span>
                 </td>
@@ -1671,7 +1671,7 @@ function renderBoyongSantriTable(resetPage = false) {
                         <button onclick="bukaModalDetailArsipSantri('${s.id}')" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer" title="Lihat Profil Lengkap">
                             <i class="fas fa-eye text-xs"></i>
                         </button>
-                        <button onclick="bukaModalAktifkanSantri('${s.id}')" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-600 flex items-center justify-center transition-colors shadow-2xs cursor-pointer" title="Aktifkan Kembali ke Kamar (Mondok Lagi)">
+                        <button onclick="bukaModalAktifkanSantri('${s.id}')" class="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 flex items-center justify-center transition-colors shadow-2xs cursor-pointer" title="Aktifkan Kembali ke Kamar (Mondok Lagi)">
                             <i class="fas fa-undo text-xs"></i>
                         </button>
                     </div>
@@ -1780,11 +1780,11 @@ function cetakSuratKeteranganBoyong(santriId) {
             .table-bio td { padding: 4px 8px; vertical-align: top; }
             .table-bio td:first-child { width: 200px; font-weight: bold; }
             .table-bio td:nth-child(2) { width: 15px; }
-            .status-box { background: #f0fdf4; border: 1.5px solid #16a34a; padding: 12px 16px; border-radius: 8px; margin: 20px 0; font-size: 13px; color: #166534; }
+            .status-box { background: #eff6ff; border: 1.5px solid #2563eb; padding: 12px 16px; border-radius: 8px; margin: 20px 0; font-size: 13px; color: #1e40af; }
             .footer-sign { width: 100%; margin-top: 50px; font-size: 14px; border-collapse: collapse; }
             .footer-sign td { width: 50%; text-align: center; vertical-align: top; }
             .space-sign { height: 75px; }
-            .btn-print { position: fixed; top: 15px; right: 15px; background: #16a34a; color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+            .btn-print { position: fixed; top: 15px; right: 15px; background: #2563eb; color: white; padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
             @media print {
                 .btn-print { display: none; }
                 body { padding: 0; }
@@ -1917,7 +1917,7 @@ function bukaModalDetailArsipSantri(santriId) {
             </div>
             <div>
                 ${isAktif 
-                    ? `<span class="px-3 py-1.5 text-xs border rounded-xl font-bold bg-emerald-50 text-emerald-700 border-emerald-300 inline-flex items-center gap-1.5 shadow-2xs"><i class="fas fa-check-circle"></i> Santri Aktif Kamar</span>`
+                    ? `<span class="px-3 py-1.5 text-xs border rounded-xl font-bold bg-blue-50 text-blue-700 border-blue-300 inline-flex items-center gap-1.5 shadow-2xs"><i class="fas fa-check-circle"></i> Santri Aktif Kamar</span>`
                     : (isBoyong 
                         ? `<span class="px-3 py-1.5 text-xs border rounded-xl font-bold bg-rose-50 text-rose-700 border-rose-300 inline-flex items-center gap-1.5 shadow-2xs"><i class="fas fa-box-archive"></i> Sudah Boyong</span>`
                         : `<span class="px-3 py-1.5 text-xs border rounded-xl font-bold bg-amber-50 text-amber-800 border-amber-300 inline-flex items-center gap-1.5 shadow-2xs"><i class="fas fa-user-graduate"></i> Guru Tugas / Non-Mukim (GT)</span>`)
@@ -1990,11 +1990,11 @@ function bukaModalDetailArsipSantri(santriId) {
                     <div class="pt-1 flex items-center justify-between">
                         <div>
                             <span class="text-gray-400 text-[10px]">No. WhatsApp / HP:</span>
-                            <div class="font-mono font-bold text-emerald-700">${s.noHpWali || s.hp || 'Belum ada'}</div>
+                            <div class="font-mono font-bold text-blue-700">${s.noHpWali || s.hp || 'Belum ada'}</div>
                         </div>
                         ${cleanPhone ? `
-                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold border border-emerald-200 text-xs inline-flex items-center gap-1 transition-colors">
-                                <i class="fab fa-whatsapp text-emerald-600"></i> Chat WA
+                            <a href="https://wa.me/${cleanPhone}" target="_blank" class="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 text-xs inline-flex items-center gap-1 transition-colors">
+                                <i class="fab fa-whatsapp text-blue-600"></i> Chat WA
                             </a>
                         ` : ''}
                     </div>
@@ -2027,7 +2027,7 @@ function bukaModalDetailArsipSantri(santriId) {
             <div class="grid grid-cols-2 gap-3">
                 <div class="bg-white p-3 rounded-xl border border-gray-200">
                     <span class="text-[10px] font-bold text-gray-400 uppercase">Total Riwayat Terbayar</span>
-                    <h5 class="text-sm sm:text-base font-extrabold text-emerald-700 font-mono mt-0.5">${formatRupiah(totalSemuaBayar)}</h5>
+                    <h5 class="text-sm sm:text-base font-extrabold text-blue-700 font-mono mt-0.5">${formatRupiah(totalSemuaBayar)}</h5>
                     <p class="text-[10px] text-gray-400 mt-0.5">${santriTrx.length} transaksi tercatat</p>
                 </div>
                 <div class="bg-white p-3 rounded-xl border border-gray-200">
@@ -2042,7 +2042,7 @@ function bukaModalDetailArsipSantri(santriId) {
     if (footerLeft) {
         if (!isAktif) {
             footerLeft.innerHTML = `
-                <button onclick="tutupModal('modal-detail-arsip-santri'); bukaModalAktifkanSantri('${s.id}')" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5">
+                <button onclick="tutupModal('modal-detail-arsip-santri'); bukaModalAktifkanSantri('${s.id}')" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1.5">
                     <i class="fas fa-door-closed"></i> Aktifkan Kembali ke Kamar
                 </button>
             `;
@@ -2325,7 +2325,7 @@ function parseAndShowPreviewRows(rows) {
                     ${item.asalKota ? `<span class="text-[10px] text-gray-500 font-normal ml-1">(${item.asalKota})</span>` : ''}
                 </td>
                 <td class="px-3 py-2 text-gray-600">${item.kamar || '-'}</td>
-                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.status === 'Aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}">${item.status}</span></td>
+                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.status === 'Aktif' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}">${item.status}</span></td>
             </tr>
         `).join('');
 
@@ -2401,7 +2401,7 @@ function prosesEksekusiImportSantri() {
         title: 'Import Data Santri Selesai!',
         html: `
             <div class="text-sm text-gray-600 space-y-1 mt-2 text-left bg-gray-50 p-4 rounded-xl border border-gray-100 font-mono">
-                <p>• Santri baru ditambahkan: <b class="text-emerald-600">${addedCount}</b></p>
+                <p>• Santri baru ditambahkan: <b class="text-blue-600">${addedCount}</b></p>
                 <p>• Santri diperbarui: <b class="text-indigo-600">${updatedCount}</b></p>
                 ${skippedCount > 0 ? `<p>• Dilewati (NIS sama): <b class="text-gray-500">${skippedCount}</b></p>` : ''}
                 <p class="pt-2 border-t border-gray-200 text-gray-700 font-bold">Total Santri Sekarang: ${santriData.length}</p>
@@ -2488,13 +2488,13 @@ function renderMutasiKamarSection() {
         } else {
             gridSebaran.innerHTML = uniqueRooms.map(k => `
                 <div onclick="pilihKamarTujuanCepat('${k}')" 
-                     class="group p-3 rounded-xl border border-gray-200 bg-white hover:border-teal-500 hover:bg-teal-50/50 hover:shadow-xs cursor-pointer transition-all select-none">
+                     class="group p-3 rounded-xl border border-gray-200 bg-white hover:border-sky-500 hover:bg-sky-50/50 hover:shadow-xs cursor-pointer transition-all select-none">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-gray-700 uppercase group-hover:text-teal-700 font-mono">${k}</span>
-                        <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+                        <span class="text-xs font-bold text-gray-700 uppercase group-hover:text-sky-700 font-mono">${k}</span>
+                        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
                     </div>
                     <div class="mt-2 flex items-baseline gap-1">
-                        <span class="text-lg font-extrabold text-teal-700 font-mono">${roomCounts[k] || 0}</span>
+                        <span class="text-lg font-extrabold text-sky-700 font-mono">${roomCounts[k] || 0}</span>
                         <span class="text-[10px] text-gray-400 font-medium">Santri</span>
                     </div>
                 </div>
@@ -2606,8 +2606,8 @@ function renderTableRiwayatMutasi(resetPage = false) {
             <td class="px-5 py-3">
                 <div class="flex items-center gap-2 text-xs">
                     <span class="px-2.5 py-0.5 rounded-md bg-gray-100 text-gray-700 font-bold font-mono border border-gray-200">${item.kamarLama || '-'}</span>
-                    <i class="fas fa-arrow-right text-teal-600 text-xs"></i>
-                    <span class="px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-800 font-bold font-mono border border-teal-200">${item.kamarBaru}</span>
+                    <i class="fas fa-arrow-right text-sky-600 text-xs"></i>
+                    <span class="px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-800 font-bold font-mono border border-sky-200">${item.kamarBaru}</span>
                 </div>
             </td>
             <td class="px-5 py-3 text-xs text-gray-600 max-w-xs truncate">${item.alasan || '-'}</td>
@@ -2672,8 +2672,8 @@ function onSearchSantriMutasi(query) {
     candidates.forEach(s => {
         const inisial = (s.nama || '?').charAt(0).toUpperCase();
         html += `
-            <div onclick="selectSantriForMutasi('${s.id}')" class="p-3 hover:bg-teal-50/70 cursor-pointer transition-colors flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-xs shrink-0">
+            <div onclick="selectSantriForMutasi('${s.id}')" class="p-3 hover:bg-sky-50/70 cursor-pointer transition-colors flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs shrink-0">
                     ${inisial}
                 </div>
                 <div class="flex-1 min-w-0">
@@ -2681,10 +2681,10 @@ function onSearchSantriMutasi(query) {
                     <div class="text-[11px] text-gray-400 font-mono mt-0.5 flex items-center gap-2">
                         <span>NIS: ${s.nis || '-'}</span>
                         <span>•</span>
-                        <span class="text-teal-700 font-bold bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">Kamar: ${s.kamar || '-'}</span>
+                        <span class="text-sky-700 font-bold bg-sky-50 px-1.5 py-0.2 rounded border border-sky-200">Kamar: ${s.kamar || '-'}</span>
                     </div>
                 </div>
-                <div class="text-xs text-teal-600 font-bold shrink-0">
+                <div class="text-xs text-sky-600 font-bold shrink-0">
                     Pilih <i class="fas fa-chevron-right text-[10px]"></i>
                 </div>
             </div>

@@ -243,11 +243,11 @@ function renderCloudStatusIndicator() {
 
     if (isSyncingActive) {
         // Sedang Menyimpan / Menyinkronkan
-        elHeaderPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 transition-all cursor-pointer border border-emerald-300 shadow-2xs";
+        elHeaderPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 transition-all cursor-pointer border border-blue-300 shadow-2xs";
         elHeaderPill.title = "Sedang menyinkronkan data dengan Google Sheets...";
-        if (elHeaderIcon) elHeaderIcon.className = "fas fa-arrows-rotate fa-spin text-emerald-600 text-xs";
+        if (elHeaderIcon) elHeaderIcon.className = "fas fa-arrows-rotate fa-spin text-blue-600 text-xs";
         if (elHeaderText) elHeaderText.innerText = "Menyimpan ke Cloud...";
-        if (elHeaderDot) elHeaderDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-ping";
+        if (elHeaderDot) elHeaderDot.className = "w-2 h-2 rounded-full bg-blue-500 animate-ping";
         return;
     }
 
@@ -262,16 +262,16 @@ function renderCloudStatusIndicator() {
     }
 
     // Default: Terhubung & Sinkron Permanen (Sama seperti Google Docs / Notion)
-    elHeaderPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-all cursor-pointer border border-emerald-200 shadow-2xs";
+    elHeaderPill.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all cursor-pointer border border-blue-200 shadow-2xs";
     let timeDesc = "Baru saja";
     if (cloudConfig.lastSyncTime) {
         const d = new Date(cloudConfig.lastSyncTime);
         timeDesc = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
     }
     elHeaderPill.title = `Cloud Aktif & Tersinkron Permanen (${timeDesc}). Klik untuk opsi sinkronisasi.`;
-    if (elHeaderIcon) elHeaderIcon.className = "fas fa-cloud-check text-emerald-600 text-xs";
+    if (elHeaderIcon) elHeaderIcon.className = "fas fa-cloud-check text-blue-600 text-xs";
     if (elHeaderText) elHeaderText.innerText = "Tersinkron ke Cloud";
-    if (elHeaderDot) elHeaderDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+    if (elHeaderDot) elHeaderDot.className = "w-2 h-2 rounded-full bg-blue-500";
 }
 
 /**
@@ -310,7 +310,7 @@ function renderCloudSettingsForm() {
             modalStatusText.innerHTML = '<span class="text-amber-700 font-bold"><i class="fas fa-triangle-exclamation text-xs text-amber-500 mr-1.5"></i> Periksa URL Web App / Izin Akses Anyone</span>';
         } else {
             const ssName = cloudConfig.spreadsheetName ? ` ("${cloudConfig.spreadsheetName}")` : '';
-            modalStatusText.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fas fa-circle-check text-xs text-emerald-500 mr-1.5 animate-pulse"></i> Cloud Aktif & Terhubung Permanen ke Spreadsheet${ssName}</span>`;
+            modalStatusText.innerHTML = `<span class="text-blue-700 font-bold"><i class="fas fa-circle-check text-xs text-blue-500 mr-1.5 animate-pulse"></i> Cloud Aktif & Terhubung Permanen ke Spreadsheet${ssName}</span>`;
         }
     }
 
@@ -1290,7 +1290,7 @@ function writeAllDataToSpreadsheet(payload) {
   });
   if (santriRows.length > 0) {
     santriSheet.getRange(1, 1, santriRows.length, santriHeaders.length).setValues(santriRows);
-    formatHeaderRow(santriSheet, '#059669');
+    formatHeaderRow(santriSheet, '#1d4ed8');
   }
 
   var trxSheet = ss.getSheetByName(SHEET_NAMES.TRANSAKSI);
@@ -1524,7 +1524,7 @@ function formatHeaderRow(sheet, hexColor) {
     var lastCol = sheet.getLastColumn();
     if (lastCol > 0) {
       var headerRange = sheet.getRange(1, 1, 1, lastCol);
-      headerRange.setBackground(hexColor || '#059669');
+      headerRange.setBackground(hexColor || '#1d4ed8');
       headerRange.setFontColor('#ffffff');
       headerRange.setFontWeight('bold');
       headerRange.setFontFamily('Arial');
@@ -1588,7 +1588,7 @@ function switchCloudTab(tabName) {
         }
         if (btn) {
             if (t === tabName) {
-                btn.className = "px-3.5 py-2 font-bold text-xs rounded-xl bg-emerald-600 text-white shadow-xs transition-all flex items-center gap-1.5";
+                btn.className = "px-3.5 py-2 font-bold text-xs rounded-xl bg-blue-600 text-white shadow-xs transition-all flex items-center gap-1.5";
             } else {
                 btn.className = "px-3.5 py-2 font-semibold text-xs rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all flex items-center gap-1.5";
             }
