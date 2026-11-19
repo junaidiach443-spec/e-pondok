@@ -2053,6 +2053,19 @@ function getSuratLiburPrintStyles() {
             z-index: 10;
             pointer-events: none;
         }
+        .ttd-img-stempel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-65%, -46%);
+            height: 68px;
+            max-height: none;
+            max-width: none;
+            object-fit: contain;
+            z-index: 12;
+            pointer-events: none;
+            opacity: 0.90;
+        }
         .ttd-nama {
             color: #15803d;
             font-weight: 800;
@@ -2252,7 +2265,8 @@ function buildSuratLiburCardHtml(s, item, copyType, tglCetakFmt) {
                         <td>
                             <div class="ttd-jabatan">Sekretaris Umum</div>
                             <div class="ttd-sign-box">
-                                <img src="assets/surat_libur_ttd_sekretaris_clean.png" alt="TTD Sekretaris + Stempel" class="ttd-img-sekre">
+                                <img src="assets/surat_libur_ttd_sekretaris_clean.png" alt="TTD Sekretaris" class="ttd-img-sekre">
+                                <img src="assets/surat_libur_stempel.png" alt="Stempel Resmi" class="ttd-img-stempel">
                             </div>
                             <div class="ttd-nama">LUTFI NURULLAH, M.H.</div>
                         </td>

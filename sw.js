@@ -4,7 +4,7 @@
  * & Menjamin pembaruan hosting langsung tampil (Network-First untuk kode aplikasi)
  */
 
-const CACHE_NAME = 'epondok-v15';
+const CACHE_NAME = 'epondok-v16';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -28,6 +28,12 @@ const ASSETS_TO_CACHE = [
   './js/app.js',
   './assets/logo.png',
   './assets/favicon.png',
+  './assets/surat_libur_logo_clean.png',
+  './assets/surat_libur_kaligrafi_clean.png',
+  './assets/surat_libur_watermark_clean.png',
+  './assets/surat_libur_stempel.png',
+  './assets/surat_libur_ttd_ketua_clean.png',
+  './assets/surat_libur_ttd_sekretaris_clean.png',
   './manifest.json'
 ];
 
