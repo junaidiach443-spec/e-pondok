@@ -272,3 +272,80 @@ window.gantiHalamanRiwayatPL = gantiHalamanRiwayatPL;
 window.gantiHalamanPengeluaran = gantiHalamanPengeluaran;
 window.gantiHalamanRiwayat = gantiHalamanRiwayat;
 window.gantiHalamanLaporanDetail = gantiHalamanLaporanDetail;
+
+// ==========================================================================
+// PENGELOLAAN KOMPONEN BULANAN TERPADU (Pondok, Madrasah, Uang Makan)
+// ==========================================================================
+
+// 1. Ambil atau inisialisasi tarif komponen bulanan default dari appSettings
+function getTarifKomponenBulanan() {
+    const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : {});
+    if (!settings.tarifKomponenBulanan || typeof settings.tarifKomponenBulanan !== 'object') {
+        const total = Number(settings.tarifSyahriah) || 250000;
+        // Pembagian standar awal: Pondok 100k, Madrasah 50k, Uang Makan 100k (Total 250k)
+        settings.tarifKomponenBulanan = {
+            pondok: 100000,
+            madrasah: 50000,
+            makan: Math.max(0, total - 150000)
+        };
+    }
+    return settings.tarifKomponenBulanan;
+}
+
+// 2. Ambil profil komponen bulanan untuk santri tertentu
+function getKomponenBulananSantri(santriId) {
+    const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : {});
+    if (!settings.santriKomponenBulanan) {
+        settings.santriKomponenBulanan = {};
+    }
+    
+    // Cek jika santri mendapat dispensasi bebas syahriah total (100%)
+    if (typeof isSantriBebasSyahriah === 'function' && isSantriBebasSyahriah(santriId)) {
+        return { pondok: false, madrasah: false, makan: false, isBebasTotal: true };
+    }
+    
+    const saved = settings.santriKomponenBulanan[santriId];
+    if (saved && typeof saved === 'object') {
+        return {
+            pondok: saved.pondok !== false,
+            madrasah: saved.madrasah !== false,
+            makan: saved.makan !== false,
+            isBebasTotal: false
+        };
+    }
+    
+    // Bawaan santri aktif kamar: ikut ketiganya (Pondok, Madrasah, Makan)
+    return { pondok: true, madrasah: true, makan: true, isBebasTotal: false };
+}
+
+// 3. Simpan profil komponen bulanan santri
+function setKomponenBulananSantri(santriId, komponen) {
+    const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : {});
+    if (!settings.santriKomponenBulanan) {
+        settings.santriKomponenBulanan = {};
+    }
+    settings.santriKomponenBulanan[santriId] = {
+        pondok: komponen.pondok !== false,
+        madrasah: komponen.madrasah !== false,
+        makan: komponen.makan !== false
+    };
+    if (typeof saveDataToStorage === 'function') saveDataToStorage();
+    if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
+}
+
+// 4. Hitung total tarif bulanan spesifik untuk seorang santri
+function getTarifBulananSantri(santriId) {
+    const k = getKomponenBulananSantri(santriId);
+    if (k.isBebasTotal) return 0;
+    const tk = getTarifKomponenBulanan();
+    let total = 0;
+    if (k.pondok) total += (Number(tk.pondok) || 0);
+    if (k.madrasah) total += (Number(tk.madrasah) || 0);
+    if (k.makan) total += (Number(tk.makan) || 0);
+    return total;
+}
+
+window.getTarifKomponenBulanan = getTarifKomponenBulanan;
+window.getKomponenBulananSantri = getKomponenBulananSantri;
+window.setKomponenBulananSantri = setKomponenBulananSantri;
+window.getTarifBulananSantri = getTarifBulananSantri;

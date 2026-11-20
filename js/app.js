@@ -56,9 +56,13 @@ function initApp() {
     
     // 3. Set Nilai Form Pengaturan Tarif
     try {
-        const elTarif = document.getElementById('setting-tarif');
-        if (elTarif && appSettings) {
-            elTarif.value = appSettings.tarifSyahriah;
+        if (typeof initFormTarifBulananPengaturan === 'function') {
+            initFormTarifBulananPengaturan();
+        } else {
+            const elTarif = document.getElementById('setting-tarif');
+            if (elTarif && appSettings) {
+                elTarif.value = appSettings.tarifSyahriah;
+            }
         }
     } catch (e) { console.error("Error setting tarif:", e); }
 

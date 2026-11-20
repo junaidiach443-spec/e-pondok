@@ -182,6 +182,16 @@ function bukaHalamanLaporanDetail(kategori) {
         filterKamar.value = 'all';
     }
 
+    // Toggle tampilan Rincian Komponen Bulanan jika kategori Syahriah
+    const syahriahContainer = document.getElementById('lap-syahriah-breakdown-container');
+    if (syahriahContainer) {
+        if (kategori === 'Syahriah') {
+            syahriahContainer.classList.remove('hidden');
+        } else {
+            syahriahContainer.classList.add('hidden');
+        }
+    }
+
     // Inisialisasi dropdown filter pos Pembayaran Lain jika kategori Pembayaran Lain
     const posContainer = document.getElementById('lap-filter-pos-pl-container');
     const selPos = document.getElementById('lap-filter-pos-pl');
@@ -240,13 +250,33 @@ function renderIsiLaporanDetail(resetPage = false) {
         let infoKhusus = '';
 
         if (window.currentKategoriLaporan === 'Syahriah') {
-            nominalTarget = appSettings.tarifSyahriah * 12;
+            const tarifSantri = (typeof getTarifBulananSantri === 'function') 
+                ? getTarifBulananSantri(s.id) 
+                : (appSettings.tarifSyahriah || 250000);
+            const isBebasSyahriah = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
+            isBebas = isBebasSyahriah;
+            nominalTarget = isBebas ? 0 : (tarifSantri * 12);
+            
             const trx = transactions.filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
-            totalBayar = trx.reduce((sum, t) => sum + t.amount, 0);
-            tunggakan = Math.max(0, nominalTarget - totalBayar);
-            statusLunas = tunggakan <= 0;
-            if (tunggakan > 0) {
-                const jmlBulan = Math.ceil(tunggakan / appSettings.tarifSyahriah);
+            totalBayar = trx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+            tunggakan = isBebas ? 0 : Math.max(0, nominalTarget - totalBayar);
+            statusLunas = isBebas || (tunggakan <= 0);
+
+            const komp = (typeof getKomponenBulananSantri === 'function') 
+                ? getKomponenBulananSantri(s.id) 
+                : { pondok: true, madrasah: true, makan: true };
+            if (!komp.pondok && !komp.madrasah && !komp.makan) {
+                infoKhusus = '(Bebas Biaya)';
+            } else if (!komp.makan) {
+                infoKhusus = `(Non-Makan: ${formatRupiah(tarifSantri)}/bln)`;
+            } else if (!komp.pondok) {
+                infoKhusus = `(Bebas Pondok: ${formatRupiah(tarifSantri)}/bln)`;
+            } else if (!komp.madrasah) {
+                infoKhusus = `(Bebas Madrasah: ${formatRupiah(tarifSantri)}/bln)`;
+            }
+
+            if (tunggakan > 0 && tarifSantri > 0) {
+                const jmlBulan = Math.ceil(tunggakan / tarifSantri);
                 blnNunggakInfo = `<div class="text-[10px] text-gray-500 font-medium mt-0.5">${jmlBulan} Bulan</div>`;
             }
         } else if (isPL) {
@@ -334,6 +364,61 @@ function renderIsiLaporanDetail(resetPage = false) {
     if (elKpiTarget) elKpiTarget.innerText = formatRupiah(kpiTarget);
     if (elKpiTerbayar) elKpiTerbayar.innerText = formatRupiah(kpiTerbayar);
     if (elKpiTunggakan) elKpiTunggakan.innerText = formatRupiah(kpiTunggakan);
+
+    // Hitung & Perbarui Rincian Penerimaan Komponen Bulanan jika kategori Syahriah
+    if (window.currentKategoriLaporan === 'Syahriah') {
+        const tarifKomponen = (typeof getTarifKomponenBulanan === 'function') 
+            ? getTarifKomponenBulanan() 
+            : { pondok: 100000, madrasah: 50000, makan: 100000 };
+            
+        const elTarifPondok = document.getElementById('lap-rekap-tarif-pondok');
+        const elTarifMadrasah = document.getElementById('lap-rekap-tarif-madrasah');
+        const elTarifMakan = document.getElementById('lap-rekap-tarif-makan');
+        if (elTarifPondok) elTarifPondok.innerText = `${formatRupiah(tarifKomponen.pondok)}/bln`;
+        if (elTarifMadrasah) elTarifMadrasah.innerText = `${formatRupiah(tarifKomponen.madrasah)}/bln`;
+        if (elTarifMakan) elTarifMakan.innerText = `${formatRupiah(tarifKomponen.makan)}/bln`;
+
+        let totalMasukPondok = 0;
+        let totalMasukMadrasah = 0;
+        let totalMasukMakan = 0;
+
+        const filteredSantriIds = new Set(dataLap.map(x => x.id));
+        const syahriahTrxFiltered = (transactions || []).filter(t => 
+            t.kategori === 'Syahriah' && 
+            t.ta === TA && 
+            t.type === 'in' && 
+            filteredSantriIds.has(t.santriId)
+        );
+
+        syahriahTrxFiltered.forEach(t => {
+            if (t.rincian && (typeof t.rincian.pondok === 'number' || typeof t.rincian.madrasah === 'number' || typeof t.rincian.makan === 'number')) {
+                totalMasukPondok += (t.rincian.pondok || 0);
+                totalMasukMadrasah += (t.rincian.madrasah || 0);
+                totalMasukMakan += (t.rincian.makan || 0);
+            } else {
+                // Backward-compatibility: hitung proporsional berdasarkan paket santri saat ini
+                const komp = (typeof getKomponenBulananSantri === 'function') ? getKomponenBulananSantri(t.santriId) : { pondok: true, madrasah: true, makan: true };
+                const nominalPondok = komp.pondok ? (tarifKomponen.pondok || 0) : 0;
+                const nominalMadrasah = komp.madrasah ? (tarifKomponen.madrasah || 0) : 0;
+                const nominalMakan = komp.makan ? (tarifKomponen.makan || 0) : 0;
+                const totalTarifSantri = nominalPondok + nominalMadrasah + nominalMakan;
+                if (totalTarifSantri > 0) {
+                    totalMasukPondok += Math.round((nominalPondok / totalTarifSantri) * (t.amount || 0));
+                    totalMasukMadrasah += Math.round((nominalMadrasah / totalTarifSantri) * (t.amount || 0));
+                    totalMasukMakan += Math.round((nominalMakan / totalTarifSantri) * (t.amount || 0));
+                } else {
+                    totalMasukPondok += (t.amount || 0);
+                }
+            }
+        });
+
+        const elMasukPondok = document.getElementById('lap-rekap-terkumpul-pondok');
+        const elMasukMadrasah = document.getElementById('lap-rekap-terkumpul-madrasah');
+        const elMasukMakan = document.getElementById('lap-rekap-terkumpul-makan');
+        if (elMasukPondok) elMasukPondok.innerText = formatRupiah(totalMasukPondok);
+        if (elMasukMadrasah) elMasukMadrasah.innerText = formatRupiah(totalMasukMadrasah);
+        if (elMasukMakan) elMasukMakan.innerText = formatRupiah(totalMasukMakan);
+    }
 
     // Simpan dataset hasil filter untuk ekspor penuh
     window.currentFilteredDataLap = dataLap;
@@ -424,8 +509,12 @@ function exportLaporanSaatIni() {
     let titleSuffix = (isPL && fPos !== 'all') ? `_${fPos}` : '';
     const fileName = `Laporan_${kategori}${titleSuffix}_${ta.replace('/', '_')}`;
 
-    const headers = ["No", "NIS", "Nama Santri", "Kamar", "Nama Wali", "No. WA Wali", "Total Tagihan", "Sudah Dibayar", "Sisa Tunggakan", "Status Kelunasan"];
-    if (isSyahriah) headers.push("Tunggakan (Bulan)");
+    const headers = ["No", "NIS", "Nama Santri", "Kamar", "Nama Wali", "No. WA Wali"];
+    if (isSyahriah) {
+        headers.push("Paket Bulanan", "Tarif/Bulan", "Total Tagihan", "Sudah Dibayar", "Sisa Tunggakan", "Status Kelunasan", "Tunggakan (Bulan)");
+    } else {
+        headers.push("Total Tagihan", "Sudah Dibayar", "Sisa Tunggakan", "Status Kelunasan");
+    }
 
     let exportRows = [];
     list.forEach((s, idx) => {
@@ -436,23 +525,47 @@ function exportLaporanSaatIni() {
             s.nama || '-',
             s.kamar || '-',
             s.namaWali || '-',
-            s.noHpWali || '-',
-            formatRupiah(s.nominalTarget),
-            formatRupiah(s.totalBayar),
-            formatRupiah(s.tunggakan),
-            statusStr
+            s.noHpWali || '-'
         ];
         if (isSyahriah) {
-            let bln = s.tunggakan > 0 ? Math.ceil(s.tunggakan / appSettings.tarifSyahriah) : 0;
-            rowData.push(bln + " Bulan");
+            const komp = (typeof getKomponenBulananSantri === 'function') ? getKomponenBulananSantri(s.id) : { pondok: true, madrasah: true, makan: true };
+            let lbl = [];
+            if (komp.pondok) lbl.push("Pondok");
+            if (komp.madrasah) lbl.push("Madrasah");
+            if (komp.makan) lbl.push("Makan");
+            let strPaket = lbl.length ? lbl.join('+') : 'Bebas Biaya';
+            if (!komp.makan && lbl.length > 0) strPaket += ' (Non-Makan)';
+
+            const tarifSantri = (typeof getTarifBulananSantri === 'function') ? getTarifBulananSantri(s.id) : (appSettings.tarifSyahriah || 250000);
+            let bln = s.tunggakan > 0 ? Math.ceil(s.tunggakan / (tarifSantri || 1)) : 0;
+
+            rowData.push(
+                strPaket,
+                formatRupiah(tarifSantri),
+                formatRupiah(s.nominalTarget),
+                formatRupiah(s.totalBayar),
+                formatRupiah(s.tunggakan),
+                statusStr,
+                bln + " Bulan"
+            );
+        } else {
+            rowData.push(
+                formatRupiah(s.nominalTarget),
+                formatRupiah(s.totalBayar),
+                formatRupiah(s.tunggakan),
+                statusStr
+            );
         }
         exportRows.push(rowData);
     });
 
     if (window.XLSX) {
         const ws = XLSX.utils.aoa_to_sheet([headers, ...exportRows]);
-        ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 30 }, { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 16 }];
-        if (isSyahriah) ws['!cols'].push({ wch: 16 });
+        if (isSyahriah) {
+            ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 30 }, { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 18 }];
+        } else {
+            ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 30 }, { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, { wch: 16 }];
+        }
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Laporan");
         XLSX.writeFile(wb, `${fileName}.xlsx`);

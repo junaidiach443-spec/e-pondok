@@ -1168,6 +1168,16 @@
                                     <span class="text-sm text-gray-500">Kelas / Kamar</span>
                                     <span class="font-bold text-gray-800 text-base" id="detail-kamar">-</span>
                                 </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                                    <div>
+                                        <span class="text-sm text-gray-500">Paket Tagihan</span>
+                                        <div class="text-[11px] text-gray-400 font-mono" id="detail-tarif-per-bulan">Rp 0 / bln</div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div id="detail-paket-badges" class="flex items-center gap-1"></div>
+                                        <button onclick="bukaModalAturPaketBulanan(currentDetailSantriId)" class="text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer" title="Ubah paket bulanan santri ini"><i class="fas fa-sliders-h text-[10px]"></i> Ubah</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="p-6 md:w-1/2 bg-slate-50/60">
@@ -1764,6 +1774,42 @@
                     </div>
                 </div>
 
+                <!-- Rekap Rincian Komponen Bulanan (Pondok, Madrasah, Makan) Khusus Laporan Syahriah -->
+                <div id="lap-syahriah-breakdown-container" class="hidden bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-blue-50/70 p-5 rounded-2xl border border-blue-100 shadow-2xs space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-2">
+                            <i class="fas fa-layer-group text-indigo-600"></i> Rincian Penerimaan Komponen Bulanan
+                        </h4>
+                        <span class="text-[11px] font-medium text-indigo-700 bg-white/80 px-2.5 py-1 rounded-full border border-indigo-100">Berdasarkan Pembayaran Masuk</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-indigo-100/70 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-gray-600">🏢 Bulanan Pondok</span>
+                                <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-1.5 py-0.5 rounded" id="lap-rekap-tarif-pondok">Rp 100.000/bln</span>
+                            </div>
+                            <p class="text-lg font-extrabold text-blue-700 font-mono mt-1.5" id="lap-rekap-terkumpul-pondok">Rp 0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Operasional Pesantren</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-indigo-100/70 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-gray-600">📚 Bulanan Madrasah</span>
+                                <span class="text-[10px] bg-purple-50 text-purple-700 font-bold px-1.5 py-0.5 rounded" id="lap-rekap-tarif-madrasah">Rp 50.000/bln</span>
+                            </div>
+                            <p class="text-lg font-extrabold text-purple-700 font-mono mt-1.5" id="lap-rekap-terkumpul-madrasah">Rp 0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Operasional Madrasah</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-indigo-100/70 shadow-2xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold text-gray-600">🍲 Uang Makan (Dapur)</span>
+                                <span class="text-[10px] bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded" id="lap-rekap-tarif-makan">Rp 100.000/bln</span>
+                            </div>
+                            <p class="text-lg font-extrabold text-amber-600 font-mono mt-1.5" id="lap-rekap-terkumpul-makan">Rp 0</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Konsumsi / Dapur Santri</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
                     <div class="flex flex-wrap gap-4 items-end">
                         <div class="flex-1 min-w-[200px]">
@@ -1909,21 +1955,37 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Tarif Syahriah (1 Kolom) -->
+                    <!-- Tarif Bulanan Terpadu (1 Kolom) -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:col-span-1 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center gap-3 mb-4">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><i class="fas fa-money-bill"></i></div>
-                                <h3 class="font-bold text-gray-800">Tarif Syahriah</h3>
-                            </div>
-                            <div class="space-y-4">
+                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fas fa-money-check-dollar"></i></div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-600 mb-1.5">Nominal per Bulan (Rp)</label>
-                                    <input type="number" id="setting-tarif" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-800 font-mono">
+                                    <h3 class="font-bold text-gray-800">Tarif Bulanan Terpadu</h3>
+                                    <p class="text-[11px] text-gray-500">Rincian komponen SPP & Konsumsi</p>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1 flex items-center gap-1.5"><i class="fas fa-mosque text-blue-600 text-[10px]"></i> 1. Bulanan Pondok (Rp)</label>
+                                    <input type="number" id="setting-tarif-pondok" oninput="hitungTotalTarifPengaturan()" placeholder="Contoh: 100000" class="w-full border border-gray-300 rounded-lg px-3.5 py-2 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-800 font-mono text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1 flex items-center gap-1.5"><i class="fas fa-school text-sky-600 text-[10px]"></i> 2. Bulanan Madrasah (Rp)</label>
+                                    <input type="number" id="setting-tarif-madrasah" oninput="hitungTotalTarifPengaturan()" placeholder="Contoh: 50000" class="w-full border border-gray-300 rounded-lg px-3.5 py-2 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-800 font-mono text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1 flex items-center gap-1.5"><i class="fas fa-utensils text-amber-600 text-[10px]"></i> 3. Uang Makan / Dapur (Rp)</label>
+                                    <input type="number" id="setting-tarif-makan" oninput="hitungTotalTarifPengaturan()" placeholder="Contoh: 100000" class="w-full border border-gray-300 rounded-lg px-3.5 py-2 focus:ring-2 focus:ring-blue-500 outline-none font-bold text-gray-800 font-mono text-sm">
+                                </div>
+                                <div class="pt-2 border-t border-gray-100">
+                                    <label class="block text-xs font-extrabold text-blue-800 mb-1">TOTAL PAKET PENUH / BULAN (Rp)</label>
+                                    <input type="number" id="setting-tarif" readonly class="w-full border border-blue-200 bg-blue-50/60 rounded-lg px-3.5 py-2 font-black text-blue-800 font-mono text-base outline-none cursor-not-allowed">
+                                    <p class="text-[10px] text-gray-400 mt-1">*Santri non-makan / non-bulanan dapat diatur di menu Data Santri Kamar.</p>
                                 </div>
                             </div>
                         </div>
-                        <button onclick="simpanPengaturanUmum()" class="w-full mt-4 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white py-2.5 rounded-lg font-bold transition-all shadow-xs">Simpan Tarif</button>
+                        <button onclick="simpanPengaturanUmum()" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-bold transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2 text-sm"><i class="fas fa-save"></i> Simpan Tarif Terpadu</button>
                     </div>
 
                     <!-- Santri Bebas Tanggungan Syahriah (2 Kolom) -->
@@ -2852,10 +2914,113 @@
                     <input type="hidden" id="santri-wali">
                     <input type="hidden" id="santri-kota">
                 </div>
+
+                <!-- Bagian 5: Paket Tagihan Bulanan Terpadu -->
+                <div class="border-t border-gray-100 pt-3">
+                    <h4 class="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fas fa-money-check-dollar"></i> 5. Paket Tagihan Bulanan (Pondok, Madrasah, Makan)
+                    </h4>
+                    <p class="text-[11px] text-gray-500 mb-2.5">Centang pos pembayaran yang wajib dibayar santri ini setiap bulannya:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-blue-50/50 transition-colors cursor-pointer select-none">
+                            <input type="checkbox" id="modal-santri-chk-pondok" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                            <span class="text-xs font-bold text-gray-700">Bulanan Pondok</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-blue-50/50 transition-colors cursor-pointer select-none">
+                            <input type="checkbox" id="modal-santri-chk-madrasah" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                            <span class="text-xs font-bold text-gray-700">Bulanan Madrasah</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 hover:bg-blue-50/50 transition-colors cursor-pointer select-none">
+                            <input type="checkbox" id="modal-santri-chk-makan" checked class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                            <span class="text-xs font-bold text-gray-700">Uang Makan</span>
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
                 <button onclick="tutupModal('modal-santri')" class="px-5 py-2.5 rounded-lg text-gray-600 font-medium hover:bg-gray-200 transition-colors text-sm">Batal</button>
                 <button onclick="simpanSantri()" class="px-5 py-2.5 rounded-lg bg-blue-700 hover:bg-indigo-700 text-white font-bold shadow-md transition-colors text-sm">Simpan Data Santri</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Atur Paket Bulanan Santri Kamar (Pondok, Madrasah, Uang Makan) -->
+    <div id="modal-atur-paket-bulanan" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="modal-atur-paket-bulanan-content">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-blue-50/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-sm">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-gray-800">Atur Tagihan Bulanan</h3>
+                        <p class="text-xs text-gray-500">Sesuaikan paket wajib santri kamar aktif</p>
+                    </div>
+                </div>
+                <button onclick="tutupModal('modal-atur-paket-bulanan')" class="text-gray-400 hover:text-rose-500 transition-colors"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="paket-santri-id">
+                
+                <!-- Info Santri -->
+                <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200/80 flex items-center justify-between">
+                    <div>
+                        <div class="font-extrabold text-gray-800 text-sm uppercase" id="paket-santri-nama">-</div>
+                        <div class="text-[11px] text-gray-500 font-mono mt-0.5" id="paket-santri-nis">-</div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold text-xs border border-blue-200 font-mono" id="paket-santri-kamar">Kamar -</span>
+                </div>
+
+                <!-- Pilihan 3 Centang Komponen -->
+                <div class="space-y-2.5">
+                    <label class="text-xs font-bold text-gray-600 uppercase tracking-wider block">Komponen yang Wajib Dibayar:</label>
+                    
+                    <!-- Komponen 1: Bulanan Pondok -->
+                    <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer select-none">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="paket-chk-pondok" onchange="hitungPreviewPaketBulanan()" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                            <div>
+                                <div class="font-bold text-xs text-gray-800">Bulanan Pondok</div>
+                                <div class="text-[10px] text-gray-500">Iuran asrama & sarana pondok</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-blue-700 font-mono" id="paket-nominal-pondok">Rp 0</span>
+                    </label>
+
+                    <!-- Komponen 2: Bulanan Madrasah -->
+                    <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer select-none">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="paket-chk-madrasah" onchange="hitungPreviewPaketBulanan()" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                            <div>
+                                <div class="font-bold text-xs text-gray-800">Bulanan Madrasah</div>
+                                <div class="text-[10px] text-gray-500">SPP pendidikan diniyah / sekolah</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-blue-700 font-mono" id="paket-nominal-madrasah">Rp 0</span>
+                    </label>
+
+                    <!-- Komponen 3: Uang Makan -->
+                    <label class="flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer select-none">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" id="paket-chk-makan" onchange="hitungPreviewPaketBulanan()" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                            <div>
+                                <div class="font-bold text-xs text-gray-800">Uang Makan (Dapur / Katering)</div>
+                                <div class="text-[10px] text-gray-500">Konsumsi santri (kosongkan jika masak sendiri)</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold text-blue-700 font-mono" id="paket-nominal-makan">Rp 0</span>
+                    </label>
+                </div>
+
+                <!-- Total Preview -->
+                <div class="bg-blue-50/80 p-3.5 rounded-xl border border-blue-200 flex items-center justify-between">
+                    <span class="text-xs font-extrabold text-blue-900 uppercase">Total Tagihan per Bulan:</span>
+                    <span class="text-base font-black text-blue-800 font-mono" id="paket-total-preview">Rp 0</span>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-2.5">
+                <button onclick="tutupModal('modal-atur-paket-bulanan')" class="px-4 py-2 rounded-lg text-gray-600 font-medium hover:bg-gray-200 transition-colors text-xs">Batal</button>
+                <button onclick="simpanPaketBulananSantri()" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm transition-all text-xs flex items-center gap-1.5 cursor-pointer"><i class="fas fa-check"></i> Simpan Paket</button>
             </div>
         </div>
     </div>

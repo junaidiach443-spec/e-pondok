@@ -33,12 +33,24 @@ function generateStrukText(namaBendahara) {
     const TA = getTahunAjaranAktif();
     let trx = transactions.filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
     
+    const tarifSantri = (typeof getTarifBulananSantri === 'function') ? getTarifBulananSantri(s.id) : (appSettings.tarifSyahriah || 250000);
+    const komp = (typeof getKomponenBulananSantri === 'function') ? getKomponenBulananSantri(s.id) : { pondok: true, madrasah: true, makan: true };
+    const isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
+
     let text = "  Pondok Pesantren Al-Usymuni\n";
     text += "     Tarate Pandian Sumenep\n";
     text += "--------------------------------\n\n";
     text += "REKAP PEMBAYARAN SYAHRIAH\n\n";
     text += `Nama : ${s.nama}\n`;
     text += `Kamar: ${s.kamar || '-'}\n`;
+
+    let labelPaket = [];
+    if (komp.pondok) labelPaket.push("Pdk");
+    if (komp.madrasah) labelPaket.push("Mad");
+    if (komp.makan) labelPaket.push("Mkn");
+    let strPaket = labelPaket.length ? labelPaket.join('+') : 'Bebas';
+    if (!komp.makan && labelPaket.length > 0) strPaket += ' (Non-Makan)';
+    text += `Paket: ${strPaket}\n`;
     text += "--------------------------------\n";
     text += "Bulan   Jumlah Status  Tanggal\n";
     
@@ -46,12 +58,12 @@ function generateStrukText(namaBendahara) {
     bulanIslam.forEach(bulan => {
         const trxBulan = trx.find(t => t.desc.includes(bulan));
         let blnShort = bulan.substring(0, 6).padEnd(6, ' ');
-        
-        let cleanNom = formatRupiah(appSettings.tarifSyahriah).replace(/Rp\s?/g, '').trim(); 
+        let nominalBln = trxBulan ? (Number(trxBulan.amount) || tarifSantri) : tarifSantri;
+        let cleanNom = formatRupiah(nominalBln).replace(/Rp\s?/g, '').trim(); 
         let padNom = cleanNom.substring(0, 6).padEnd(6, ' ');
         
         if (trxBulan) {
-            totalBayar += (appSettings.tarifSyahriah || 0);
+            totalBayar += Number(trxBulan.amount) || tarifSantri;
             let tglObj = new Date(trxBulan.date);
             let tgl = tglObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }); 
             text += `${blnShort} ${padNom} Lunas  ${tgl}\n`;
@@ -60,8 +72,8 @@ function generateStrukText(namaBendahara) {
         }
     });
     
-    const totalTagihan = appSettings.tarifSyahriah * 12;
-    const sisa = totalTagihan - totalBayar;
+    const totalTagihan = isBebas ? 0 : (tarifSantri * 12);
+    const sisa = isBebas ? 0 : Math.max(0, totalTagihan - totalBayar);
     
     let padTotal = formatRupiah(totalTagihan).replace(/Rp\s?/g, '').trim();
     let padDibayar = formatRupiah(totalBayar).replace(/Rp\s?/g, '').trim();
@@ -308,9 +320,21 @@ function formatStrukForWhatsApp(type, santri, namaBendahara) {
     if (type === 'Syahriah') {
         if (!santri) return window.currentReceiptText || "";
         let trx = (transactions || []).filter(t => t.santriId === santri.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
-        let totalBayar = trx.reduce((sum, t) => sum + t.amount, 0);
-        let totalTagihan = appSettings.tarifSyahriah * 12;
-        let sisa = Math.max(0, totalTagihan - totalBayar);
+        let tarifSantri = (typeof getTarifBulananSantri === 'function') ? getTarifBulananSantri(santri.id) : (appSettings.tarifSyahriah || 250000);
+        let komp = (typeof getKomponenBulananSantri === 'function') ? getKomponenBulananSantri(santri.id) : { pondok: true, madrasah: true, makan: true };
+        let tarifKomp = (typeof getTarifKomponenBulanan === 'function') ? getTarifKomponenBulanan() : { pondok: 100000, madrasah: 50000, makan: 100000 };
+        let isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(santri.id) : false;
+
+        let totalBayar = trx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+        let totalTagihan = isBebas ? 0 : (tarifSantri * 12);
+        let sisa = isBebas ? 0 : Math.max(0, totalTagihan - totalBayar);
+
+        let labelPaket = [];
+        if (komp.pondok) labelPaket.push(`Pondok (${formatRupiah(tarifKomp.pondok)})`);
+        if (komp.madrasah) labelPaket.push(`Madrasah (${formatRupiah(tarifKomp.madrasah)})`);
+        if (komp.makan) labelPaket.push(`Makan (${formatRupiah(tarifKomp.makan)})`);
+        let detailPaketStr = labelPaket.length ? labelPaket.join(', ') : 'Bebas Biaya';
+        if (!komp.makan && labelPaket.length > 0) detailPaketStr += ' *(Non-Makan)*';
 
         let rincianBulan = "";
         (bulanIslam || []).forEach(b => {
@@ -331,6 +355,8 @@ function formatStrukForWhatsApp(type, santri, namaBendahara) {
                `*NIS:* ${santri.nis}\n` +
                `*Kamar:* ${santri.kamar || '-'}\n` +
                `*Tahun Ajaran:* ${TA}\n` +
+               `*Paket Bulanan:* ${detailPaketStr}\n` +
+               `*Tarif:* ${formatRupiah(tarifSantri)} / bulan\n` +
                `━━━━━━━━━━━━━━━━━━━━\n` +
                `*STATUS 12 BULAN HIJRIAH:*\n` +
                `${rincianBulan}` +

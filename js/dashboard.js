@@ -187,7 +187,17 @@ function updateDashboard() {
         {
             nama: 'Syahriah',
             calcTarget: () => {
-                return santriAktif * (appSettings.tarifSyahriah * 12);
+                let target = 0;
+                activeSantriList.forEach(s => {
+                    const isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
+                    if (!isBebas) {
+                        const tarif = (typeof getTarifBulananSantri === 'function') 
+                            ? getTarifBulananSantri(s.id) 
+                            : (appSettings.tarifSyahriah || 250000);
+                        target += tarif * 12;
+                    }
+                });
+                return target;
             }
         }
     ];

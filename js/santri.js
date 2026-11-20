@@ -133,6 +133,26 @@ function renderSemuaTabel(resetPage = false) {
                 ? `<span class="inline-block px-1.5 py-0.5 text-[9px] font-bold rounded bg-slate-100 text-slate-600 border border-slate-200 mt-1 uppercase tracking-wider"><i class="fas fa-location-dot text-[8px] mr-0.5 text-indigo-500"></i>${s.asalKota}</span>` 
                 : '';
 
+            const kp = (typeof getKomponenBulananSantri === 'function') 
+                ? getKomponenBulananSantri(s.id) 
+                : { pondok: true, madrasah: true, makan: true };
+            const tarifBulananSantri = (typeof getTarifBulananSantri === 'function')
+                ? getTarifBulananSantri(s.id)
+                : ((appSettings && appSettings.tarifSyahriah) || 250000);
+
+            let badgePaketHtml = '';
+            if (kp.isBebasTotal || (!kp.pondok && !kp.madrasah && !kp.makan)) {
+                badgePaketHtml = `<span onclick="bukaModalAturPaketBulanan('${s.id}')" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 mt-1 cursor-pointer hover:bg-purple-100 transition-colors" title="Bebas Biaya: Rp 0/bln (Klik untuk atur)"><i class="fas fa-gift text-[9px]"></i> Bebas Biaya</span>`;
+            } else if (!kp.makan) {
+                badgePaketHtml = `<span onclick="bukaModalAturPaketBulanan('${s.id}')" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 mt-1 cursor-pointer hover:bg-amber-100 transition-colors" title="Non-Katering: ${formatRupiah(tarifBulananSantri)}/bln (Klik untuk atur)"><i class="fas fa-utensils text-[9px]"></i> Non-Makan</span>`;
+            } else if (!kp.pondok) {
+                badgePaketHtml = `<span onclick="bukaModalAturPaketBulanan('${s.id}')" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 mt-1 cursor-pointer hover:bg-sky-100 transition-colors" title="Bebas Pondok: ${formatRupiah(tarifBulananSantri)}/bln (Klik untuk atur)"><i class="fas fa-mosque text-[9px]"></i> Bebas Pondok</span>`;
+            } else if (!kp.madrasah) {
+                badgePaketHtml = `<span onclick="bukaModalAturPaketBulanan('${s.id}')" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 mt-1 cursor-pointer hover:bg-indigo-100 transition-colors" title="Bebas Madrasah: ${formatRupiah(tarifBulananSantri)}/bln (Klik untuk atur)"><i class="fas fa-school text-[9px]"></i> Bebas Madrasah</span>`;
+            } else {
+                badgePaketHtml = `<span onclick="bukaModalAturPaketBulanan('${s.id}')" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 mt-1 cursor-pointer hover:bg-blue-100 transition-colors" title="Paket Lengkap: ${formatRupiah(tarifBulananSantri)}/bln (Klik untuk atur)"><i class="fas fa-check-circle text-[9px] text-blue-500"></i> Paket Lengkap</span>`;
+            }
+
             return `
             <tr class="hover:bg-gray-50/80 transition-colors border-b border-gray-100">
                 <td class="px-6 py-4 font-mono text-gray-500 text-xs">${s.nis || '-'}</td>
@@ -152,12 +172,16 @@ function renderSemuaTabel(resetPage = false) {
                 </td>
                 <td class="px-6 py-4">${waLinkHtml}</td>
                 <td class="px-6 py-4">
-                    <span class="px-3 py-1 text-[10px] border rounded-lg font-bold uppercase tracking-wider text-blue-600 bg-blue-50 border-blue-200">
-                        ${s.status}
-                    </span>
+                    <div class="flex flex-col items-start">
+                        <span class="px-2.5 py-0.5 text-[10px] border rounded-md font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border-blue-200">
+                            ${s.status}
+                        </span>
+                        ${badgePaketHtml}
+                    </div>
                 </td>
                 <td class="px-6 py-4 text-right whitespace-nowrap">
                     ${s.noHpWali ? `<button onclick="bukaChatWaliSantri('${s.id}')" class="text-blue-600 hover:text-blue-800 p-2 transition-colors cursor-pointer" title="Kirim Pesan WhatsApp"><i class="fab fa-whatsapp text-lg"></i></button>` : ''}
+                    <button onclick="bukaModalAturPaketBulanan('${s.id}')" class="text-blue-600 hover:text-blue-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Atur Paket Bulanan (Pondok, Madrasah, Makan)"><i class="fas fa-sliders-h"></i></button>
                     <button onclick="siapkanMutasiKamar('${s.id}')" class="text-sky-600 hover:text-sky-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Mutasi / Pindah Kamar"><i class="fas fa-exchange-alt"></i></button>
                     <button onclick="bukaModalBoyongSantri('${s.id}')" class="text-amber-600 hover:text-amber-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Proses Boyong / GT (Keluarkan dari Kamar)"><i class="fas fa-sign-out-alt"></i></button>
                     <button onclick="editSantri('${s.id}')" class="text-indigo-600 hover:text-indigo-800 p-2 ml-0.5 transition-colors cursor-pointer" title="Edit Data"><i class="fas fa-edit"></i></button>
@@ -485,6 +509,13 @@ function bukaModalSantri() {
     if (elWali) elWali.value = '';
     const elKota = document.getElementById('santri-kota');
     if (elKota) elKota.value = '';
+
+    const chkPondok = document.getElementById('modal-santri-chk-pondok');
+    const chkMadrasah = document.getElementById('modal-santri-chk-madrasah');
+    const chkMakan = document.getElementById('modal-santri-chk-makan');
+    if (chkPondok) chkPondok.checked = true;
+    if (chkMadrasah) chkMadrasah.checked = true;
+    if (chkMakan) chkMakan.checked = true;
     
     toggleFieldBoyongModalSantri('Aktif');
 
@@ -653,6 +684,21 @@ function simpanSantri() {
         });
     }
 
+    // Simpan preferensi komponen paket bulanan dari modal
+    const targetSantriId = id || ('S-' + (1000 + nextNo));
+    const chkPondok = document.getElementById('modal-santri-chk-pondok');
+    const chkMadrasah = document.getElementById('modal-santri-chk-madrasah');
+    const chkMakan = document.getElementById('modal-santri-chk-makan');
+    if (chkPondok || chkMadrasah || chkMakan) {
+        if (typeof setKomponenBulananSantri === 'function') {
+            setKomponenBulananSantri(targetSantriId, {
+                pondok: chkPondok ? chkPondok.checked : true,
+                madrasah: chkMadrasah ? chkMadrasah.checked : true,
+                makan: chkMakan ? chkMakan.checked : true
+            });
+        }
+    }
+
     saveDataToStorage();
     updateFiltersAndDropdowns();
     renderSemuaTabel();
@@ -707,6 +753,16 @@ function editSantri(id) {
         const elAlasan = document.getElementById('santri-alasan-boyong');
         if (elAlasan) elAlasan.value = s.alasanBoyong || '';
 
+        const kp = (typeof getKomponenBulananSantri === 'function') 
+            ? getKomponenBulananSantri(s.id) 
+            : { pondok: true, madrasah: true, makan: true };
+        const chkPondok = document.getElementById('modal-santri-chk-pondok');
+        const chkMadrasah = document.getElementById('modal-santri-chk-madrasah');
+        const chkMakan = document.getElementById('modal-santri-chk-makan');
+        if (chkPondok) chkPondok.checked = (kp.pondok !== false);
+        if (chkMadrasah) chkMadrasah.checked = (kp.madrasah !== false);
+        if (chkMakan) chkMakan.checked = (kp.makan !== false);
+
         toggleFieldBoyongModalSantri(s.status || 'Aktif');
 
         document.getElementById('modal-santri-title').innerText = 'Edit Data Santri';
@@ -736,6 +792,97 @@ function hapusSantri(id) {
 // ==========================================================================
 
 // ==========================================================================
+// PENGATURAN PAKET BULANAN SANTRI KAMAR (Pondok, Madrasah, Uang Makan)
+// ==========================================================================
+
+// Buka Modal Atur Paket Bulanan Santri Kamar
+function bukaModalAturPaketBulanan(santriId) {
+    const s = (santriData || []).find(x => x.id === santriId);
+    if (!s) return showToast("Data santri tidak ditemukan", "error");
+
+    const kp = (typeof getKomponenBulananSantri === 'function') 
+        ? getKomponenBulananSantri(s.id) 
+        : { pondok: true, madrasah: true, makan: true };
+    const tk = (typeof getTarifKomponenBulanan === 'function')
+        ? getTarifKomponenBulanan()
+        : { pondok: 100000, madrasah: 50000, makan: 100000 };
+
+    const elId = document.getElementById('paket-santri-id');
+    const elNama = document.getElementById('paket-santri-nama');
+    const elNis = document.getElementById('paket-santri-nis');
+    const elKamar = document.getElementById('paket-santri-kamar');
+
+    if (elId) elId.value = s.id;
+    if (elNama) elNama.innerText = s.nama || '-';
+    if (elNis) elNis.innerText = 'NIS: ' + (s.nis || '-');
+    if (elKamar) elKamar.innerText = 'Kamar ' + (s.kamar || s.kamarTerakhir || '-');
+
+    const chkPondok = document.getElementById('paket-chk-pondok');
+    const chkMadrasah = document.getElementById('paket-chk-madrasah');
+    const chkMakan = document.getElementById('paket-chk-makan');
+
+    if (chkPondok) chkPondok.checked = (kp.pondok !== false);
+    if (chkMadrasah) chkMadrasah.checked = (kp.madrasah !== false);
+    if (chkMakan) chkMakan.checked = (kp.makan !== false);
+
+    const elNomPondok = document.getElementById('paket-nominal-pondok');
+    const elNomMadrasah = document.getElementById('paket-nominal-madrasah');
+    const elNomMakan = document.getElementById('paket-nominal-makan');
+
+    if (elNomPondok) elNomPondok.innerText = formatRupiah(tk.pondok || 0) + ' / bln';
+    if (elNomMadrasah) elNomMadrasah.innerText = formatRupiah(tk.madrasah || 0) + ' / bln';
+    if (elNomMakan) elNomMakan.innerText = formatRupiah(tk.makan || 0) + ' / bln';
+
+    hitungPreviewPaketBulanan();
+    bukaModal('modal-atur-paket-bulanan');
+}
+
+// Hitung preview total tagihan per bulan di modal atur paket
+function hitungPreviewPaketBulanan() {
+    const chkPondok = document.getElementById('paket-chk-pondok');
+    const chkMadrasah = document.getElementById('paket-chk-madrasah');
+    const chkMakan = document.getElementById('paket-chk-makan');
+    const elPreview = document.getElementById('paket-total-preview');
+
+    const tk = (typeof getTarifKomponenBulanan === 'function')
+        ? getTarifKomponenBulanan()
+        : { pondok: 100000, madrasah: 50000, makan: 100000 };
+
+    let total = 0;
+    if (chkPondok && chkPondok.checked) total += (Number(tk.pondok) || 0);
+    if (chkMadrasah && chkMadrasah.checked) total += (Number(tk.madrasah) || 0);
+    if (chkMakan && chkMakan.checked) total += (Number(tk.makan) || 0);
+
+    if (elPreview) elPreview.innerText = formatRupiah(total) + ' / bulan';
+}
+
+// Simpan Pengaturan Paket Bulanan Santri
+function simpanPaketBulananSantri() {
+    const santriId = document.getElementById('paket-santri-id')?.value;
+    if (!santriId) return;
+
+    const chkPondok = document.getElementById('paket-chk-pondok');
+    const chkMadrasah = document.getElementById('paket-chk-madrasah');
+    const chkMakan = document.getElementById('paket-chk-makan');
+
+    const pondok = chkPondok ? chkPondok.checked : true;
+    const madrasah = chkMadrasah ? chkMadrasah.checked : true;
+    const makan = chkMakan ? chkMakan.checked : true;
+
+    if (typeof setKomponenBulananSantri === 'function') {
+        setKomponenBulananSantri(santriId, { pondok, madrasah, makan });
+    }
+
+    tutupModal('modal-atur-paket-bulanan');
+    if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
+    if (typeof renderSyahriah === 'function') renderSyahriah();
+    if (typeof updateDashboard === 'function') updateDashboard();
+
+    const s = (santriData || []).find(x => x.id === santriId);
+    showToast(`Paket bulanan ${s ? s.nama : 'santri'} berhasil disimpan!`, "success");
+}
+
+// ==========================================================================
 // Pengecekan Kelunasan Tagihan Santri Sebelum Boyong
 // ==========================================================================
 function hitungRincianTunggakanSantri(santriId, targetBulanIndex = null) {
@@ -749,7 +896,9 @@ function hitungRincianTunggakanSantri(santriId, targetBulanIndex = null) {
     // 1. Syahriah (SPP Bulanan di TA Aktif - Dihitung hanya sampai bulan boyong jika santri boyong)
     const isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
     if (!isBebas) {
-        const tarifSyahriah = (appSettings && appSettings.tarifSyahriah) || 0;
+        const tarifSyahriah = (typeof getTarifBulananSantri === 'function') 
+            ? getTarifBulananSantri(s.id) 
+            : ((appSettings && appSettings.tarifSyahriah) || 0);
         
         let bulanMaksIndex = 11; // default 12 bulan penuh
         if (targetBulanIndex !== null && targetBulanIndex !== undefined && targetBulanIndex >= 0) {
@@ -997,16 +1146,35 @@ function lunasiSemuaTanggunganSantri(santriId) {
             res.items.forEach(item => {
                 if (item.actionType === 'syahriah') {
                     const listBln = item.bulanBelumBayar || [];
+                    const tarifSyahriahSantri = (typeof getTarifBulananSantri === 'function') 
+                        ? getTarifBulananSantri(s.id) 
+                        : ((appSettings && appSettings.tarifSyahriah) || 0);
+                    const kompSantri = (typeof getKomponenBulananSantri === 'function')
+                        ? getKomponenBulananSantri(s.id)
+                        : { pondok: true, madrasah: true, makan: true };
+                    const tarifKompSantri = (typeof getTarifKomponenBulanan === 'function')
+                        ? getTarifKomponenBulanan()
+                        : { pondok: 100000, madrasah: 50000, makan: 100000 };
+                    const nomPondok = kompSantri.pondok ? (tarifKompSantri.pondok || 0) : 0;
+                    const nomMadrasah = kompSantri.madrasah ? (tarifKompSantri.madrasah || 0) : 0;
+                    const nomMakan = kompSantri.makan ? (tarifKompSantri.makan || 0) : 0;
+
                     listBln.forEach(bln => {
                         transactions.push({
                             id: makeTrxId(),
                             type: 'in',
                             kategori: 'Syahriah',
+                            subJenis: 'Bulanan Terpadu',
                             santriId: s.id,
                             santriNama: s.nama,
                             santriNis: s.nis,
                             santriKamar: s.kamar || s.kamarTerakhir || '-',
-                            amount: (appSettings && appSettings.tarifSyahriah) || 0,
+                            amount: tarifSyahriahSantri,
+                            rincian: {
+                                pondok: nomPondok,
+                                madrasah: nomMadrasah,
+                                makan: nomMakan
+                            },
                             date: today,
                             desc: `Syahriah: ${bln} (${TA}) - Pelunasan ${labelProses}`,
                             ta: TA,
@@ -2963,6 +3131,9 @@ window.onMutasiSantriSelected = onMutasiSantriSelected;
 window.pilihKamarTujuanCepat = pilihKamarTujuanCepat;
 window.siapkanMutasiKamar = siapkanMutasiKamar;
 window.prosesMutasiKamar = prosesMutasiKamar;
+window.bukaModalAturPaketBulanan = bukaModalAturPaketBulanan;
+window.hitungPreviewPaketBulanan = hitungPreviewPaketBulanan;
+window.simpanPaketBulananSantri = simpanPaketBulananSantri;
 window.batalkanMutasiKamar = batalkanMutasiKamar;
 window.exportMutasiKamarExcel = exportMutasiKamarExcel;
 window.generateNisOtomatis = generateNisOtomatis;

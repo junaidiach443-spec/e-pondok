@@ -50,7 +50,12 @@ function renderSyahriah(resetPage = false) {
             let isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
             let trx = transactions.filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
             let totalBayar = trx.reduce((sum, t) => sum + t.amount, 0);
-            let progress = isBebas ? 100 : Math.min(100, Math.round((totalBayar / (appSettings.tarifSyahriah * 12)) * 100));
+
+            const tarifSantriIni = (typeof getTarifBulananSantri === 'function') 
+                ? getTarifBulananSantri(s.id) 
+                : ((appSettings && appSettings.tarifSyahriah) || 250000);
+            const totalTarget12 = tarifSantriIni * 12;
+            let progress = isBebas ? 100 : (totalTarget12 > 0 ? Math.min(100, Math.round((totalBayar / totalTarget12) * 100)) : 100);
 
             // Hitung jumlah bulan yang sudah lunas dibayar
             let bulanLunasCount = 0;
@@ -60,16 +65,26 @@ function renderSyahriah(resetPage = false) {
                 const bList = (typeof bulanIslam !== 'undefined') ? bulanIslam : (window.bulanIslam || []);
                 const listBulanTerbayar = bList.filter(b => trx.some(t => (t.desc || '').includes(b)));
                 bulanLunasCount = listBulanTerbayar.length;
-                if (bulanLunasCount === 0 && totalBayar > 0 && appSettings.tarifSyahriah > 0) {
-                    bulanLunasCount = Math.min(12, Math.floor(totalBayar / appSettings.tarifSyahriah));
-                } else if (appSettings.tarifSyahriah > 0) {
-                    bulanLunasCount = Math.min(12, Math.max(bulanLunasCount, Math.floor(totalBayar / appSettings.tarifSyahriah)));
+                if (bulanLunasCount === 0 && totalBayar > 0 && tarifSantriIni > 0) {
+                    bulanLunasCount = Math.min(12, Math.floor(totalBayar / tarifSantriIni));
+                } else if (tarifSantriIni > 0) {
+                    bulanLunasCount = Math.min(12, Math.max(bulanLunasCount, Math.floor(totalBayar / tarifSantriIni)));
                 }
             }
             
+            const kp = (typeof getKomponenBulananSantri === 'function') 
+                ? getKomponenBulananSantri(s.id) 
+                : { pondok: true, madrasah: true, makan: true };
+
             let statusBadge = '';
-            if (isBebas) {
-                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-blue-50 text-blue-700 rounded font-bold border border-blue-200 ml-1.5"><i class="fas fa-gift mr-1"></i>Bebas Syahriah</span>`;
+            if (isBebas || (!kp.pondok && !kp.madrasah && !kp.makan)) {
+                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-purple-50 text-purple-700 rounded font-bold border border-purple-200 ml-1.5"><i class="fas fa-gift mr-1"></i>Bebas Biaya</span>`;
+            } else if (!kp.makan) {
+                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-amber-50 text-amber-700 rounded font-bold border border-amber-200 ml-1.5" title="Non-Katering / Masak Sendiri"><i class="fas fa-utensils mr-1"></i>Non-Makan</span>`;
+            } else if (!kp.pondok) {
+                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-sky-50 text-sky-700 rounded font-bold border border-sky-200 ml-1.5"><i class="fas fa-mosque mr-1"></i>Bebas Pondok</span>`;
+            } else if (!kp.madrasah) {
+                statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-indigo-50 text-indigo-700 rounded font-bold border border-indigo-200 ml-1.5"><i class="fas fa-school mr-1"></i>Bebas Madrasah</span>`;
             } else if (s.status !== 'Aktif') {
                 statusBadge = `<span class="px-2 py-0.5 text-[9px] bg-gray-100 text-gray-500 rounded font-semibold border border-gray-200 ml-1.5">${s.status}</span>`;
             }
@@ -143,8 +158,28 @@ function bukaDetailSyahriah(santriId) {
     const TA = getTahunAjaranAktif();
     const trx = transactions.filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
     
+    const tarifSantri = (typeof getTarifBulananSantri === 'function') ? getTarifBulananSantri(s.id) : (appSettings.tarifSyahriah || 250000);
+    const komp = (typeof getKomponenBulananSantri === 'function') ? getKomponenBulananSantri(s.id) : { pondok: true, madrasah: true, makan: true };
+
+    const elTarifBln = document.getElementById('detail-tarif-per-bulan');
+    if (elTarifBln) elTarifBln.innerText = `${formatRupiah(tarifSantri)} / bln`;
+
+    const elPaketBadges = document.getElementById('detail-paket-badges');
+    if (elPaketBadges) {
+        let badgesHtml = '';
+        if (komp.pondok) badgesHtml += '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Pondok</span>';
+        if (komp.madrasah) badgesHtml += '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">Madrasah</span>';
+        if (komp.makan) badgesHtml += '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Makan</span>';
+        if (!komp.pondok && !komp.madrasah && !komp.makan) {
+            badgesHtml = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Bebas Biaya</span>';
+        } else if (!komp.makan) {
+            badgesHtml += '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Non-Makan</span>';
+        }
+        elPaketBadges.innerHTML = badgesHtml;
+    }
+
     const isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
-    const totalTagihan = isBebas ? 0 : (appSettings.tarifSyahriah * 12);
+    const totalTagihan = isBebas ? 0 : (tarifSantri * 12);
     const sudahDibayar = trx.reduce((sum, t) => sum + t.amount, 0);
     const sisa = Math.max(0, totalTagihan - sudahDibayar);
 
@@ -178,8 +213,9 @@ function renderBulanSyahriah() {
     const trx = (transactions || []).filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
     
     // Sinkronkan Ringkasan Keuangan di Kartu Detail
+    const tarifSantri = (typeof getTarifBulananSantri === 'function') ? getTarifBulananSantri(s.id) : (appSettings.tarifSyahriah || 250000);
     const isBebas = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
-    const totalTagihan = isBebas ? 0 : ((appSettings.tarifSyahriah || 250000) * 12);
+    const totalTagihan = isBebas ? 0 : (tarifSantri * 12);
     const sudahDibayar = trx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
     const sisa = Math.max(0, totalTagihan - sudahDibayar);
 
@@ -213,6 +249,7 @@ function renderBulanSyahriah() {
         const trxBulan = trx.find(t => (t.desc || '').includes(namaBulan));
         const isPaid = !!trxBulan;
         const isSelected = selectedBulanPay.includes(namaBulan);
+        const nominalBulanIni = trxBulan ? (Number(trxBulan.amount) || tarifSantri) : tarifSantri;
         
         if (isPaid) {
             let tglFormatted = '-';
@@ -236,7 +273,7 @@ function renderBulanSyahriah() {
             <tr class="hover:bg-blue-50/30 transition-colors">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
                 <td class="px-6 py-4 font-bold text-gray-800">${namaBulan}</td>
-                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah || 250000)}</td>
+                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(nominalBulanIni)}</td>
                 <td class="px-6 py-4"><span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-200 flex items-center w-max gap-1"><i class="fas fa-check"></i> Lunas</span></td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex flex-col items-center justify-center gap-1.5">
@@ -251,7 +288,7 @@ function renderBulanSyahriah() {
             <tr class="hover:bg-blue-50/20 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50/60' : ''}" onclick="toggleBulanPay('${namaBulan}')">
                 <td class="px-6 py-4 text-gray-400 font-medium">${i + 1}</td>
                 <td class="px-6 py-4 font-bold ${isSelected ? 'text-blue-700' : 'text-gray-600'}">${namaBulan}</td>
-                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(appSettings.tarifSyahriah || 250000)}</td>
+                <td class="px-6 py-4 text-gray-500 font-mono text-sm">${formatRupiah(nominalBulanIni)}</td>
                 <td class="px-6 py-4"><span class="text-xs text-gray-400 font-medium">Belum Bayar</span></td>
                 <td class="px-6 py-4 text-center" onclick="event.stopPropagation()">
                     <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleBulanPay('${namaBulan}')" class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 cursor-pointer">
@@ -417,7 +454,10 @@ function updateActionPanel() {
 
     if (selectedBulanPay.length > 0 && isDetailVisible) {
         panel.classList.remove('translate-y-full', 'hidden');
-        document.getElementById('action-total-rp').innerText = formatRupiah(selectedBulanPay.length * appSettings.tarifSyahriah);
+        const tarifSantri = (typeof getTarifBulananSantri === 'function' && currentDetailSantriId) 
+            ? getTarifBulananSantri(currentDetailSantriId) 
+            : (appSettings.tarifSyahriah || 250000);
+        document.getElementById('action-total-rp').innerText = formatRupiah(selectedBulanPay.length * tarifSantri);
         document.getElementById('action-total-item').innerText = selectedBulanPay.length + ' Bulan';
         document.getElementById('action-btn-count').innerText = selectedBulanPay.length;
     } else {
@@ -453,7 +493,19 @@ function prosesBayarSyahriahSelected() {
         const now = Date.now();
         const tglHariIni = new Date().toLocaleDateString('en-CA');
         const taAktif = getTahunAjaranAktif();
-        const tarif = appSettings.tarifSyahriah || 250000;
+        
+        // Hitung rincian per-komponen (Pondok, Madrasah, Makan) sesuai paket santri
+        const komp = (typeof getKomponenBulananSantri === 'function') 
+            ? getKomponenBulananSantri(s.id) 
+            : { pondok: true, madrasah: true, makan: true };
+        const tarifKomp = (typeof getTarifKomponenBulanan === 'function')
+            ? getTarifKomponenBulanan()
+            : { pondok: 100000, madrasah: 50000, makan: 100000 };
+            
+        const nomPondok = komp.pondok ? (tarifKomp.pondok || 0) : 0;
+        const nomMadrasah = komp.madrasah ? (tarifKomp.madrasah || 0) : 0;
+        const nomMakan = komp.makan ? (tarifKomp.makan || 0) : 0;
+        const tarif = nomPondok + nomMadrasah + nomMakan;
 
         // Simpan setiap bulan secara terpisah agar masing-masing memiliki riwayat mandiri
         // dan dapat dibatalkan per bulan secara independen
@@ -471,11 +523,17 @@ function prosesBayarSyahriahSelected() {
                 santriKamar: s.kamar || s.kamarTerakhir || '-',
                 ta: taAktif,
                 kategori: 'Syahriah',
+                subJenis: 'Bulanan Terpadu',
                 type: 'in',
                 amount: tarif,
                 desc: `Syahriah: ${bulan}`,
                 metode: metodeBayar,
                 kasir: kasirNama,
+                rincian: {
+                    pondok: nomPondok,
+                    madrasah: nomMadrasah,
+                    makan: nomMakan
+                },
                 date: tglHariIni
             });
         });

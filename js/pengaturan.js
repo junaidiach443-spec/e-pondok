@@ -90,14 +90,60 @@ function renderPengaturanTagihan() {
     `).join('');
 }
 
-// Simpan Tarif Syahriah Bulanan
+// Hitung Total Tarif Bulanan di Form Pengaturan
+function hitungTotalTarifPengaturan() {
+    const elPondok = document.getElementById('setting-tarif-pondok');
+    const elMadrasah = document.getElementById('setting-tarif-madrasah');
+    const elMakan = document.getElementById('setting-tarif-makan');
+    const elTotal = document.getElementById('setting-tarif');
+    
+    const pondok = parseInt(elPondok ? elPondok.value : 0) || 0;
+    const madrasah = parseInt(elMadrasah ? elMadrasah.value : 0) || 0;
+    const makan = parseInt(elMakan ? elMakan.value : 0) || 0;
+    const total = pondok + madrasah + makan;
+    
+    if (elTotal) elTotal.value = total;
+}
+
+// Inisialisasi Nilai Form Pengaturan Tarif Bulanan
+function initFormTarifBulananPengaturan() {
+    const tk = (typeof getTarifKomponenBulanan === 'function') 
+        ? getTarifKomponenBulanan() 
+        : { pondok: 100000, madrasah: 50000, makan: 100000 };
+    
+    const elPondok = document.getElementById('setting-tarif-pondok');
+    const elMadrasah = document.getElementById('setting-tarif-madrasah');
+    const elMakan = document.getElementById('setting-tarif-makan');
+    const elTotal = document.getElementById('setting-tarif');
+    
+    if (elPondok) elPondok.value = tk.pondok || 0;
+    if (elMadrasah) elMadrasah.value = tk.madrasah || 0;
+    if (elMakan) elMakan.value = tk.makan || 0;
+    if (elTotal) elTotal.value = (tk.pondok || 0) + (tk.madrasah || 0) + (tk.makan || 0);
+}
+
+// Simpan Tarif Syahriah & Komponen Bulanan
 function simpanPengaturanUmum() {
-    const elTarif = document.getElementById('setting-tarif');
-    appSettings.tarifSyahriah = parseInt(elTarif.value) || 0;
+    const elPondok = document.getElementById('setting-tarif-pondok');
+    const elMadrasah = document.getElementById('setting-tarif-madrasah');
+    const elMakan = document.getElementById('setting-tarif-makan');
+    const elTotal = document.getElementById('setting-tarif');
+
+    const pondok = parseInt(elPondok ? elPondok.value : 0) || 0;
+    const madrasah = parseInt(elMadrasah ? elMadrasah.value : 0) || 0;
+    const makan = parseInt(elMakan ? elMakan.value : 0) || 0;
+    const total = pondok + madrasah + makan;
+
+    appSettings.tarifKomponenBulanan = { pondok, madrasah, makan };
+    appSettings.tarifSyahriah = total;
+    if (elTotal) elTotal.value = total;
+
     saveDataToStorage();
+    if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
     if (typeof updateDashboard === 'function') updateDashboard();
     if (typeof renderSyahriah === 'function') renderSyahriah();
-    showToast("Tarif Syahriah Tersimpan");
+    if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
+    showToast("Tarif Bulanan Terpadu Berhasil Disimpan", "success");
 }
 
 // ==========================================================================
@@ -1599,6 +1645,8 @@ window.tambahTahunAjaran = tambahTahunAjaran;
 window.aktifkanTahun = aktifkanTahun;
 window.hapusTahun = hapusTahun;
 window.renderPengaturanTagihan = renderPengaturanTagihan;
+window.hitungTotalTarifPengaturan = hitungTotalTarifPengaturan;
+window.initFormTarifBulananPengaturan = initFormTarifBulananPengaturan;
 window.simpanPengaturanUmum = simpanPengaturanUmum;
 window.bukaModalTagihanKustom = bukaModalTagihanKustom;
 window.editTagihanKustom = editTagihanKustom;

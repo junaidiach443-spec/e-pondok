@@ -14,6 +14,12 @@ var appSettings = {
         { ta: '1447/1448', aktif: true }
     ],
     tarifSyahriah: 250000,
+    tarifKomponenBulanan: {
+        pondok: 100000,
+        madrasah: 50000,
+        makan: 100000
+    },
+    santriKomponenBulanan: {},
     santriBebasSyahriah: [],
     tagihanKustom: [
         { nama: 'Ikhtibar PPU', nominal: 150000 }
