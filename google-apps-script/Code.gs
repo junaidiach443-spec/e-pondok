@@ -163,15 +163,29 @@ function readAllDataFromSpreadsheet() {
   var santriData = santriRows.map(function(r) {
     return {
       id: String(r.id || ''),
+      no: Number(r.no) || 0,
+      instansi: String(r.instansi || 'PPU'),
+      tglMasuk: String(r.tglMasuk || ''),
       nis: String(r.nis || ''),
+      nik: String(r.nik || ''),
       nama: String(r.nama || ''),
       tempatLahir: String(r.tempatLahir || ''),
       tanggalLahir: String(r.tanggalLahir || ''),
       kamar: String(r.kamar || ''),
       status: String(r.status || 'Aktif'),
-      noHpWali: String(r.noHpWali || ''),
-      namaWali: String(r.namaWali || ''),
-      asalKota: String(r.asalKota || ''),
+      diniyah: String(r.diniyah || ''),
+      umum: String(r.umum || ''),
+      hp: String(r.hp || r.noHpWali || ''),
+      noHpWali: String(r.noHpWali || r.hp || ''),
+      desa: String(r.desa || ''),
+      kecamatan: String(r.kecamatan || ''),
+      kabupaten: String(r.kabupaten || ''),
+      provinsi: String(r.provinsi || 'JAWA TIMUR'),
+      kodePos: String(r.kodePos || ''),
+      ayah: String(r.ayah || ''),
+      ibu: String(r.ibu || ''),
+      namaWali: String(r.namaWali || r.ayah || r.ibu || ''),
+      asalKota: String(r.asalKota || r.kabupaten || ''),
       tahunMasuk: String(r.tahunMasuk || ''),
       kamarTerakhir: String(r.kamarTerakhir || ''),
       tanggalBoyong: String(r.tanggalBoyong || ''),
@@ -285,22 +299,36 @@ function writeAllDataToSpreadsheet(payload) {
   // 1. Tulis Sheet Santri
   var santriSheet = ss.getSheetByName(SHEET_NAMES.SANTRI);
   santriSheet.clearContents();
-  var santriHeaders = ['id', 'nis', 'nama', 'tempatLahir', 'tanggalLahir', 'kamar', 'status', 'noHpWali', 'namaWali', 'asalKota', 'tahunMasuk', 'kamarTerakhir', 'tanggalBoyong', 'tahunBoyong', 'alasanBoyong', 'updatedAt'];
+  var santriHeaders = ['id', 'no', 'instansi', 'tglMasuk', 'nis', 'nik', 'nama', 'tempatLahir', 'tanggalLahir', 'kamar', 'status', 'diniyah', 'umum', 'hp', 'desa', 'kecamatan', 'kabupaten', 'provinsi', 'kodePos', 'ayah', 'ibu', 'noHpWali', 'namaWali', 'asalKota', 'tahunMasuk', 'kamarTerakhir', 'tanggalBoyong', 'tahunBoyong', 'alasanBoyong', 'updatedAt'];
   var santriRows = [santriHeaders];
   var nowStr = new Date().toISOString();
 
-  santriData.forEach(function(s) {
+  santriData.forEach(function(s, idx) {
     santriRows.push([
       String(s.id || ''),
+      Number(s.no) || (idx + 1),
+      String(s.instansi || 'PPU'),
+      String(s.tglMasuk || ''),
       String(s.nis || ''),
+      String(s.nik || ''),
       String(s.nama || ''),
       String(s.tempatLahir || ''),
       String(s.tanggalLahir || ''),
       String(s.kamar || ''),
       String(s.status || 'Aktif'),
-      String(s.noHpWali || ''),
-      String(s.namaWali || ''),
-      String(s.asalKota || ''),
+      String(s.diniyah || ''),
+      String(s.umum || ''),
+      String(s.hp || s.noHpWali || ''),
+      String(s.desa || ''),
+      String(s.kecamatan || ''),
+      String(s.kabupaten || ''),
+      String(s.provinsi || 'JAWA TIMUR'),
+      String(s.kodePos || ''),
+      String(s.ayah || ''),
+      String(s.ibu || ''),
+      String(s.noHpWali || s.hp || ''),
+      String(s.namaWali || s.ayah || s.ibu || ''),
+      String(s.asalKota || s.kabupaten || ''),
       String(s.tahunMasuk || ''),
       String(s.kamarTerakhir || ''),
       String(s.tanggalBoyong || ''),

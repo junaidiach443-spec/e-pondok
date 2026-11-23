@@ -3968,10 +3968,11 @@
                 <!-- Step 1: Download Template -->
                 <div class="bg-indigo-50/60 border border-indigo-100 p-4 rounded-xl flex items-center justify-between gap-4">
                     <div class="space-y-0.5">
-                        <p class="text-xs font-bold text-indigo-900">Format Kolom: NIS, Nama Santri, Kamar, Status</p>
-                        <p class="text-xs text-indigo-600">Download template standar yang sudah disiapkan.</p>
+                        <p class="text-xs font-bold text-indigo-900">Format Kolom Master Santri (20 Kolom Sesuai Format Export):</p>
+                        <p class="text-[11px] text-indigo-700 font-mono">NO, INSTANSI, TGL MASUK, NIS, NIK, NAMA, TEMPAT LAHIR, TANGGAL LAHIR, KAMAR, DINIYAH, UMUM, HP, DESA, KECAMATAN, KABUPATEN, PROVINSI, KODE POS, AYAH, IBU, STATUS</p>
+                        <p class="text-[11px] text-gray-500">Mendukung status: <b>AKTIF</b>, <b>BOYONG</b>, dan <b>GT</b> (Guru Tugas). Format impor 100% cocok dengan hasil ekspor master.</p>
                     </div>
-                    <button onclick="downloadTemplateSantri()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 shrink-0">
+                    <button onclick="downloadTemplateMasterSantri()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5 shrink-0">
                         <i class="fas fa-download"></i> Download Template
                     </button>
                 </div>
@@ -3994,13 +3995,15 @@
                             Update jika NIS sudah ada
                         </label>
                     </div>
-                    <div class="max-h-48 overflow-y-auto border border-gray-200 rounded-xl overflow-x-auto">
+                    <div class="max-h-56 overflow-y-auto border border-gray-200 rounded-xl overflow-x-auto">
                         <table class="w-full text-left text-xs whitespace-nowrap">
                             <thead class="bg-gray-100 text-gray-600 sticky top-0">
                                 <tr>
-                                    <th class="px-3 py-2">NIS</th>
+                                    <th class="px-3 py-2">No & NIS</th>
                                     <th class="px-3 py-2">Nama Santri & TTL</th>
                                     <th class="px-3 py-2">Kamar</th>
+                                    <th class="px-3 py-2">Diniyah & Umum</th>
+                                    <th class="px-3 py-2">Alamat & Wali</th>
                                     <th class="px-3 py-2">Status</th>
                                 </tr>
                             </thead>
@@ -4909,23 +4912,23 @@
     </div>
 
     <!-- Modular Application Scripts -->
-    <script src="js/utils.js?v=25"></script>
-    <script src="js/data.js?v=25"></script>
-    <script src="js/navigation.js?v=25"></script>
-    <script src="js/dashboard.js?v=25"></script>
-    <script src="js/santri.js?v=25"></script>
-    <script src="js/izin-keluar.js?v=25"></script>
-    <script src="js/syahriah.js?v=25"></script>
-    <script src="js/tagihan-kustom.js?v=25"></script>
-    <script src="js/pembayaran-lain.js?v=25"></script>
-    <script src="js/pengeluaran.js?v=25"></script>
-    <script src="js/cetak.js?v=25"></script>
-    <script src="js/laporan.js?v=25"></script>
-    <script src="js/pengaturan.js?v=25"></script>
-    <script src="js/backup-restore.js?v=25"></script>
-    <script src="js/auth.js?v=25"></script>
-    <script src="js/cloud-sync.js?v=25"></script>
-    <script src="js/app.js?v=25"></script>
+    <script src="js/utils.js?v=26"></script>
+    <script src="js/data.js?v=26"></script>
+    <script src="js/navigation.js?v=26"></script>
+    <script src="js/dashboard.js?v=26"></script>
+    <script src="js/santri.js?v=26"></script>
+    <script src="js/izin-keluar.js?v=26"></script>
+    <script src="js/syahriah.js?v=26"></script>
+    <script src="js/tagihan-kustom.js?v=26"></script>
+    <script src="js/pembayaran-lain.js?v=26"></script>
+    <script src="js/pengeluaran.js?v=26"></script>
+    <script src="js/cetak.js?v=26"></script>
+    <script src="js/laporan.js?v=26"></script>
+    <script src="js/pengaturan.js?v=26"></script>
+    <script src="js/backup-restore.js?v=26"></script>
+    <script src="js/auth.js?v=26"></script>
+    <script src="js/cloud-sync.js?v=26"></script>
+    <script src="js/app.js?v=26"></script>
 </body>
 </html>
 

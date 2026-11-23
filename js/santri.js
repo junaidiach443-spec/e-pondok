@@ -2243,12 +2243,19 @@ function bukaModalDetailArsipSantri(santriId) {
 function downloadTemplateMasterSantri() {
     const headers = ["NO", "INSTANSI", "TGL MASUK", "NIS", "NIK", "NAMA", "TEMPAT LAHIR", "TANGGAL LAHIR", "KAMAR", "DINIYAH", "UMUM", "HP", "DESA", "KECAMATAN", "KABUPATEN", "PROVINSI", "KODE POS", "AYAH", "IBU", "STATUS"];
     const sampleRows = [
-        [1, "PPU", "20 Syawal 1440 H. | 24 Juni 2019 M", "1440-19-028", "3529032705040001", "ABDULLA", "SUMENEP", "27 Juni 2004", "A-02", "I", "SMA", "085230292683", "MANDING TIMUR", "MANDING", "SUMENEP", "JAWA TIMUR", "69452", "ACH. MAULANA", "AMYANI", "BOYONG"],
-        [2, "PPU", "11 Syawal 1438 | 08 Juli 2017 M.", "1438-17-011", "3529030605040001", "ACHMAD JUNAIDI", "SUMENEP", "05 Juni 2004", "B-01", "III", "SMP", "082330074833", "MANDING LAOK", "MANDING", "SUMENEP", "JAWA TIMUR", "69452", "Hawawi", "Buriya", "AKTIF"]
+        [1, "PPU", "11 Syawal 1438 | 08 Juli 2017 M.", "1438-17-011", "3529030605040001", "ACHMAD JUNAIDI", "SUMENEP", "05 Juni 2004", "B-01", "III", "SMP", "082330074833", "MANDING LAOK", "MANDING", "SUMENEP", "JAWA TIMUR", "69452", "HAWAWI", "BURIYA", "AKTIF"],
+        [2, "PPU", "20 Syawal 1440 H. | 24 Juni 2019 M", "1440-19-028", "3529032705040001", "ABDULLA", "SUMENEP", "27 Juni 2004", "A-02", "I", "SMA", "085230292683", "MANDING TIMUR", "MANDING", "SUMENEP", "JAWA TIMUR", "69452", "ACH. MAULANA", "AMYANI", "BOYONG"],
+        [3, "PPU", "15 Syawal 1441 | 07 Juni 2020 M.", "1441-20-005", "3529031201050002", "MUHAMMAD HASAN", "PAMEKASAN", "12 Januari 2005", "A-01", "II", "MA", "087812345678", "PADEMAWU", "PADEMAWU", "PAMEKASAN", "JAWA TIMUR", "69321", "H. BUKHORI", "SITI AISYAH", "GT"]
     ];
 
     if (window.XLSX) {
         const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
+        ws['!cols'] = [
+            { wch: 6 }, { wch: 10 }, { wch: 25 }, { wch: 15 }, { wch: 20 },
+            { wch: 28 }, { wch: 15 }, { wch: 18 }, { wch: 10 }, { wch: 10 },
+            { wch: 10 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 16 },
+            { wch: 14 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 12 }
+        ];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Master_Santri_Template");
         XLSX.writeFile(wb, "Template_Master_Santri_PPU.xlsx");
@@ -2322,32 +2329,9 @@ function exportMasterSantriExcel() {
 // Fitur: Template Input, Import Excel/CSV, & Export Excel
 // ==========================================================================
 
-// Download Template File Input Standar
+// Download Template File Input Standar (Sama persis 20 kolom dengan Master Santri & Format Export)
 function downloadTemplateSantri() {
-    const headers = ["NIS", "Nama Santri", "Tempat Lahir", "Tanggal Lahir", "Kamar", "Status", "No. HP / WA Wali", "Nama Orang Tua / Wali", "Asal Daerah / Kota"];
-    const sampleRows = [
-        ["2024001", "AHMAD FAUZI", "Sumenep", "12 Mei 2008", "A-01", "Aktif", "081234567890", "H. Moh. Hasan", "Sumenep"],
-        ["2024002", "MUHAMMAD RIZKI", "Pamekasan", "20 Agustus 2007", "A-02", "Aktif", "085233445566", "Ust. Achmad", "Pamekasan"],
-        ["2024003", "SITI AISYAH", "Bangkalan", "05 Januari 2009", "B-01", "Aktif", "087811223344", "H. Abdurrahman", "Bangkalan"],
-        ["", "ZULFA NURUL", "Sampang", "15 Oktober 2008", "B-02", "Aktif", "", "Ibu Fatimah", "Sampang"] // NIS kosong akan di-generate otomatis
-    ];
-
-    if (window.XLSX) {
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
-        ws['!cols'] = [{ wch: 15 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 18 }];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Template_Santri");
-        XLSX.writeFile(wb, "Template_Import_Santri.xlsx");
-    } else {
-        const csvLines = [headers.join(",")];
-        sampleRows.forEach(r => csvLines.push(r.map(v => `"${v}"`).join(",")));
-        const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "Template_Import_Santri.csv";
-        link.click();
-    }
-    showToast("Template berhasil diunduh");
+    return downloadTemplateMasterSantri();
 }
 
 // Buka Modal Import Santri
@@ -2458,17 +2442,32 @@ function parseAndShowPreviewRows(rows) {
 
     const header = rows[headerRowIdx].map(h => (h || '').toString().toLowerCase().trim());
     
-    // Deteksi index kolom
+    // Deteksi index kolom 20 Kolom Sesuai Format Export Master:
+    // NO, INSTANSI, TGL MASUK, NIS, NIK, NAMA, TEMPAT LAHIR, TANGGAL LAHIR, KAMAR, DINIYAH, UMUM, HP, DESA, KECAMATAN, KABUPATEN, PROVINSI, KODE POS, AYAH, IBU, STATUS
+    let noIdx = header.findIndex(h => h === 'no' || h === 'nomor' || h.startsWith('no.'));
+    let instansiIdx = header.findIndex(h => h.includes('instansi') || h.includes('lembaga'));
+    let tglMasukIdx = header.findIndex(h => h.includes('tgl masuk') || h.includes('tanggal masuk') || (h.includes('masuk') && !h.includes('tahun')));
+    let thnMasukIdx = header.findIndex(h => h.includes('tahun masuk') || h.includes('th masuk') || h.includes('angkatan'));
     let nisIdx = header.findIndex(h => h.includes('nis') || h.includes('induk'));
+    let nikIdx = header.findIndex(h => h.includes('nik') || h.includes('ktp') || h.includes('no. ktp'));
     let namaIdx = header.findIndex(h => h.includes('nama') && !h.includes('wali') && !h.includes('orang') && !h.includes('ayah') && !h.includes('ibu'));
     let tempatLahirIdx = header.findIndex(h => h.includes('tempat') || (h.includes('lahir') && !h.includes('tgl') && !h.includes('tanggal')));
-    let tglLahirIdx = header.findIndex(h => h.includes('tanggal') || h.includes('tgl lahir') || h.includes('tgl. lahir') || h.includes('tgl_lahir'));
+    let tglLahirIdx = header.findIndex(h => (h.includes('tanggal') || h.includes('tgl')) && !h.includes('masuk') && !h.includes('boyong'));
     let ttlIdx = header.findIndex(h => h.includes('ttl'));
     let kamarIdx = header.findIndex(h => h.includes('kamar') || h.includes('asrama') || h.includes('kelas') || h.includes('kobong'));
-    let statusIdx = header.findIndex(h => h.includes('status'));
-    let hpIdx = header.findIndex(h => h.includes('hp') || h.includes('wa') || h.includes('telepon') || h.includes('whatsapp') || h.includes('kontak'));
-    let waliIdx = header.findIndex(h => h.includes('wali') || h.includes('orang tua') || h.includes('ayah') || h.includes('ibu'));
-    let kotaIdx = header.findIndex(h => h.includes('kota') || h.includes('asal') || h.includes('daerah') || h.includes('alamat'));
+    let diniyahIdx = header.findIndex(h => h.includes('diniyah') || h.includes('madrasah') || h === 'din');
+    let umumIdx = header.findIndex(h => h.includes('umum') || h.includes('formal') || h.includes('sekolah'));
+    let hpIdx = header.findIndex(h => h.includes('hp') || h.includes('wa') || h.includes('telepon') || h.includes('whatsapp') || h.includes('kontak') || h.includes('telp'));
+    let desaIdx = header.findIndex(h => h.includes('desa') || h.includes('kelurahan'));
+    let kecamatanIdx = header.findIndex(h => h.includes('kecamatan') || h === 'kec');
+    let kabupatenIdx = header.findIndex(h => h.includes('kabupaten') || h === 'kab' || h.includes('kota'));
+    let provinsiIdx = header.findIndex(h => h.includes('provinsi') || h === 'prov');
+    let kodePosIdx = header.findIndex(h => h.includes('kode pos') || h.includes('kodepos') || h === 'pos');
+    let ayahIdx = header.findIndex(h => h.includes('ayah') || h.includes('bapak'));
+    let ibuIdx = header.findIndex(h => h.includes('ibu'));
+    let waliIdx = header.findIndex(h => h.includes('wali') || h.includes('orang tua'));
+    let kotaIdx = header.findIndex(h => (h.includes('asal') || h.includes('daerah') || h.includes('alamat')) && !h.includes('desa'));
+    let statusIdx = header.findIndex(h => h.includes('status') || h.includes('keaktifan') || h.includes('kondisi'));
 
     if (namaIdx === -1) {
         namaIdx = header.findIndex(h => h.includes('nama'));
@@ -2484,32 +2483,122 @@ function parseAndShowPreviewRows(rows) {
         const row = rows[i];
         if (!row || row.length === 0) continue;
 
-        const nama = (row[namaIdx] || '').toString().trim();
-        const nis = (row[nisIdx] || '').toString().trim();
-        let tempatLahir = (tempatLahirIdx > -1 && row[tempatLahirIdx]) ? row[tempatLahirIdx].toString().trim() : '';
+        const nama = (namaIdx > -1 && row[namaIdx]) ? row[namaIdx].toString().trim().toUpperCase() : '';
+        if (!nama) continue; // Nama wajib
+
+        const no = (noIdx > -1 && row[noIdx]) ? parseInt(row[noIdx], 10) || null : null;
+        const instansi = (instansiIdx > -1 && row[instansiIdx]) ? row[instansiIdx].toString().trim().toUpperCase() : 'PPU';
+        const tglMasuk = (tglMasukIdx > -1 && row[tglMasukIdx]) ? row[tglMasukIdx].toString().trim() : '';
+        let nis = (nisIdx > -1 && row[nisIdx]) ? row[nisIdx].toString().trim() : '';
+        const nik = (nikIdx > -1 && row[nikIdx]) ? row[nikIdx].toString().trim() : '';
+
+        let tempatLahir = (tempatLahirIdx > -1 && row[tempatLahirIdx]) ? row[tempatLahirIdx].toString().trim().toUpperCase() : '';
         let tanggalLahir = (tglLahirIdx > -1 && row[tglLahirIdx]) ? row[tglLahirIdx].toString().trim() : '';
         if (!tempatLahir && !tanggalLahir && ttlIdx > -1 && row[ttlIdx]) {
             const ttlRaw = row[ttlIdx].toString().trim();
             const parts = ttlRaw.split(/[,/]/);
-            tempatLahir = (parts[0] || '').trim();
+            tempatLahir = (parts[0] || '').trim().toUpperCase();
             tanggalLahir = (parts.slice(1).join(', ') || '').trim();
         }
-        const kamar = (row[kamarIdx] || '').toString().trim();
-        let status = (row[statusIdx] || '').toString().trim();
-        const noHpWali = (hpIdx > -1 && row[hpIdx]) ? row[hpIdx].toString().trim() : '';
-        const namaWali = (waliIdx > -1 && row[waliIdx]) ? row[waliIdx].toString().trim() : '';
-        const asalKota = (kotaIdx > -1 && row[kotaIdx]) ? row[kotaIdx].toString().trim() : '';
 
-        if (!nama && !nis) continue; // Baris kosong
-        if (!nama) continue; // Nama wajib
+        const rawKamar = (kamarIdx > -1 && row[kamarIdx]) ? row[kamarIdx].toString().trim().toUpperCase() : '';
+        const diniyah = (diniyahIdx > -1 && row[diniyahIdx]) ? row[diniyahIdx].toString().trim().toUpperCase() : '';
+        const umum = (umumIdx > -1 && row[umumIdx]) ? row[umumIdx].toString().trim().toUpperCase() : '';
+        const hp = (hpIdx > -1 && row[hpIdx]) ? row[hpIdx].toString().trim() : '';
+        const desa = (desaIdx > -1 && row[desaIdx]) ? row[desaIdx].toString().trim().toUpperCase() : '';
+        const kecamatan = (kecamatanIdx > -1 && row[kecamatanIdx]) ? row[kecamatanIdx].toString().trim().toUpperCase() : '';
+        const kabupaten = (kabupatenIdx > -1 && row[kabupatenIdx]) ? row[kabupatenIdx].toString().trim().toUpperCase() : '';
+        const provinsi = (provinsiIdx > -1 && row[provinsiIdx]) ? row[provinsiIdx].toString().trim().toUpperCase() : 'JAWA TIMUR';
+        const kodePos = (kodePosIdx > -1 && row[kodePosIdx]) ? row[kodePosIdx].toString().trim() : '';
+        const ayah = (ayahIdx > -1 && row[ayahIdx]) ? row[ayahIdx].toString().trim().toUpperCase() : '';
+        const ibu = (ibuIdx > -1 && row[ibuIdx]) ? row[ibuIdx].toString().trim().toUpperCase() : '';
 
-        if (!status || !['aktif', 'tidak aktif'].includes(status.toLowerCase())) {
-            status = 'Aktif';
+        let namaWali = (waliIdx > -1 && row[waliIdx]) ? row[waliIdx].toString().trim().toUpperCase() : '';
+        if (!namaWali) namaWali = ayah || ibu || 'Wali Santri';
+
+        let asalKota = (kotaIdx > -1 && row[kotaIdx]) ? row[kotaIdx].toString().trim().toUpperCase() : '';
+        if (!asalKota) asalKota = kabupaten || kecamatan || 'Sumenep';
+
+        // Deteksi Status: AKTIF, BOYONG, atau GT (Guru Tugas / Non-Mukim)
+        let rawStatus = (statusIdx > -1 && row[statusIdx]) ? row[statusIdx].toString().trim().toUpperCase() : 'AKTIF';
+        let status = 'Aktif';
+        if (rawStatus.includes('BOYONG') || rawStatus.includes('KELUAR') || rawStatus.includes('PINDAH') || rawStatus.includes('LULUS')) {
+            status = 'Boyong';
+        } else if (rawStatus.includes('GT') || rawStatus.includes('GURU TUGAS') || rawStatus.includes('NON-MUKIM') || rawStatus.includes('NON MUKIM')) {
+            status = 'GT';
+        } else if (rawStatus.includes('TIDAK') || rawStatus.includes('NONAKTIF') || rawStatus.includes('NON-AKTIF') || rawStatus.includes('OFF')) {
+            status = 'Boyong';
         } else {
-            status = status.toLowerCase() === 'aktif' ? 'Aktif' : 'Tidak Aktif';
+            status = 'Aktif';
         }
 
-        tempImportSantriData.push({ nis, nama, tempatLahir, tanggalLahir, kamar, status, noHpWali, namaWali, asalKota });
+        // Tentukan kamar dan kamarTerakhir sesuai status
+        let kamar = '';
+        let kamarTerakhir = rawKamar || '-';
+        let tanggalBoyong = '';
+        let tahunBoyong = '';
+        let alasanBoyong = '';
+
+        if (status === 'Boyong' || status === 'GT') {
+            kamar = ''; // dilepas dari kamar aktif agar tidak membebani kapasitas kamar
+            kamarTerakhir = rawKamar || '-';
+            tanggalBoyong = new Date().toLocaleDateString('en-CA');
+            tahunBoyong = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : '1447/1448';
+            alasanBoyong = status === 'GT' ? 'Guru Tugas (GT) / Non-Mukim' : 'Boyong dari asrama';
+        } else {
+            kamar = rawKamar;
+            kamarTerakhir = rawKamar;
+        }
+
+        let tahunMasuk = (thnMasukIdx > -1 && row[thnMasukIdx]) ? row[thnMasukIdx].toString().trim() : '';
+        if (!tahunMasuk && tglMasuk) {
+            const m = tglMasuk.match(/14\d{2}/);
+            if (m) {
+                const y = parseInt(m[0], 10);
+                tahunMasuk = `${y}/${y + 1}`;
+            }
+        }
+        if (!tahunMasuk && nis) {
+            const m = nis.match(/^14\d{2}/);
+            if (m) {
+                const y = parseInt(m[0], 10);
+                tahunMasuk = `${y}/${y + 1}`;
+            }
+        }
+        if (!tahunMasuk) {
+            tahunMasuk = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : '1447/1448';
+        }
+
+        tempImportSantriData.push({
+            no,
+            instansi,
+            tglMasuk,
+            nis,
+            nik,
+            nama,
+            tempatLahir,
+            tanggalLahir,
+            kamar,
+            kamarTerakhir,
+            status,
+            diniyah,
+            umum,
+            hp,
+            noHpWali: hp,
+            desa,
+            kecamatan,
+            kabupaten,
+            provinsi,
+            kodePos,
+            ayah,
+            ibu,
+            namaWali,
+            asalKota,
+            tahunMasuk,
+            tanggalBoyong,
+            tahunBoyong,
+            alasanBoyong
+        });
     }
 
     if (tempImportSantriData.length === 0) {
@@ -2526,20 +2615,46 @@ function parseAndShowPreviewRows(rows) {
     
     if (tablePreview) {
         const previewRows = tempImportSantriData.slice(0, 10);
-        let html = previewRows.map(item => `
-            <tr>
-                <td class="px-3 py-2 font-mono text-gray-500">${item.nis || '<span class="text-amber-500 italic">Auto</span>'}</td>
-                <td class="px-3 py-2">
-                    <div class="font-bold text-gray-800">${item.nama}</div>
-                    <div class="text-[10px] text-gray-400">${item.tempatLahir ? item.tempatLahir + ', ' : ''}${item.tanggalLahir || '-'} ${item.asalKota ? '• ' + item.asalKota : ''}</div>
-                </td>
-                <td class="px-3 py-2 text-gray-600 font-mono">${item.kamar || '-'}</td>
-                <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.status === 'Aktif' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}">${item.status}</span></td>
-            </tr>
-        `).join('');
+        let html = previewRows.map((item, idx) => {
+            let statusBadge = '';
+            if (item.status === 'Aktif') {
+                statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1"><i class="fas fa-check-circle text-[9px]"></i> Aktif</span>`;
+            } else if (item.status === 'Boyong') {
+                statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1"><i class="fas fa-box-archive text-[9px]"></i> Boyong</span>`;
+            } else {
+                statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-300 inline-flex items-center gap-1"><i class="fas fa-user-graduate text-[9px]"></i> Guru Tugas (GT)</span>`;
+            }
+
+            const kamarDisplay = item.status === 'Aktif'
+                ? (item.kamar ? `Kamar ${item.kamar}` : '-')
+                : `Eks: ${item.kamarTerakhir || '-'}`;
+
+            return `
+                <tr>
+                    <td class="px-3 py-2 font-mono text-gray-500">
+                        ${item.no ? item.no + '. ' : (idx + 1) + '. '}<span class="font-bold text-gray-700">${item.nis || 'Auto'}</span>
+                        ${item.nik ? `<div class="text-[10px] text-gray-400">NIK: ${item.nik}</div>` : ''}
+                    </td>
+                    <td class="px-3 py-2">
+                        <div class="font-bold text-gray-800">${item.nama}</div>
+                        <div class="text-[10px] text-gray-400">${item.tempatLahir ? item.tempatLahir + ', ' : ''}${item.tanggalLahir || '-'}</div>
+                    </td>
+                    <td class="px-3 py-2 font-mono text-gray-700">${kamarDisplay}</td>
+                    <td class="px-3 py-2 text-[11px] text-gray-600">
+                        <span class="font-bold text-purple-700">Din: ${item.diniyah || '-'}</span> | 
+                        <span class="font-medium text-blue-700">Um: ${item.umum || '-'}</span>
+                    </td>
+                    <td class="px-3 py-2 text-[11px] text-gray-600">
+                        <div>${item.namaWali || '-'}</div>
+                        <div class="text-[10px] text-gray-400">${item.kabupaten || item.asalKota || '-'} ${item.hp ? '• ' + item.hp : ''}</div>
+                    </td>
+                    <td class="px-3 py-2">${statusBadge}</td>
+                </tr>
+            `;
+        }).join('');
 
         if (tempImportSantriData.length > 10) {
-            html += `<tr><td colspan="4" class="px-3 py-2 text-center text-gray-400 italic bg-gray-50">... dan ${tempImportSantriData.length - 10} data lainnya</td></tr>`;
+            html += `<tr><td colspan="6" class="px-3 py-2 text-center text-gray-400 italic bg-gray-50">... dan ${tempImportSantriData.length - 10} data lainnya</td></tr>`;
         }
         tablePreview.innerHTML = html;
     }
@@ -2563,42 +2678,101 @@ function prosesEksekusiImportSantri() {
     let addedCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
+    let countAktif = 0;
+    let countBoyong = 0;
+    let countGT = 0;
 
-    tempImportSantriData.forEach(item => {
+    tempImportSantriData.forEach((item, idx) => {
         let nis = item.nis;
         if (!nis) {
             nis = 'NIS-' + (Date.now() + Math.floor(Math.random() * 10000)).toString().slice(-6);
         }
 
+        // Daftarkan kamar ke master jika kamar aktif belum ada
+        if (item.kamar) {
+            if (!appSettings.kamarList) appSettings.kamarList = [];
+            const exists = appSettings.kamarList.some(k => (typeof k === 'string' ? k : k.nama).trim().toUpperCase() === item.kamar.trim().toUpperCase());
+            if (!exists) {
+                appSettings.kamarList.push({ id: 'KMR-' + (Date.now() + idx), nama: item.kamar.trim().toUpperCase(), kapasitas: 20 });
+            }
+        }
+
+        if (item.status === 'Boyong') countBoyong++;
+        else if (item.status === 'GT') countGT++;
+        else countAktif++;
+
         const existingIdx = santriData.findIndex(s => s.nis && s.nis.toString().trim() === nis);
 
         if (existingIdx > -1) {
             if (updateExisting) {
-                santriData[existingIdx].nama = item.nama;
-                santriData[existingIdx].kamar = item.kamar || santriData[existingIdx].kamar;
-                santriData[existingIdx].status = item.status || santriData[existingIdx].status;
-                if (item.tempatLahir) santriData[existingIdx].tempatLahir = item.tempatLahir;
-                if (item.tanggalLahir) santriData[existingIdx].tanggalLahir = item.tanggalLahir;
-                if (item.noHpWali) santriData[existingIdx].noHpWali = item.noHpWali;
-                if (item.namaWali) santriData[existingIdx].namaWali = item.namaWali;
-                if (item.asalKota) santriData[existingIdx].asalKota = item.asalKota;
-                santriData[existingIdx].updatedAt = new Date().toISOString();
+                santriData[existingIdx] = {
+                    ...santriData[existingIdx],
+                    no: item.no || santriData[existingIdx].no || (existingIdx + 1),
+                    instansi: item.instansi || santriData[existingIdx].instansi || 'PPU',
+                    tglMasuk: item.tglMasuk || santriData[existingIdx].tglMasuk || '',
+                    nis: nis,
+                    nik: item.nik || santriData[existingIdx].nik || '',
+                    nama: item.nama,
+                    tempatLahir: item.tempatLahir || santriData[existingIdx].tempatLahir || '',
+                    tanggalLahir: item.tanggalLahir || santriData[existingIdx].tanggalLahir || '',
+                    kamar: item.kamar,
+                    kamarTerakhir: item.kamarTerakhir || santriData[existingIdx].kamarTerakhir || '-',
+                    status: item.status || 'Aktif',
+                    diniyah: item.diniyah || santriData[existingIdx].diniyah || '',
+                    umum: item.umum || santriData[existingIdx].umum || '',
+                    hp: item.hp || santriData[existingIdx].hp || '',
+                    noHpWali: item.noHpWali || santriData[existingIdx].noHpWali || '',
+                    desa: item.desa || santriData[existingIdx].desa || '',
+                    kecamatan: item.kecamatan || santriData[existingIdx].kecamatan || '',
+                    kabupaten: item.kabupaten || santriData[existingIdx].kabupaten || '',
+                    provinsi: item.provinsi || santriData[existingIdx].provinsi || 'JAWA TIMUR',
+                    kodePos: item.kodePos || santriData[existingIdx].kodePos || '',
+                    ayah: item.ayah || santriData[existingIdx].ayah || '',
+                    ibu: item.ibu || santriData[existingIdx].ibu || '',
+                    namaWali: item.namaWali || santriData[existingIdx].namaWali || '',
+                    asalKota: item.asalKota || santriData[existingIdx].asalKota || '',
+                    tahunMasuk: item.tahunMasuk || santriData[existingIdx].tahunMasuk || getTahunAjaranAktif(),
+                    tanggalBoyong: item.tanggalBoyong || santriData[existingIdx].tanggalBoyong || '',
+                    tahunBoyong: item.tahunBoyong || santriData[existingIdx].tahunBoyong || '',
+                    alasanBoyong: item.alasanBoyong || santriData[existingIdx].alasanBoyong || '',
+                    updatedAt: new Date().toISOString()
+                };
                 updatedCount++;
             } else {
                 skippedCount++;
             }
         } else {
+            const nextNo = item.no || ((santriData.reduce((max, s) => Math.max(max, s.no || 0), 0) || santriData.length) + 1);
             santriData.push({
                 id: 'S-' + (Date.now() + Math.floor(Math.random() * 10000)),
+                no: nextNo,
+                instansi: item.instansi || 'PPU',
+                tglMasuk: item.tglMasuk || '',
                 nis: nis,
+                nik: item.nik || '',
                 nama: item.nama,
                 tempatLahir: item.tempatLahir || '',
                 tanggalLahir: item.tanggalLahir || '',
-                kamar: item.kamar || '',
+                kamar: item.kamar,
+                kamarTerakhir: item.kamarTerakhir || '-',
                 status: item.status || 'Aktif',
+                diniyah: item.diniyah || '',
+                umum: item.umum || '',
+                hp: item.hp || '',
                 noHpWali: item.noHpWali || '',
+                desa: item.desa || '',
+                kecamatan: item.kecamatan || '',
+                kabupaten: item.kabupaten || '',
+                provinsi: item.provinsi || 'JAWA TIMUR',
+                kodePos: item.kodePos || '',
+                ayah: item.ayah || '',
+                ibu: item.ibu || '',
                 namaWali: item.namaWali || '',
                 asalKota: item.asalKota || '',
+                tahunMasuk: item.tahunMasuk || getTahunAjaranAktif(),
+                tanggalBoyong: item.tanggalBoyong || '',
+                tahunBoyong: item.tahunBoyong || '',
+                alasanBoyong: item.alasanBoyong || '',
                 updatedAt: new Date().toISOString()
             });
             addedCount++;
@@ -2619,11 +2793,16 @@ function prosesEksekusiImportSantri() {
         icon: 'success',
         title: 'Import Data Santri Selesai!',
         html: `
-            <div class="text-sm text-gray-600 space-y-1 mt-2 text-left bg-gray-50 p-4 rounded-xl border border-gray-100 font-mono">
+            <div class="text-sm text-gray-600 space-y-1.5 mt-2 text-left bg-gray-50 p-4 rounded-xl border border-gray-100 font-mono">
                 <p>• Santri baru ditambahkan: <b class="text-blue-600">${addedCount}</b></p>
                 <p>• Santri diperbarui: <b class="text-indigo-600">${updatedCount}</b></p>
                 ${skippedCount > 0 ? `<p>• Dilewati (NIS sama): <b class="text-gray-500">${skippedCount}</b></p>` : ''}
-                <p class="pt-2 border-t border-gray-200 text-gray-700 font-bold">Total Santri Sekarang: ${santriData.length}</p>
+                <div class="pt-2 border-t border-gray-200 text-xs space-y-1">
+                    <p class="text-emerald-700 font-bold"><i class="fas fa-check-circle mr-1"></i> Santri Aktif: ${countAktif} Santri</p>
+                    <p class="text-rose-700 font-bold"><i class="fas fa-box-archive mr-1"></i> Santri Boyong: ${countBoyong} Santri</p>
+                    <p class="text-amber-700 font-bold"><i class="fas fa-user-graduate mr-1"></i> Guru Tugas (GT): ${countGT} Santri</p>
+                </div>
+                <p class="pt-2 border-t border-gray-200 text-gray-800 font-bold">Total Santri di Sistem: ${santriData.length}</p>
             </div>
         `,
         confirmButtonText: 'Tutup',
