@@ -160,7 +160,10 @@ function renderSemuaTabel(resetPage = false) {
                     <div class="font-bold text-gray-800 uppercase flex items-center gap-2">
                         <span class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">${s.nama ? s.nama.charAt(0) : '?'}</span>
                         <div>
-                            <div>${s.nama}</div>
+                            <div class="font-bold text-gray-900">${s.nama}</div>
+                            <div class="text-[11px] text-gray-500 font-normal flex items-center gap-1 mt-0.5 normal-case">
+                                <i class="fas fa-cake-candles text-[9px] text-amber-500"></i> ${s.tempatLahir ? s.tempatLahir + ', ' : ''}${s.tanggalLahir || '-'}
+                            </div>
                             ${badgeKota}
                         </div>
                     </div>
@@ -1989,6 +1992,7 @@ function cetakSuratKeteranganBoyong(santriId) {
                 <tr><td>Nama Lengkap</td><td>:</td><td><b>${s.nama}</b></td></tr>
                 <tr><td>Nomor Induk Santri (NIS)</td><td>:</td><td>${s.nis || '-'}</td></tr>
                 <tr><td>Nomor Induk Kependudukan (NIK)</td><td>:</td><td>${s.nik || '-'}</td></tr>
+                <tr><td>Tempat, Tanggal Lahir</td><td>:</td><td>${s.tempatLahir ? s.tempatLahir + ', ' : ''}${s.tanggalLahir || '-'}</td></tr>
                 <tr><td>Status Santri</td><td>:</td><td><b>${isGT ? 'Guru Tugas / Non-Mukim (GT)' : 'Sudah Boyong (Alumni)'}</b></td></tr>
                 <tr><td>Angkatan / Tahun Masuk</td><td>:</td><td>${s.tahunMasuk || s.tglMasuk || '-'}</td></tr>
                 <tr><td>Kamar Terakhir</td><td>:</td><td>Kamar ${s.kamarTerakhir || '-'}</td></tr>
@@ -2320,17 +2324,17 @@ function exportMasterSantriExcel() {
 
 // Download Template File Input Standar
 function downloadTemplateSantri() {
-    const headers = ["NIS", "Nama Santri", "Kamar", "Status", "No. HP / WA Wali", "Nama Orang Tua / Wali", "Asal Daerah / Kota"];
+    const headers = ["NIS", "Nama Santri", "Tempat Lahir", "Tanggal Lahir", "Kamar", "Status", "No. HP / WA Wali", "Nama Orang Tua / Wali", "Asal Daerah / Kota"];
     const sampleRows = [
-        ["2024001", "AHMAD FAUZI", "I - A", "Aktif", "081234567890", "H. Moh. Hasan", "Sumenep"],
-        ["2024002", "MUHAMMAD RIZKI", "I - B", "Aktif", "085233445566", "Ust. Achmad", "Pamekasan"],
-        ["2024003", "SITI AISYAH", "II - A", "Aktif", "087811223344", "H. Abdurrahman", "Bangkalan"],
-        ["", "ZULFA NURUL", "II - B", "Aktif", "", "Ibu Fatimah", "Sampang"] // NIS kosong akan di-generate otomatis
+        ["2024001", "AHMAD FAUZI", "Sumenep", "12 Mei 2008", "A-01", "Aktif", "081234567890", "H. Moh. Hasan", "Sumenep"],
+        ["2024002", "MUHAMMAD RIZKI", "Pamekasan", "20 Agustus 2007", "A-02", "Aktif", "085233445566", "Ust. Achmad", "Pamekasan"],
+        ["2024003", "SITI AISYAH", "Bangkalan", "05 Januari 2009", "B-01", "Aktif", "087811223344", "H. Abdurrahman", "Bangkalan"],
+        ["", "ZULFA NURUL", "Sampang", "15 Oktober 2008", "B-02", "Aktif", "", "Ibu Fatimah", "Sampang"] // NIS kosong akan di-generate otomatis
     ];
 
     if (window.XLSX) {
         const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
-        ws['!cols'] = [{ wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 18 }];
+        ws['!cols'] = [{ wch: 15 }, { wch: 25 }, { wch: 18 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 18 }];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Template_Santri");
         XLSX.writeFile(wb, "Template_Import_Santri.xlsx");
@@ -2443,6 +2447,9 @@ function parseAndShowPreviewRows(rows) {
     // Deteksi index kolom
     let nisIdx = header.findIndex(h => h.includes('nis') || h.includes('induk'));
     let namaIdx = header.findIndex(h => h.includes('nama') && !h.includes('wali') && !h.includes('orang'));
+    let tempatLahirIdx = header.findIndex(h => h.includes('tempat') || (h.includes('lahir') && !h.includes('tgl') && !h.includes('tanggal')));
+    let tglLahirIdx = header.findIndex(h => h.includes('tanggal') || h.includes('tgl lahir') || h.includes('tgl. lahir') || h.includes('tgl_lahir'));
+    let ttlIdx = header.findIndex(h => h.includes('ttl'));
     let kamarIdx = header.findIndex(h => h.includes('kamar') || h.includes('asrama') || h.includes('kelas'));
     let statusIdx = header.findIndex(h => h.includes('status'));
     let hpIdx = header.findIndex(h => h.includes('hp') || h.includes('wa') || h.includes('telepon') || h.includes('whatsapp') || h.includes('kontak'));
@@ -2462,6 +2469,14 @@ function parseAndShowPreviewRows(rows) {
 
         const nama = (row[namaIdx] || '').toString().trim();
         const nis = (row[nisIdx] || '').toString().trim();
+        let tempatLahir = (tempatLahirIdx > -1 && row[tempatLahirIdx]) ? row[tempatLahirIdx].toString().trim() : '';
+        let tanggalLahir = (tglLahirIdx > -1 && row[tglLahirIdx]) ? row[tglLahirIdx].toString().trim() : '';
+        if (!tempatLahir && !tanggalLahir && ttlIdx > -1 && row[ttlIdx]) {
+            const ttlRaw = row[ttlIdx].toString().trim();
+            const parts = ttlRaw.split(/[,/]/);
+            tempatLahir = (parts[0] || '').trim();
+            tanggalLahir = (parts.slice(1).join(', ') || '').trim();
+        }
         const kamar = (row[kamarIdx] || '').toString().trim();
         let status = (row[statusIdx] || '').toString().trim();
         const noHpWali = (hpIdx > -1 && row[hpIdx]) ? row[hpIdx].toString().trim() : '';
@@ -2477,7 +2492,7 @@ function parseAndShowPreviewRows(rows) {
             status = status.toLowerCase() === 'aktif' ? 'Aktif' : 'Tidak Aktif';
         }
 
-        tempImportSantriData.push({ nis, nama, kamar, status, noHpWali, namaWali, asalKota });
+        tempImportSantriData.push({ nis, nama, tempatLahir, tanggalLahir, kamar, status, noHpWali, namaWali, asalKota });
     }
 
     if (tempImportSantriData.length === 0) {
@@ -2497,11 +2512,11 @@ function parseAndShowPreviewRows(rows) {
         let html = previewRows.map(item => `
             <tr>
                 <td class="px-3 py-2 font-mono text-gray-500">${item.nis || '<span class="text-amber-500 italic">Auto</span>'}</td>
-                <td class="px-3 py-2 font-bold text-gray-800">
-                    ${item.nama}
-                    ${item.asalKota ? `<span class="text-[10px] text-gray-500 font-normal ml-1">(${item.asalKota})</span>` : ''}
+                <td class="px-3 py-2">
+                    <div class="font-bold text-gray-800">${item.nama}</div>
+                    <div class="text-[10px] text-gray-400">${item.tempatLahir ? item.tempatLahir + ', ' : ''}${item.tanggalLahir || '-'} ${item.asalKota ? '• ' + item.asalKota : ''}</div>
                 </td>
-                <td class="px-3 py-2 text-gray-600">${item.kamar || '-'}</td>
+                <td class="px-3 py-2 text-gray-600 font-mono">${item.kamar || '-'}</td>
                 <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.status === 'Aktif' ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}">${item.status}</span></td>
             </tr>
         `).join('');
@@ -2545,9 +2560,12 @@ function prosesEksekusiImportSantri() {
                 santriData[existingIdx].nama = item.nama;
                 santriData[existingIdx].kamar = item.kamar || santriData[existingIdx].kamar;
                 santriData[existingIdx].status = item.status || santriData[existingIdx].status;
+                if (item.tempatLahir) santriData[existingIdx].tempatLahir = item.tempatLahir;
+                if (item.tanggalLahir) santriData[existingIdx].tanggalLahir = item.tanggalLahir;
                 if (item.noHpWali) santriData[existingIdx].noHpWali = item.noHpWali;
                 if (item.namaWali) santriData[existingIdx].namaWali = item.namaWali;
                 if (item.asalKota) santriData[existingIdx].asalKota = item.asalKota;
+                santriData[existingIdx].updatedAt = new Date().toISOString();
                 updatedCount++;
             } else {
                 skippedCount++;
@@ -2557,11 +2575,14 @@ function prosesEksekusiImportSantri() {
                 id: 'S-' + (Date.now() + Math.floor(Math.random() * 10000)),
                 nis: nis,
                 nama: item.nama,
+                tempatLahir: item.tempatLahir || '',
+                tanggalLahir: item.tanggalLahir || '',
                 kamar: item.kamar || '',
                 status: item.status || 'Aktif',
                 noHpWali: item.noHpWali || '',
                 namaWali: item.namaWali || '',
-                asalKota: item.asalKota || ''
+                asalKota: item.asalKota || '',
+                updatedAt: new Date().toISOString()
             });
             addedCount++;
         }
@@ -2591,11 +2612,13 @@ function prosesEksekusiImportSantri() {
 
 // Export Data Santri ke Excel (.xlsx) atau CSV
 function exportSantriExcel() {
-    const headers = ["No", "NIS", "Nama Lengkap", "Kamar / Asrama", "Nama Wali", "No. HP / WA Wali", "Asal Daerah / Kota", "Status Santri"];
+    const headers = ["No", "NIS", "Nama Lengkap", "Tempat Lahir", "Tanggal Lahir", "Kamar / Asrama", "Nama Wali", "No. HP / WA Wali", "Asal Daerah / Kota", "Status Santri"];
     const rows = santriData.map((s, idx) => [
         idx + 1,
         s.nis || '-',
         s.nama,
+        s.tempatLahir || '-',
+        s.tanggalLahir || '-',
         s.kamar || '-',
         s.namaWali || '-',
         s.noHpWali || '-',
@@ -2607,7 +2630,7 @@ function exportSantriExcel() {
 
     if (window.XLSX) {
         const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 28 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 12 }];
+        ws['!cols'] = [{ wch: 6 }, { wch: 15 }, { wch: 28 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 12 }];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Data_Santri");
         XLSX.writeFile(wb, `${fileName}.xlsx`);
