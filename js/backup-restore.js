@@ -869,7 +869,7 @@ function bersihkanTransaksiPercobaan() {
     });
 }
 
-// Kosongkan Seluruh Data Master Santri & Transaksi (Mulai Baru)
+// Kosongkan Seluruh Data Master Santri & Transaksi (Hapus Permanen untuk Mulai Baru)
 function kosongkanDataMasterSantri() {
     if (typeof Swal === 'undefined') return;
 
@@ -877,15 +877,15 @@ function kosongkanDataMasterSantri() {
     const totalTrxSaatIni = (window.transactions || transactions || []).length;
 
     Swal.fire({
-        title: 'Kosongkan Data Master Santri?',
+        title: 'Hapus Permanen Data Master Santri?',
         html: `
             <div class="text-left text-sm text-gray-600 space-y-2.5 mt-1">
                 <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1">
                     <p class="font-extrabold flex items-center gap-1.5 text-rose-700 text-sm">
-                        <i class="fas fa-exclamation-triangle"></i> PERHATIAN: Memulai Master Baru dari Nol!
+                        <i class="fas fa-exclamation-triangle"></i> PERHATIAN: Hapus Permanen Tanpa Pengarsipan!
                     </p>
                     <p class="text-[11px] leading-relaxed text-gray-700">
-                        Seluruh data santri (${totalSantriSaatIni} Santri), riwayat perizinan & mutasi, serta seluruh riwayat transaksi (${totalTrxSaatIni} Trx) akan dikosongkan agar Anda dapat memasukkan data santri baru secara mandiri.
+                        Seluruh data santri (${totalSantriSaatIni} Santri), riwayat perizinan & mutasi, serta seluruh riwayat transaksi (${totalTrxSaatIni} Trx) akan <b>dihapus permanen</b> agar Anda dapat memasukkan data santri baru dari awal.
                     </p>
                 </div>
                 <div class="bg-blue-50/70 p-3 rounded-xl border border-blue-200 text-xs space-y-1">
@@ -895,7 +895,7 @@ function kosongkanDataMasterSantri() {
                     <p class="text-blue-800">• Pos Pembayaran Lain & Akun Login Admin</p>
                 </div>
                 <p class="text-[11px] text-gray-500">
-                    <i class="fas fa-shield-alt text-emerald-600 mr-1"></i> File cadangan otomatis lengkap akan langsung diunduh ke folder Downloads sebelum data dikosongkan demi keamanan Anda.
+                    <i class="fas fa-info-circle text-blue-600 mr-1"></i> Data dihapus langsung secara bersih. Anda dapat mengunduh cadangan/arsip nanti setelah data riil baru selesai dimasukkan.
                 </p>
                 <p class="text-xs font-bold text-gray-800 pt-1">
                     Ketik kata konfirmasi <span class="text-rose-600 font-mono font-extrabold">HAPUS MASTER</span> di bawah ini:
@@ -907,7 +907,7 @@ function kosongkanDataMasterSantri() {
         showCancelButton: true,
         confirmButtonColor: '#e11d48',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Kosongkan Master Santri',
+        confirmButtonText: 'Ya, Hapus Permanen Sekarang',
         cancelButtonText: 'Batal',
         preConfirm: (value) => {
             if ((value || '').trim().toUpperCase() !== 'HAPUS MASTER') {
@@ -918,42 +918,12 @@ function kosongkanDataMasterSantri() {
         }
     }).then((res) => {
         if (res.isConfirmed) {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-CA');
-            const hourStr = String(now.getHours()).padStart(2, '0');
-            const minStr = String(now.getMinutes()).padStart(2, '0');
-            const filenameKhusus = `backup_epondok_SEBELUM_KOSONGKAN_MASTER_${dateStr}_${hourStr}${minStr}.json`;
-            const TA = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : (appSettings?.tahunAjaranList?.find(t => t.aktif)?.ta || '-');
-
-            // Simpan snapshot otomatis instan ke localStorage
-            const autoSnapshotPayload = {
-                appName: "e-Pondok Keuangan PP. AL-USYMUNI",
-                version: "2.0",
-                exportDate: now.toISOString(),
-                exportDateFormatted: now.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' }) + ' WIB',
-                tahunAjaranAktif: TA,
-                summary: {
-                    totalSantri: (santriData || []).length,
-                    totalTransaksi: (transactions || []).length,
-                    totalKasMasuk: (transactions || []).filter(t => t.type === 'in').reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
-                },
-                database: {
-                    santriData: JSON.parse(JSON.stringify(santriData || [])),
-                    transactions: JSON.parse(JSON.stringify(transactions || [])),
-                    appSettings: JSON.parse(JSON.stringify(appSettings || {})),
-                    mutasiKamarList: JSON.parse(JSON.stringify(mutasiKamarList || [])),
-                    liburanSantriList: JSON.parse(JSON.stringify(liburanSantriList || [])),
-                    pulangSantriList: JSON.parse(JSON.stringify(pulangSantriList || []))
-                }
-            };
+            // Bersihkan snapshot cadangan lama agar benar-benar terhapus permanen
             try {
-                localStorage.setItem('epondok_auto_snapshot_before_clean', JSON.stringify(autoSnapshotPayload));
+                localStorage.removeItem('epondok_auto_snapshot_before_clean');
             } catch (snapErr) {
-                console.warn("Gagal simpan auto-snapshot ke localStorage:", snapErr);
+                console.warn("Gagal hapus auto-snapshot dari localStorage:", snapErr);
             }
-
-            // Download backup otomatis
-            downloadBackupJSON(filenameKhusus);
 
             // Tandai transaksi sebagai terhapus
             if (typeof trackDeletedTransactionId === 'function' && Array.isArray(transactions)) {
@@ -1008,17 +978,16 @@ function kosongkanDataMasterSantri() {
 
             Swal.fire({
                 icon: 'success',
-                title: 'Data Master Berhasil Dikosongkan!',
+                title: 'Data Master Dihapus Permanen!',
                 html: `
                     <div class="text-sm text-gray-600 space-y-2 mt-2 text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <p class="font-bold text-gray-800">Aplikasi siap untuk penginputan data santri baru.</p>
+                        <p class="font-bold text-gray-800">Aplikasi bersih dan siap untuk penginputan data santri baru.</p>
                         <p class="text-xs text-gray-600">
-                            Data master santri dan transaksi telah menjadi 0. Anda sekarang dapat mulai memasukkan santri baru melalui menu <b>Data Santri → Tambah Santri</b> atau melalui impor Excel/CSV.
+                            Seluruh data master santri dan riwayat transaksi telah dihapus permanen. Anda dapat langsung mulai memasukkan data santri baru melalui menu <b>Data Santri → Tambah Santri</b> atau melalui impor Excel/CSV.
                         </p>
-                        <p class="text-xs text-gray-500">File cadangan otomatis sebelum dikosongkan tersimpan di folder Downloads:</p>
-                        <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-lg font-mono text-xs text-blue-800 font-bold break-all">
-                            <i class="fas fa-file-code mr-1"></i> ${filenameKhusus}
-                        </div>
+                        <p class="text-[11px] text-gray-500">
+                            Setelah data santri baru selesai dimasukkan, Anda dapat membuat cadangan/arsip kapan saja melalui tombol "Unduh Cadangan Lengkap (.JSON)" di atas.
+                        </p>
                     </div>
                 `,
                 confirmButtonColor: '#1d4ed8'
