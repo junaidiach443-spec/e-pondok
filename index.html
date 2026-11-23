@@ -443,9 +443,6 @@
                         <button onclick="bukaModalSantri()" class="bg-blue-700 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center justify-center gap-2 text-sm">
                             <i class="fas fa-plus"></i> Tambah Santri
                         </button>
-                        <button onclick="kosongkanDataMasterSantri()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl font-bold shadow-md transition-colors flex items-center justify-center gap-2 text-sm" title="Hapus Permanen Seluruh Data Master Santri & Transaksi untuk Mulai Baru">
-                            <i class="fas fa-trash-alt"></i> Kosongkan Master
-                        </button>
                     </div>
                 </div>
 
@@ -1955,9 +1952,19 @@
 
             <!-- Halaman: Pengaturan -->
             <div id="page-pengaturan" class="hidden max-w-4xl mx-auto space-y-6 pb-10">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Pengaturan Sistem</h2>
-                    <p class="text-sm text-gray-500 mt-1">Konfigurasi master data aplikasi.</p>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl font-bold text-gray-800">Pengaturan Sistem</h2>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fas fa-lock-open mr-1"></i> Terbuka</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Konfigurasi master data aplikasi & keamanan.</p>
+                    </div>
+                    <div>
+                        <button type="button" onclick="kunciPengaturan()" class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-xs" title="Kunci Kembali Pengaturan">
+                            <i class="fas fa-lock text-rose-500"></i> Kunci Pengaturan
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -4912,23 +4919,23 @@
     </div>
 
     <!-- Modular Application Scripts -->
-    <script src="js/utils.js?v=26"></script>
-    <script src="js/data.js?v=26"></script>
-    <script src="js/navigation.js?v=26"></script>
-    <script src="js/dashboard.js?v=26"></script>
-    <script src="js/santri.js?v=26"></script>
-    <script src="js/izin-keluar.js?v=26"></script>
-    <script src="js/syahriah.js?v=26"></script>
-    <script src="js/tagihan-kustom.js?v=26"></script>
-    <script src="js/pembayaran-lain.js?v=26"></script>
-    <script src="js/pengeluaran.js?v=26"></script>
-    <script src="js/cetak.js?v=26"></script>
-    <script src="js/laporan.js?v=26"></script>
-    <script src="js/pengaturan.js?v=26"></script>
-    <script src="js/backup-restore.js?v=26"></script>
-    <script src="js/auth.js?v=26"></script>
-    <script src="js/cloud-sync.js?v=26"></script>
-    <script src="js/app.js?v=26"></script>
+    <script src="js/utils.js?v=27"></script>
+    <script src="js/data.js?v=27"></script>
+    <script src="js/navigation.js?v=27"></script>
+    <script src="js/dashboard.js?v=27"></script>
+    <script src="js/santri.js?v=27"></script>
+    <script src="js/izin-keluar.js?v=27"></script>
+    <script src="js/syahriah.js?v=27"></script>
+    <script src="js/tagihan-kustom.js?v=27"></script>
+    <script src="js/pembayaran-lain.js?v=27"></script>
+    <script src="js/pengeluaran.js?v=27"></script>
+    <script src="js/cetak.js?v=27"></script>
+    <script src="js/laporan.js?v=27"></script>
+    <script src="js/pengaturan.js?v=27"></script>
+    <script src="js/backup-restore.js?v=27"></script>
+    <script src="js/auth.js?v=27"></script>
+    <script src="js/cloud-sync.js?v=27"></script>
+    <script src="js/app.js?v=27"></script>
 </body>
 </html>
 

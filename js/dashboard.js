@@ -110,10 +110,26 @@ function updateDashboard() {
     let kasTransferMasuk = 0;
     let kasTransferKeluar = 0;
 
-    (transactions || []).forEach(t => {
+    // Filter transaksi yang aktif dan belum dihapus
+    const deletedTrxIds = (typeof getDeletedTransactionIds === 'function') ? new Set(getDeletedTransactionIds()) : new Set();
+    const rawTrx = (typeof window !== 'undefined' && Array.isArray(window.transactions))
+        ? window.transactions
+        : ((typeof transactions !== 'undefined' && Array.isArray(transactions)) ? transactions : []);
+    const activeTrx = rawTrx.filter(t => t && t.id && !deletedTrxIds.has(t.id));
+
+    // Sinkronkan kembali ke variabel transaksi jika ada selisih
+    if (typeof transactions !== 'undefined' && transactions.length !== activeTrx.length) {
+        transactions = activeTrx;
+    }
+    if (typeof window !== 'undefined' && window.transactions && window.transactions.length !== activeTrx.length) {
+        window.transactions = activeTrx;
+    }
+
+    activeTrx.forEach(t => {
         const amount = Number(t.amount) || 0;
         const isTransfer = (t.metode === 'Transfer');
         const matchPeriod = (dashboardPeriodFilter === 'all') || ((t.ta || '') === TA);
+        const tDate = (t.date || '').slice(0, 10);
 
         if (t.type === 'in') {
             if (matchPeriod) {
@@ -124,7 +140,7 @@ function updateDashboard() {
                     kasTunaiMasuk += amount;
                 }
 
-                if (t.date === today) {
+                if (tDate === today || t.date === today) {
                     incomeToday += amount;
                     trxTodayCount++;
                 }
@@ -138,7 +154,7 @@ function updateDashboard() {
                     kasTunaiKeluar += amount;
                 }
 
-                if (t.date === today) {
+                if (tDate === today || t.date === today) {
                     expenseToday += amount;
                 }
             }
@@ -154,7 +170,7 @@ function updateDashboard() {
     const elTaMismatch = document.getElementById('dash-ta-mismatch-banner');
     if (elTaMismatch) {
         if (dashboardPeriodFilter === 'ta' && kasMasuk === 0) {
-            const inTrxOtherTa = (transactions || []).filter(t => t && t.type === 'in' && t.ta && t.ta !== TA);
+            const inTrxOtherTa = activeTrx.filter(t => t && t.type === 'in' && t.ta && t.ta !== TA);
             if (inTrxOtherTa.length > 0) {
                 const otherTaMap = {};
                 let otherSum = 0;
@@ -190,7 +206,7 @@ function updateDashboard() {
                         </div>
                     </div>
                 `;
-            } else if ((transactions || []).length === 0) {
+            } else if (activeTrx.length === 0) {
                 // Transaksi sedang kosong! Cek apakah ada cadangan otomatis dari sebelum dikosongkan
                 let snapData = null;
                 try {
@@ -346,7 +362,7 @@ function updateDashboard() {
         let totalMasuk = 0;
         let totalKeluar = 0;
 
-        (transactions || []).filter(t => (dashboardPeriodFilter === 'all' || (t.ta || '') === TA) && t.kategori === cat.nama).forEach(t => {
+        activeTrx.filter(t => (dashboardPeriodFilter === 'all' || (t.ta || '') === TA) && t.kategori === cat.nama).forEach(t => {
             if (t.type === 'in') totalMasuk += t.amount;
             if (t.type === 'out') totalKeluar += t.amount;
         });

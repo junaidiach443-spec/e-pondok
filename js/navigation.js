@@ -45,6 +45,64 @@ function updateHeaderTitle(title) {
 
 // Navigasi Utama Halaman
 function navigate(pageId) {
+    // Proteksi Keamanan Halaman Pengaturan dengan Password "juna321"
+    if (pageId === 'pengaturan') {
+        const isAuth = sessionStorage.getItem('epondok_pengaturan_auth') === 'juna321';
+        if (!isAuth) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Akses Pengaturan Terkunci',
+                    html: `
+                        <div class="text-center mb-3">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2 text-xl shadow-xs">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <p class="text-xs text-gray-600">Menu Pengaturan Sistem dilindungi kata sandi pengurus. Masukkan sandi untuk membuka akses:</p>
+                        </div>
+                    `,
+                    input: 'password',
+                    inputPlaceholder: 'Masukkan kata sandi pengaturan...',
+                    inputAttributes: {
+                        autocapitalize: 'off',
+                        autocorrect: 'off'
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-key mr-1.5"></i> Buka Akses',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#1d4ed8',
+                    cancelButtonColor: '#64748b',
+                    focusConfirm: false,
+                    didOpen: () => {
+                        const input = Swal.getInput();
+                        if (input) input.focus();
+                    },
+                    preConfirm: (inputVal) => {
+                        if ((inputVal || '').trim() !== 'juna321') {
+                            Swal.showValidationMessage('Kata sandi salah! Akses ditolak.');
+                            return false;
+                        }
+                        return true;
+                    }
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        sessionStorage.setItem('epondok_pengaturan_auth', 'juna321');
+                        navigate('pengaturan');
+                    }
+                });
+                return;
+            } else {
+                const pass = prompt('Masukkan sandi pengaturan:');
+                if ((pass || '').trim() === 'juna321') {
+                    sessionStorage.setItem('epondok_pengaturan_auth', 'juna321');
+                    navigate('pengaturan');
+                } else if (pass !== null) {
+                    alert('Kata sandi salah! Akses ditolak.');
+                }
+                return;
+            }
+        }
+    }
+
     // Auto-sync real-time dari cloud setiap kali berpindah halaman
     if (typeof pullFromCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
         const now = Date.now();
@@ -189,9 +247,19 @@ function navigate(pageId) {
     }
 }
 
+// Kunci Kembali Halaman Pengaturan
+function kunciPengaturan() {
+    sessionStorage.removeItem('epondok_pengaturan_auth');
+    if (typeof showToast === 'function') {
+        showToast('Pengaturan sistem berhasil dikunci kembali.', 'info');
+    }
+    navigate('dashboard');
+}
+
 // Expose ke global window
 window.toggleSidebar = toggleSidebar;
 window.toggleMenu = toggleMenu;
 window.updateHeaderTitle = updateHeaderTitle;
 window.navigate = navigate;
 window.navigateToPage = navigate;
+window.kunciPengaturan = kunciPengaturan;

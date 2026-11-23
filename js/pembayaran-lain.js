@@ -984,21 +984,18 @@ function simpanPembayaranUmumPL() {
 
 // Hapus Transaksi Pembayaran Lain
 function hapusPembayaranLain(trxId) {
-    showConfirm("Hapus Transaksi", "Yakin ingin menghapus kuitansi pembayaran ini? Kas masuk akan dikurangi.", () => {
-        const idx = transactions.findIndex(t => t.id === trxId);
-        if (idx !== -1) {
-            if (typeof trackDeletedTransactionId === 'function') {
-                trackDeletedTransactionId(trxId);
-            }
-            transactions.splice(idx, 1);
-            window.transactions = transactions;
-            saveDataToStorage();
-            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
-            renderPembayaranLainPage();
-            if (typeof updateDashboard === 'function') updateDashboard();
-            if (typeof renderLaporan === 'function') renderLaporan();
-            showToast("Transaksi Berhasil Dihapus");
+    showConfirm("Hapus Transaksi", "Yakin ingin menghapus kuitansi pembayaran ini? Kas masuk dan saldo akan otomatis dikurangi.", () => {
+        if (typeof trackDeletedTransactionId === 'function') {
+            trackDeletedTransactionId(trxId);
         }
+        transactions = (transactions || []).filter(t => t.id !== trxId);
+        window.transactions = transactions;
+        saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(true);
+        renderPembayaranLainPage();
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof renderLaporan === 'function') renderLaporan();
+        showToast("Transaksi Berhasil Dihapus");
     });
 }
 
