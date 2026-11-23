@@ -140,11 +140,11 @@ function updateDashboard() {
     const saldoKasTunai = kasTunaiMasuk - kasTunaiKeluar;
     const saldoKasTransfer = kasTransferMasuk - kasTransferKeluar;
 
-    // Deteksi ketidaksesuaian Tahun Ajaran: Kas Masuk T.A aktif bernilai Rp 0 namun ada transaksi di T.A lain
+    // Deteksi ketidaksesuaian Tahun Ajaran atau Ketersediaan Cadangan Otomatis
     const elTaMismatch = document.getElementById('dash-ta-mismatch-banner');
     if (elTaMismatch) {
-        if (dashboardPeriodFilter === 'ta' && kasMasuk === 0 && Array.isArray(transactions) && transactions.length > 0) {
-            const inTrxOtherTa = transactions.filter(t => t && t.type === 'in' && t.ta && t.ta !== TA);
+        if (dashboardPeriodFilter === 'ta' && kasMasuk === 0) {
+            const inTrxOtherTa = (transactions || []).filter(t => t && t.type === 'in' && t.ta && t.ta !== TA);
             if (inTrxOtherTa.length > 0) {
                 const otherTaMap = {};
                 let otherSum = 0;
@@ -180,6 +180,42 @@ function updateDashboard() {
                         </div>
                     </div>
                 `;
+            } else if ((transactions || []).length === 0) {
+                // Transaksi sedang kosong! Cek apakah ada cadangan otomatis dari sebelum dikosongkan
+                let snapData = null;
+                try {
+                    const rawSnap = localStorage.getItem('epondok_auto_snapshot_before_clean');
+                    if (rawSnap) snapData = JSON.parse(rawSnap);
+                } catch (e) {}
+
+                const snapTrx = (snapData && snapData.database && snapData.database.transactions) || [];
+                if (snapTrx.length > 0) {
+                    const snapKas = (snapData.summary && snapData.summary.totalKasMasuk) || snapTrx.filter(t => t.type === 'in').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+                    elTaMismatch.classList.remove('hidden');
+                    elTaMismatch.innerHTML = `
+                        <div class="bg-blue-50 border border-blue-300 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-blue-900 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 text-base">
+                                    <i class="fas fa-rotate-left"></i>
+                                </div>
+                                <div>
+                                    <p class="font-extrabold text-sm text-gray-800">Transaksi Baru Saja Dikosongkan?</p>
+                                    <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
+                                        Tersedia cadangan otomatis sebelum dikosongkan: <b>${snapTrx.length} Transaksi (Total ${formatRupiah(snapKas)})</b> pada <b>T.A ${snapData.tahunAjaranAktif || '-'}</b>.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                                <button type="button" onclick="pulihkanDariAutoSnapshot()" class="flex-1 sm:flex-none px-4 py-2 bg-blue-700 text-white rounded-xl font-bold text-xs hover:bg-blue-800 transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                                    <i class="fas fa-rotate-left"></i> Pulihkan Otomatis Sekarang
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    elTaMismatch.classList.add('hidden');
+                    elTaMismatch.innerHTML = '';
+                }
             } else {
                 elTaMismatch.classList.add('hidden');
                 elTaMismatch.innerHTML = '';

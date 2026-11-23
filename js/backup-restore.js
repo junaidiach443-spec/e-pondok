@@ -58,9 +58,118 @@ function renderBackupRestorePage() {
         }
     }
 
-    // 3. Reset State Dropzone Restore jika belum ada file aktif
+    // 3. Tampilkan Banner Cadangan Otomatis jika ada snapshot tersimpan
+    renderAutoSnapshotBox();
+
+    // 4. Reset State Dropzone Restore jika belum ada file aktif
     if (!selectedRestoreData) {
         batalPilihFileRestore();
+    }
+}
+
+// Render Kotak Cadangan Otomatis Instan Sebelum Dikosongkan
+function renderAutoSnapshotBox() {
+    const boxAuto = document.getElementById('container-auto-snapshot-restore');
+    if (!boxAuto) return;
+    try {
+        const raw = localStorage.getItem('epondok_auto_snapshot_before_clean');
+        if (!raw) {
+            boxAuto.classList.add('hidden');
+            boxAuto.innerHTML = '';
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        const dataTrx = (parsed.database && parsed.database.transactions) || [];
+        if (!Array.isArray(dataTrx) || dataTrx.length === 0) {
+            boxAuto.classList.add('hidden');
+            boxAuto.innerHTML = '';
+            return;
+        }
+        const totalKas = (parsed.summary && parsed.summary.totalKasMasuk) || dataTrx.filter(t => t.type === 'in').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+        const waktuStr = parsed.exportDateFormatted || 'Baru saja';
+
+        boxAuto.classList.remove('hidden');
+        boxAuto.innerHTML = `
+            <div class="p-4 bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 border-2 border-blue-300 rounded-xl space-y-2.5 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                        <span class="font-bold text-blue-900 text-xs">Cadangan Otomatis Tersedia (Sebelum Dikosongkan)</span>
+                    </div>
+                    <span class="text-[10px] text-blue-700 font-mono">${waktuStr}</span>
+                </div>
+                <p class="text-[11px] text-gray-700 leading-relaxed">
+                    Tersimpan <b>${dataTrx.length} Transaksi Keuangan</b> (Total Kas: <b>${formatRupiah(totalKas)}</b>) untuk <b>T.A ${parsed.tahunAjaranAktif || '-'}</b> tepat sebelum tombol "Bersihkan Transaksi" ditekan.
+                </p>
+                <button type="button" onclick="pulihkanDariAutoSnapshot()" class="w-full py-2.5 px-4 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-rotate-left"></i> Pulihkan Otomatis Sekarang (Tanpa Perlu Cari File)
+                </button>
+            </div>
+        `;
+    } catch (e) {
+        boxAuto.classList.add('hidden');
+    }
+}
+
+// Pulihkan Data Langsung dari Snapshot Otomatis Terakhir
+function pulihkanDariAutoSnapshot() {
+    try {
+        const raw = localStorage.getItem('epondok_auto_snapshot_before_clean');
+        if (!raw) {
+            if (typeof showToast === 'function') showToast("Tidak ada cadangan otomatis tersimpan.", "warning");
+            return;
+        }
+        const parsed = JSON.parse(raw);
+        const dataSantri = (parsed.database && parsed.database.santriData) || [];
+        const dataTrx = (parsed.database && parsed.database.transactions) || [];
+        const dataSettings = (parsed.database && parsed.database.appSettings) || {};
+        const dataMutasi = (parsed.database && parsed.database.mutasiKamarList) || [];
+        const dataLiburan = (parsed.database && parsed.database.liburanSantriList) || [];
+        const dataPulang = (parsed.database && parsed.database.pulangSantriList) || [];
+
+        const payload = {
+            santriData: dataSantri,
+            transactions: dataTrx,
+            appSettings: dataSettings,
+            mutasiKamarList: dataMutasi,
+            liburanSantriList: dataLiburan,
+            pulangSantriList: dataPulang,
+            _detectedTa: parsed.tahunAjaranAktif || ''
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Pulihkan Cadangan Otomatis?',
+                html: `
+                    <div class="text-left text-xs text-gray-600 space-y-2 mt-2">
+                        <p class="font-bold text-gray-800">Transaksi sebelum dikosongkan akan dikembalikan secara instan:</p>
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1 text-blue-900 font-medium">
+                            <div>• Riwayat Transaksi: <b>${dataTrx.length} Transaksi</b></div>
+                            <div>• Total Kas Masuk: <b>${formatRupiah(parsed.summary?.totalKasMasuk || 0)}</b></div>
+                            <div>• Tahun Ajaran: <b>${parsed.tahunAjaranAktif || '-'}</b></div>
+                            <div>• Waktu Cadangan: <b>${parsed.exportDateFormatted || '-'}</b></div>
+                        </div>
+                        <p class="text-[11px] text-gray-500 pt-1">
+                            Lanjutkan pemulihan instan sekarang?
+                        </p>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1d4ed8',
+                confirmButtonText: '<i class="fas fa-rotate-left mr-1"></i> Ya, Pulihkan Instan',
+                cancelButtonText: 'Batal'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    eksekusiSimpanRestore(payload);
+                }
+            });
+        } else {
+            eksekusiSimpanRestore(payload);
+        }
+    } catch (e) {
+        console.error("Gagal pulihkan dari auto-snapshot:", e);
+        if (typeof showToast === 'function') showToast("Gagal memulihkan snapshot: " + e.message, "error");
     }
 }
 
@@ -683,6 +792,35 @@ function bersihkanTransaksiPercobaan() {
             const hourStr = String(now.getHours()).padStart(2, '0');
             const minStr = String(now.getMinutes()).padStart(2, '0');
             const filenameKhusus = `backup_epondok_SEBELUM_BERSIHKAN_${dateStr}_${hourStr}${minStr}.json`;
+            const TA = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : (appSettings.tahunAjaranList?.find(t => t.aktif)?.ta || '-');
+
+            // Simpan snapshot otomatis instan ke localStorage agar bisa dipulihkan 1-klik tanpa perlu cari file
+            const autoSnapshotPayload = {
+                appName: "e-Pondok Keuangan PP. AL-USYMUNI",
+                version: "2.0",
+                exportDate: now.toISOString(),
+                exportDateFormatted: now.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' }) + ' WIB',
+                tahunAjaranAktif: TA,
+                summary: {
+                    totalSantri: (santriData || []).length,
+                    totalTransaksi: (transactions || []).length,
+                    totalKasMasuk: (transactions || []).filter(t => t.type === 'in').reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+                },
+                database: {
+                    santriData: JSON.parse(JSON.stringify(santriData || [])),
+                    transactions: JSON.parse(JSON.stringify(transactions || [])),
+                    appSettings: JSON.parse(JSON.stringify(appSettings || {})),
+                    mutasiKamarList: JSON.parse(JSON.stringify(mutasiKamarList || [])),
+                    liburanSantriList: JSON.parse(JSON.stringify(liburanSantriList || [])),
+                    pulangSantriList: JSON.parse(JSON.stringify(pulangSantriList || []))
+                }
+            };
+            try {
+                localStorage.setItem('epondok_auto_snapshot_before_clean', JSON.stringify(autoSnapshotPayload));
+            } catch (snapErr) {
+                console.warn("Gagal simpan auto-snapshot ke localStorage:", snapErr);
+            }
+
             downloadBackupJSON(filenameKhusus);
 
             // Tandai seluruh ID transaksi lama sebagai terhapus agar tidak tertarik kembali dari perangkat/Cloud lain
@@ -738,3 +876,4 @@ window.handleFileSelectRestore = handleFileSelectRestore;
 window.batalPilihFileRestore = batalPilihFileRestore;
 window.prosesRestoreData = prosesRestoreData;
 window.bersihkanTransaksiPercobaan = bersihkanTransaksiPercobaan;
+window.pulihkanDariAutoSnapshot = pulihkanDariAutoSnapshot;
