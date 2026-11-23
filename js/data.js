@@ -231,14 +231,19 @@ function loadDataFromStorage() {
         localStorage.setItem('appSettings', JSON.stringify(appSettings));
     }
 
-    // Satu kali pembersihan master santri awal (74 santri dummy) & transaksi percobaan untuk mulai baru
-    const MASTER_CLEAN_VERSION = '2026-11-23-clean-master-v1';
+    // Satu kali pembersihan master santri awal & transaksi percobaan untuk mulai baru
+    const MASTER_CLEAN_VERSION = '2026-11-23-force-wipe-v5';
     if (localStorage.getItem('epondok_master_clean_version') !== MASTER_CLEAN_VERSION) {
         santriData = [];
+        window.santriData = [];
         transactions = [];
+        window.transactions = [];
         mutasiKamarList = [];
+        window.mutasiKamarList = [];
         liburanSantriList = [];
+        window.liburanSantriList = [];
         pulangSantriList = [];
+        window.pulangSantriList = [];
         localStorage.setItem('santriData', JSON.stringify([]));
         localStorage.setItem('transactions', JSON.stringify([]));
         localStorage.setItem('mutasiKamarList', JSON.stringify([]));
@@ -253,6 +258,7 @@ function loadDataFromStorage() {
             localStorage.setItem('appSettings', JSON.stringify(appSettings));
         }
         localStorage.setItem('epondok_master_clean_version', MASTER_CLEAN_VERSION);
+        window._needsCloudMasterWipe = true;
     }
 
     const savedSantri = localStorage.getItem('santriData');

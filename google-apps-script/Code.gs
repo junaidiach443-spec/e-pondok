@@ -174,7 +174,8 @@ function readAllDataFromSpreadsheet() {
       kamarTerakhir: String(r.kamarTerakhir || ''),
       tanggalBoyong: String(r.tanggalBoyong || ''),
       tahunBoyong: String(r.tahunBoyong || ''),
-      alasanBoyong: String(r.alasanBoyong || '')
+      alasanBoyong: String(r.alasanBoyong || ''),
+      updatedAt: String(r.updatedAt || '')
     };
   });
 

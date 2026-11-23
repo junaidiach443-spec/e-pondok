@@ -870,10 +870,15 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
             if (filteredCloudSantri.length > 0) {
                 const santriChanged = mergeSantriFromCloud(filteredCloudSantri, cloudSettings);
                 if (santriChanged) dataUpdated = true;
-            } else if ((window.santriData || []).length === 0) {
-                santriData = [];
-                window.santriData = [];
-                localStorage.setItem('santriData', JSON.stringify([]));
+            } else {
+                // Semua santri di Cloud adalah data sebelum reset -> Pastikan lokal tetap kosong bersih!
+                const currentCount = (window.santriData || santriData || []).length;
+                if (currentCount > 0) {
+                    santriData = [];
+                    window.santriData = [];
+                    localStorage.setItem('santriData', JSON.stringify([]));
+                    dataUpdated = true;
+                }
             }
         } else if (cloudData.santriData.length > 0) {
             const santriChanged = mergeSantriFromCloud(cloudData.santriData, cloudSettings);
@@ -1389,7 +1394,8 @@ function readAllDataFromSpreadsheet() {
       kamarTerakhir: String(r.kamarTerakhir || ''),
       tanggalBoyong: String(r.tanggalBoyong || ''),
       tahunBoyong: String(r.tahunBoyong || ''),
-      alasanBoyong: String(r.alasanBoyong || '')
+      alasanBoyong: String(r.alasanBoyong || ''),
+      updatedAt: String(r.updatedAt || '')
     };
   });
 

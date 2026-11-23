@@ -94,6 +94,14 @@ function initApp() {
     if (typeof initCloudSync === 'function') {
         try { initCloudSync(); } catch (e) { console.error("Error initCloudSync:", e); }
     }
+
+    // Jika baru saja dilakukan pembersihan data master awal, segera push data kosong ke Google Sheets
+    if (window._needsCloudMasterWipe && typeof pushToCloud === 'function') {
+        window._needsCloudMasterWipe = false;
+        setTimeout(() => {
+            pushToCloud({ silent: true, isRestorePush: true });
+        }, 1000);
+    }
 }
 
 // Expose fungsi modal ke global window
