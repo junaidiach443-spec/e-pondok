@@ -460,10 +460,11 @@ function trackDeletedTransactionId(trxId) {
 function getDeletedTransactionIds() {
     if (window._isRestoringDatabase) return [];
     try {
+        const ghostIds = ['TRX-1795451323872-RZY20', 'TRX-1795451323872-TCZXR', 'TRX-1795451341267-AZWK6', 'TRX-1795451341267-R5CVT'];
         const local = JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
         const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
         const fromSettings = (settings && Array.isArray(settings.deletedTrxIds)) ? settings.deletedTrxIds : [];
-        const combined = Array.from(new Set([...local, ...fromSettings]));
+        const combined = Array.from(new Set([...ghostIds, ...local, ...fromSettings]));
 
         // Transaksi yang sedang aktif di memori/storage TIDAK BOLEH dianggap terhapus
         const activeIds = new Set((window.transactions || (typeof transactions !== 'undefined' ? transactions : [])).map(t => t && t.id).filter(Boolean));
@@ -593,6 +594,10 @@ function mergeTransactionsFromCloud(cloudTransactions, cloudSettings = null) {
         ? cloudSettings._cloudTrxExtras
         : {};
     const mergedSettingsRef = cloudSettings || window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
+    const activeTrxResetTs = Math.max(
+        Number(localStorage.getItem('epondok_last_trx_reset_ts') || 0),
+        Number((cloudSettings && cloudSettings.trxResetTimestamp) || 0)
+    );
 
     const localMap = new Map();
     (window.transactions || transactions || []).forEach(t => {
@@ -606,6 +611,10 @@ function mergeTransactionsFromCloud(cloudTransactions, cloudSettings = null) {
 
     cloudTransactions.forEach(c => {
         if (!c || !c.id || deletedIds.has(c.id)) return;
+        if (activeTrxResetTs > 0) {
+            const ts = extractTrxTimestamp(c.id);
+            if (ts > 0 && ts < activeTrxResetTs) return; // Lewati transaksi yang berasal dari sebelum reset!
+        }
 
         const extra = trxExtras[c.id] || {};
         const normalizedDate = normalizeDateStr(c.date);
@@ -863,7 +872,7 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
             Number((cloudSettings && cloudSettings.santriResetTimestamp) || 0)
         );
 
-        if (activeSantriResetTs > 0 && !window._isRestoringDatabase) {
+        if (activeSantriResetTs > 0 && !window._isRestoringDatabase && !isPrePullBeforePush) {
             const santriExtras = (cloudSettings && cloudSettings._cloudSantriExtras && typeof cloudSettings._cloudSantriExtras === 'object')
                 ? cloudSettings._cloudSantriExtras
                 : {};
