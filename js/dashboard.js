@@ -43,10 +43,20 @@ function updateDashboard() {
         setKpiText('master-kpi-aktif', `${santriAktif} Santri`);
         setKpiText('master-kpi-boyong', `${totalBoyong} Santri`);
         setKpiText('master-kpi-gt', `${totalGT} Santri`);
+    } else {
+        setKpiText('dash-kpi-total', '0 Santri');
+        setKpiText('dash-kpi-aktif', '0 Santri');
+        setKpiText('dash-kpi-boyong', '0 Santri');
+        setKpiText('dash-kpi-gt', '0 Santri');
+
+        setKpiText('master-kpi-total', '0 Santri');
+        setKpiText('master-kpi-aktif', '0 Santri');
+        setKpiText('master-kpi-boyong', '0 Santri');
+        setKpiText('master-kpi-gt', '0 Santri');
     }
 
     const elTotalSantri = document.getElementById('dash-total-santri');
-    if (elTotalSantri && totalSemua > 0) elTotalSantri.innerText = santriAktif;
+    if (elTotalSantri) elTotalSantri.innerText = santriAktif;
 
     const today = new Date().toLocaleDateString('en-CA');
 

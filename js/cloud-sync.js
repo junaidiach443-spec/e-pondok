@@ -560,24 +560,11 @@ function attachCloudSyncExtrasToSettings(settings) {
     });
     cleanSettings._cloudTrxExtras = trxExtras;
 
-    // Simpan perubahan penting santri (Boyong/GT/mutasi/santri baru di luar data bawaan)
+    // Simpan perubahan penting santri (seluruh atribut santri aktif & boyong tersimpan utuh)
     const santriExtras = {};
     (window.santriData || santriData || []).forEach(s => {
         if (!s || !s.id) return;
-        const idNum = parseInt(String(s.id).replace(/\D/g, ''), 10);
-        const isCustomAdded = !idNum || idNum > 1074;
-        if (isCustomAdded) {
-            santriExtras[s.id] = { ...s };
-        } else {
-            const diff = {};
-            if (s.kamarTerakhir && s.kamarTerakhir !== '-') diff.kt = s.kamarTerakhir;
-            if (s.alasanBoyong) diff.ab = s.alasanBoyong;
-            if (s.tanggalBoyong) diff.tb = s.tanggalBoyong;
-            if (s.tahunBoyong) diff.thb = s.tahunBoyong;
-            if (Object.keys(diff).length > 0) {
-                santriExtras[s.id] = diff;
-            }
-        }
+        santriExtras[s.id] = { ...s };
     });
     cleanSettings._cloudSantriExtras = santriExtras;
 
@@ -776,6 +763,19 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         }
     }
 
+    // 0A-2. Hormati Reset Master Santri dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database)
+    if (cloudSettings && cloudSettings.santriResetTimestamp && !window._isRestoringDatabase) {
+        const cloudSantriResetTs = Number(cloudSettings.santriResetTimestamp) || 0;
+        const localSantriResetTs = Number(localStorage.getItem('epondok_santri_reset_ts') || 0);
+        if (cloudSantriResetTs > localSantriResetTs && cloudSantriResetTs > restoreTs) {
+            santriData = [];
+            window.santriData = [];
+            localStorage.setItem('santriData', JSON.stringify([]));
+            localStorage.setItem('epondok_santri_reset_ts', String(cloudSantriResetTs));
+            dataUpdated = true;
+        }
+    }
+
     // 0B. Sinkronkan daftar transaksi yang dihapus dari Cloud terlebih dahulu (Kecuali sedang memulihkan cadangan database)
     if (!window._isRestoringDatabase) {
         const currentTrxIds = new Set((window.transactions || transactions || []).map(t => t && t.id).filter(Boolean));
@@ -827,12 +827,18 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         delete cleanIncoming._cloudTrxExtras;
         delete cleanIncoming._cloudSantriExtras;
         const localResetTs = (window.appSettings && window.appSettings.trxResetTimestamp) || 0;
+        const localSantriResetTs = (window.appSettings && window.appSettings.santriResetTimestamp) || 0;
         const mergedSettings = { ...window.appSettings, ...cleanIncoming };
-        // Jika reset timestamp cloud lebih usang atau sama dengan waktu pemulihan lokal, hapus trxResetTimestamp
+        // Jika reset timestamp cloud lebih usang atau sama dengan waktu pemulihan lokal, hapus trxResetTimestamp / santriResetTimestamp
         if (Number(cleanIncoming.trxResetTimestamp || 0) <= restoreTs) {
             delete mergedSettings.trxResetTimestamp;
         } else if (localResetTs > (cleanIncoming.trxResetTimestamp || 0)) {
             mergedSettings.trxResetTimestamp = localResetTs;
+        }
+        if (Number(cleanIncoming.santriResetTimestamp || 0) <= restoreTs) {
+            delete mergedSettings.santriResetTimestamp;
+        } else if (localSantriResetTs > (cleanIncoming.santriResetTimestamp || 0)) {
+            mergedSettings.santriResetTimestamp = localSantriResetTs;
         }
         window.appSettings = mergedSettings;
         appSettings = mergedSettings;
@@ -846,10 +852,33 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         dataUpdated = true;
     }
 
-    // 3. Smart Merge Santri Data dengan hidrasi _cloudSantriExtras
-    if (Array.isArray(cloudData.santriData) && cloudData.santriData.length > 0) {
-        const santriChanged = mergeSantriFromCloud(cloudData.santriData, cloudSettings);
-        if (santriChanged) dataUpdated = true;
+    // 3. Smart Merge Santri Data dengan proteksi reset
+    if (Array.isArray(cloudData.santriData)) {
+        const activeSantriResetTs = Math.max(
+            Number(localStorage.getItem('epondok_santri_reset_ts') || 0),
+            Number((cloudSettings && cloudSettings.santriResetTimestamp) || 0)
+        );
+
+        if (activeSantriResetTs > 0 && !window._isRestoringDatabase) {
+            // Saring santri: jika updatedAt tidak ada atau lebih lama dari activeSantriResetTs, jangan tarik santri lama!
+            const filteredCloudSantri = cloudData.santriData.filter(s => {
+                if (!s || !s.id) return false;
+                if (!s.updatedAt) return false;
+                const upTs = new Date(s.updatedAt).getTime();
+                return !isNaN(upTs) && upTs > activeSantriResetTs;
+            });
+            if (filteredCloudSantri.length > 0) {
+                const santriChanged = mergeSantriFromCloud(filteredCloudSantri, cloudSettings);
+                if (santriChanged) dataUpdated = true;
+            } else if ((window.santriData || []).length === 0) {
+                santriData = [];
+                window.santriData = [];
+                localStorage.setItem('santriData', JSON.stringify([]));
+            }
+        } else if (cloudData.santriData.length > 0) {
+            const santriChanged = mergeSantriFromCloud(cloudData.santriData, cloudSettings);
+            if (santriChanged) dataUpdated = true;
+        }
     }
 
     // 4. Smart Merge Mutasi Kamar, Liburan, & Pulang
@@ -1027,6 +1056,7 @@ async function pushToCloud(options = {}) {
         if (isRestoring) {
             currentSettings.deletedTrxIds = [];
             delete currentSettings.trxResetTimestamp;
+            delete currentSettings.santriResetTimestamp;
         } else {
             if (!Array.isArray(currentSettings.deletedTrxIds)) {
                 currentSettings.deletedTrxIds = [];

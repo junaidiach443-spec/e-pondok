@@ -646,13 +646,15 @@ function simpanSantri() {
                 kamarTerakhir: kamarTerakhir || santriData[idx].kamarTerakhir || '-',
                 tanggalBoyong: (status === 'Boyong' || status === 'GT') ? (tanggalBoyong || santriData[idx].tanggalBoyong) : '',
                 tahunBoyong: (status === 'Boyong' || status === 'GT') ? (santriData[idx].tahunBoyong || getTahunAjaranAktif()) : '',
-                alasanBoyong: (status === 'Boyong' || status === 'GT') ? (alasanBoyong || santriData[idx].alasanBoyong) : ''
+                alasanBoyong: (status === 'Boyong' || status === 'GT') ? (alasanBoyong || santriData[idx].alasanBoyong) : '',
+                updatedAt: new Date().toISOString()
             };
         }
     } else {
         const nextNo = (santriData.reduce((max, s) => Math.max(max, s.no || 0), 0) || santriData.length) + 1;
+        const newSantriId = 'S-' + (1000 + nextNo);
         santriData.push({ 
-            id: 'S-' + (1000 + nextNo), 
+            id: newSantriId, 
             no: nextNo,
             nis, 
             nik,
@@ -680,12 +682,13 @@ function simpanSantri() {
             kamarTerakhir: kamarTerakhir || '-',
             tanggalBoyong: (status === 'Boyong' || status === 'GT') ? (tanggalBoyong || new Date().toLocaleDateString('en-CA')) : '',
             tahunBoyong: (status === 'Boyong' || status === 'GT') ? getTahunAjaranAktif() : '',
-            alasanBoyong: (status === 'Boyong' || status === 'GT') ? (alasanBoyong || (status === 'GT' ? 'Guru Tugas (GT) / Non-Mukim' : 'Boyong dari asrama')) : ''
+            alasanBoyong: (status === 'Boyong' || status === 'GT') ? (alasanBoyong || (status === 'GT' ? 'Guru Tugas (GT) / Non-Mukim' : 'Boyong dari asrama')) : '',
+            updatedAt: new Date().toISOString()
         });
     }
 
     // Simpan preferensi komponen paket bulanan dari modal
-    const targetSantriId = id || ('S-' + (1000 + nextNo));
+    const targetSantriId = id || (santriData[santriData.length - 1] && santriData[santriData.length - 1].id) || ('S-' + (1000 + (santriData.length)));
     const chkPondok = document.getElementById('modal-santri-chk-pondok');
     const chkMadrasah = document.getElementById('modal-santri-chk-madrasah');
     const chkMakan = document.getElementById('modal-santri-chk-makan');
