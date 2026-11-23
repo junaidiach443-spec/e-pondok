@@ -868,7 +868,25 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
                 ? cloudSettings._cloudSantriExtras
                 : {};
 
-            // Saring santri: hanya terima santri baru yang diinput setelah tanggal reset (updatedAt > activeSantriResetTs)
+            // 1. Bersihkan santri lokal lama yang berasal dari sebelum reset, tetapi PERTAHANKAN santri baru (updatedAt > activeSantriResetTs)
+            const currentLocal = Array.isArray(window.santriData) ? window.santriData : (santriData || []);
+            const validLocalSantri = currentLocal.filter(s => {
+                if (!s || !s.id) return false;
+                if (s.updatedAt) {
+                    const upTs = new Date(s.updatedAt).getTime();
+                    return !isNaN(upTs) && upTs > activeSantriResetTs;
+                }
+                return false;
+            });
+
+            if (validLocalSantri.length !== currentLocal.length) {
+                santriData = validLocalSantri;
+                window.santriData = validLocalSantri;
+                localStorage.setItem('santriData', JSON.stringify(validLocalSantri));
+                dataUpdated = true;
+            }
+
+            // 2. Saring santri Cloud: hanya terima santri baru yang diinput setelah tanggal reset (updatedAt > activeSantriResetTs)
             const filteredCloudSantri = cloudData.santriData.filter(s => {
                 if (!s || !s.id) return false;
                 const extra = santriExtras[s.id];
@@ -883,15 +901,6 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
             if (filteredCloudSantri.length > 0) {
                 const santriChanged = mergeSantriFromCloud(filteredCloudSantri, cloudSettings);
                 if (santriChanged) dataUpdated = true;
-            } else {
-                // Semua santri di Cloud adalah data sebelum reset -> Pastikan lokal tetap kosong bersih (0 santri)!
-                const currentCount = (window.santriData || santriData || []).length;
-                if (currentCount > 0) {
-                    santriData = [];
-                    window.santriData = [];
-                    localStorage.setItem('santriData', JSON.stringify([]));
-                    dataUpdated = true;
-                }
             }
         } else if (cloudData.santriData.length > 0) {
             const santriChanged = mergeSantriFromCloud(cloudData.santriData, cloudSettings);

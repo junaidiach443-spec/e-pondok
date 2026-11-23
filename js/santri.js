@@ -2385,16 +2385,20 @@ function previewImportSantri(event) {
         labelFile.classList.remove('hidden');
     }
 
-    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls');
+    const fileNameLower = (file.name || '').toLowerCase();
+    const isExcel = fileNameLower.endsWith('.xlsx') || fileNameLower.endsWith('.xls');
 
-    if (isExcel && window.XLSX) {
+    if (isExcel) {
+        if (!window.XLSX) {
+            return showToast("Pustaka pembaca Excel sedang dimuat, silakan coba beberapa detik lagi atau gunakan format CSV.", "warning");
+        }
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 const firstSheetName = workbook.SheetNames[0];
-                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { header: 1 });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { header: 1, raw: false, defval: '' });
                 parseAndShowPreviewRows(rows);
             } catch (err) {
                 showToast("Gagal membaca file Excel: " + err.message, "error");
@@ -2442,28 +2446,41 @@ function parseAndShowPreviewRows(rows) {
         return showToast("File tidak berisi baris data yang cukup!", "error");
     }
 
-    const header = rows[0].map(h => (h || '').toString().toLowerCase().trim());
+    // Deteksi baris header (mencari baris pertama yang memuat kata 'nama' atau 'santri')
+    let headerRowIdx = 0;
+    for (let r = 0; r < Math.min(rows.length, 6); r++) {
+        const candidate = (rows[r] || []).map(h => (h || '').toString().toLowerCase().trim());
+        if (candidate.some(h => h.includes('nama') || h.includes('santri') || h.includes('nis'))) {
+            headerRowIdx = r;
+            break;
+        }
+    }
+
+    const header = rows[headerRowIdx].map(h => (h || '').toString().toLowerCase().trim());
     
     // Deteksi index kolom
     let nisIdx = header.findIndex(h => h.includes('nis') || h.includes('induk'));
-    let namaIdx = header.findIndex(h => h.includes('nama') && !h.includes('wali') && !h.includes('orang'));
+    let namaIdx = header.findIndex(h => h.includes('nama') && !h.includes('wali') && !h.includes('orang') && !h.includes('ayah') && !h.includes('ibu'));
     let tempatLahirIdx = header.findIndex(h => h.includes('tempat') || (h.includes('lahir') && !h.includes('tgl') && !h.includes('tanggal')));
     let tglLahirIdx = header.findIndex(h => h.includes('tanggal') || h.includes('tgl lahir') || h.includes('tgl. lahir') || h.includes('tgl_lahir'));
     let ttlIdx = header.findIndex(h => h.includes('ttl'));
-    let kamarIdx = header.findIndex(h => h.includes('kamar') || h.includes('asrama') || h.includes('kelas'));
+    let kamarIdx = header.findIndex(h => h.includes('kamar') || h.includes('asrama') || h.includes('kelas') || h.includes('kobong'));
     let statusIdx = header.findIndex(h => h.includes('status'));
     let hpIdx = header.findIndex(h => h.includes('hp') || h.includes('wa') || h.includes('telepon') || h.includes('whatsapp') || h.includes('kontak'));
     let waliIdx = header.findIndex(h => h.includes('wali') || h.includes('orang tua') || h.includes('ayah') || h.includes('ibu'));
     let kotaIdx = header.findIndex(h => h.includes('kota') || h.includes('asal') || h.includes('daerah') || h.includes('alamat'));
 
-    if (namaIdx === -1) namaIdx = 1; // Default kolom kedua
+    if (namaIdx === -1) {
+        namaIdx = header.findIndex(h => h.includes('nama'));
+        if (namaIdx === -1) namaIdx = 1;
+    }
     if (nisIdx === -1) nisIdx = 0;   // Default kolom pertama
     if (kamarIdx === -1) kamarIdx = 2;
     if (statusIdx === -1) statusIdx = 3;
 
     tempImportSantriData = [];
 
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = headerRowIdx + 1; i < rows.length; i++) {
         const row = rows[i];
         if (!row || row.length === 0) continue;
 
@@ -2590,8 +2607,12 @@ function prosesEksekusiImportSantri() {
 
     saveDataToStorage();
     updateFiltersAndDropdowns();
-    renderSemuaTabel();
-    updateDashboard();
+    if (typeof renderMasterSantriTable === 'function') renderMasterSantriTable();
+    if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
+    if (typeof renderKamar === 'function') renderKamar();
+    if (typeof renderSyahriah === 'function') renderSyahriah();
+    if (typeof renderPembayaranLainPage === 'function') renderPembayaranLainPage();
+    if (typeof updateDashboard === 'function') updateDashboard();
     tutupModal('modal-import-santri');
 
     Swal.fire({
