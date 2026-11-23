@@ -165,6 +165,8 @@ function readAllDataFromSpreadsheet() {
       id: String(r.id || ''),
       nis: String(r.nis || ''),
       nama: String(r.nama || ''),
+      tempatLahir: String(r.tempatLahir || ''),
+      tanggalLahir: String(r.tanggalLahir || ''),
       kamar: String(r.kamar || ''),
       status: String(r.status || 'Aktif'),
       noHpWali: String(r.noHpWali || ''),
@@ -283,7 +285,7 @@ function writeAllDataToSpreadsheet(payload) {
   // 1. Tulis Sheet Santri
   var santriSheet = ss.getSheetByName(SHEET_NAMES.SANTRI);
   santriSheet.clearContents();
-  var santriHeaders = ['id', 'nis', 'nama', 'kamar', 'status', 'noHpWali', 'namaWali', 'asalKota', 'tahunMasuk', 'kamarTerakhir', 'tanggalBoyong', 'tahunBoyong', 'alasanBoyong', 'updatedAt'];
+  var santriHeaders = ['id', 'nis', 'nama', 'tempatLahir', 'tanggalLahir', 'kamar', 'status', 'noHpWali', 'namaWali', 'asalKota', 'tahunMasuk', 'kamarTerakhir', 'tanggalBoyong', 'tahunBoyong', 'alasanBoyong', 'updatedAt'];
   var santriRows = [santriHeaders];
   var nowStr = new Date().toISOString();
 
@@ -292,6 +294,8 @@ function writeAllDataToSpreadsheet(payload) {
       String(s.id || ''),
       String(s.nis || ''),
       String(s.nama || ''),
+      String(s.tempatLahir || ''),
+      String(s.tanggalLahir || ''),
       String(s.kamar || ''),
       String(s.status || 'Aktif'),
       String(s.noHpWali || ''),
@@ -302,7 +306,7 @@ function writeAllDataToSpreadsheet(payload) {
       String(s.tanggalBoyong || ''),
       String(s.tahunBoyong || ''),
       String(s.alasanBoyong || ''),
-      nowStr
+      String(s.updatedAt || nowStr)
     ]);
   });
   if (santriRows.length > 0) {

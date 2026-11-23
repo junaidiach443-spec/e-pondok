@@ -4,7 +4,7 @@
  * & Menjamin pembaruan hosting langsung tampil (Network-First untuk kode aplikasi)
  */
 
-const CACHE_NAME = 'epondok-v23';
+const CACHE_NAME = 'epondok-v24';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

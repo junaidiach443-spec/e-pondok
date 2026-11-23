@@ -114,6 +114,10 @@ function initCloudSync() {
     // Auto pull saat pertama kali dibuka (jika URL valid)
     if (cloudConfig.webAppUrl && cloudConfig.autoPullOnStart) {
         setTimeout(() => {
+            if (window._needsCloudMasterWipe) {
+                console.log('[Cloud Sync] Auto pull dilewati saat start karena master baru dibersihkan.');
+                return;
+            }
             pullFromCloud({ silent: true, isInitial: true });
         }, 200);
     }
@@ -860,18 +864,27 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         );
 
         if (activeSantriResetTs > 0 && !window._isRestoringDatabase) {
-            // Saring santri: jika updatedAt tidak ada atau lebih lama dari activeSantriResetTs, jangan tarik santri lama!
+            const santriExtras = (cloudSettings && cloudSettings._cloudSantriExtras && typeof cloudSettings._cloudSantriExtras === 'object')
+                ? cloudSettings._cloudSantriExtras
+                : {};
+
+            // Saring santri: hanya terima santri baru yang diinput setelah tanggal reset (updatedAt > activeSantriResetTs)
             const filteredCloudSantri = cloudData.santriData.filter(s => {
                 if (!s || !s.id) return false;
-                if (!s.updatedAt) return false;
-                const upTs = new Date(s.updatedAt).getTime();
-                return !isNaN(upTs) && upTs > activeSantriResetTs;
+                const extra = santriExtras[s.id];
+                const upStr = s.updatedAt || (extra && extra.updatedAt);
+                if (upStr) {
+                    const upTs = new Date(upStr).getTime();
+                    if (!isNaN(upTs)) return upTs > activeSantriResetTs;
+                }
+                return false;
             });
+
             if (filteredCloudSantri.length > 0) {
                 const santriChanged = mergeSantriFromCloud(filteredCloudSantri, cloudSettings);
                 if (santriChanged) dataUpdated = true;
             } else {
-                // Semua santri di Cloud adalah data sebelum reset -> Pastikan lokal tetap kosong bersih!
+                // Semua santri di Cloud adalah data sebelum reset -> Pastikan lokal tetap kosong bersih (0 santri)!
                 const currentCount = (window.santriData || santriData || []).length;
                 if (currentCount > 0) {
                     santriData = [];
@@ -1000,7 +1013,7 @@ async function pullFromCloud(options = {}) {
  * Unggah Seluruh Data Aplikasi ke Google Sheets (Push / Upload)
  */
 async function pushToCloud(options = {}) {
-    const { silent = false, isRestorePush = false } = options;
+    const { silent = false, isRestorePush = false, isResetPush = false } = options;
     const url = cloudConfig.webAppUrl;
 
     if (!url) {
@@ -1034,9 +1047,11 @@ async function pushToCloud(options = {}) {
         }
 
         const isRestoring = Boolean(isRestorePush || window._isRestoringDatabase);
+        const isReset = Boolean(isResetPush);
+        const skipPrePull = Boolean(isRestoring || isReset);
 
-        // Jika proses restore sedang berlangsung, batalkan antrean auto-sync biasa
-        if (isRestoring) {
+        // Jika proses restore / reset paksa sedang berlangsung, batalkan antrean auto-sync biasa
+        if (skipPrePull) {
             if (syncDebounceTimer) {
                 clearTimeout(syncDebounceTimer);
                 syncDebounceTimer = null;
@@ -1044,8 +1059,8 @@ async function pushToCloud(options = {}) {
             hasPendingPush = false;
         }
 
-        // 1. PRE-PULL & MERGE sebelum push ke Google Sheets (Dilewati jika sedang restore agar data cadangan tidak terhapus)
-        if (!isRestoring) {
+        // 1. PRE-PULL & MERGE sebelum push ke Google Sheets (Dilewati jika sedang restore atau reset agar tidak menarik data lama)
+        if (!skipPrePull) {
             try {
                 const prePullRes = await callGASApi('getAllData', null, 25000);
                 if (prePullRes && prePullRes.status === 'success' && prePullRes.data) {
@@ -1058,7 +1073,7 @@ async function pushToCloud(options = {}) {
 
         // Pastikan appSettings.deletedTrxIds selalu up-to-date di payload
         let currentSettings = window.appSettings || appSettings || {};
-        if (isRestoring) {
+        if (window._isRestoringDatabase) {
             currentSettings.deletedTrxIds = [];
             delete currentSettings.trxResetTimestamp;
             delete currentSettings.santriResetTimestamp;
@@ -1086,8 +1101,8 @@ async function pushToCloud(options = {}) {
             mutasiKamarList: window.mutasiKamarList || mutasiKamarList || [],
             liburanSantriList: window.liburanSantriList || liburanSantriList || [],
             pulangSantriList: window.pulangSantriList || pulangSantriList || [],
-            deletedTrxIds: isRestoring ? [] : getDeletedTransactionIds(),
-            isRestore: isRestoring
+            deletedTrxIds: skipPrePull ? [] : getDeletedTransactionIds(),
+            isRestore: skipPrePull
         };
 
         const res = await callGASApi('saveAllData', payloadData, 40000);
@@ -1388,8 +1403,13 @@ function readAllDataFromSpreadsheet() {
       id: String(r.id || ''),
       nis: String(r.nis || ''),
       nama: String(r.nama || ''),
+      tempatLahir: String(r.tempatLahir || ''),
+      tanggalLahir: String(r.tanggalLahir || ''),
       kamar: String(r.kamar || ''),
       status: String(r.status || 'Aktif'),
+      noHpWali: String(r.noHpWali || ''),
+      namaWali: String(r.namaWali || ''),
+      asalKota: String(r.asalKota || ''),
       tahunMasuk: String(r.tahunMasuk || ''),
       kamarTerakhir: String(r.kamarTerakhir || ''),
       tanggalBoyong: String(r.tanggalBoyong || ''),
@@ -1516,7 +1536,7 @@ function writeAllDataToSpreadsheet(payload) {
 
   var santriSheet = ss.getSheetByName(SHEET_NAMES.SANTRI);
   santriSheet.clearContents();
-  var santriHeaders = ['id', 'nis', 'nama', 'kamar', 'status', 'tahunMasuk', 'kamarTerakhir', 'tanggalBoyong', 'tahunBoyong', 'alasanBoyong', 'updatedAt'];
+  var santriHeaders = ['id', 'nis', 'nama', 'tempatLahir', 'tanggalLahir', 'kamar', 'status', 'noHpWali', 'namaWali', 'asalKota', 'tahunMasuk', 'kamarTerakhir', 'tanggalBoyong', 'tahunBoyong', 'alasanBoyong', 'updatedAt'];
   var santriRows = [santriHeaders];
   var nowStr = new Date().toISOString();
 
@@ -1525,14 +1545,19 @@ function writeAllDataToSpreadsheet(payload) {
       String(s.id || ''),
       String(s.nis || ''),
       String(s.nama || ''),
+      String(s.tempatLahir || ''),
+      String(s.tanggalLahir || ''),
       String(s.kamar || ''),
       String(s.status || 'Aktif'),
+      String(s.noHpWali || ''),
+      String(s.namaWali || ''),
+      String(s.asalKota || ''),
       String(s.tahunMasuk || ''),
       String(s.kamarTerakhir || ''),
       String(s.tanggalBoyong || ''),
       String(s.tahunBoyong || ''),
       String(s.alasanBoyong || ''),
-      nowStr
+      String(s.updatedAt || nowStr)
     ]);
   });
   if (santriRows.length > 0) {

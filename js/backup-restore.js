@@ -956,9 +956,9 @@ function kosongkanDataMasterSantri() {
 
             saveDataToStorage();
 
-            // Push ke Cloud agar data master di Google Sheets ikut dikosongkan (Force-push / isRestorePush: true)
+            // Push ke Cloud agar data master di Google Sheets ikut dikosongkan (Force-push / isResetPush: true)
             if (typeof pushToCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
-                pushToCloud({ silent: true, isRestorePush: true });
+                pushToCloud({ silent: true, isResetPush: true, isRestorePush: true });
             }
 
             // Segarkan seluruh tampilan

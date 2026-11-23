@@ -99,8 +99,8 @@ function initApp() {
     if (window._needsCloudMasterWipe && typeof pushToCloud === 'function') {
         window._needsCloudMasterWipe = false;
         setTimeout(() => {
-            pushToCloud({ silent: true, isRestorePush: true });
-        }, 1000);
+            pushToCloud({ silent: true, isResetPush: true, isRestorePush: true });
+        }, 300);
     }
 }
 
