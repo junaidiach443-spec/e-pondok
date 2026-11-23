@@ -65,7 +65,7 @@ function renderBackupRestorePage() {
 }
 
 // 1. Ekspor & Unduh File Cadangan Database (JSON)
-function downloadBackupJSON() {
+function downloadBackupJSON(customFilename = null) {
     try {
         const now = new Date();
         const TA = typeof getTahunAjaranAktif === 'function' ? getTahunAjaranAktif() : (appSettings.tahunAjaranList?.find(t => t.aktif)?.ta || '-');
@@ -104,7 +104,8 @@ function downloadBackupJSON() {
         const dateStr = now.toLocaleDateString('en-CA');
         const hourStr = String(now.getHours()).padStart(2, '0');
         const minStr = String(now.getMinutes()).padStart(2, '0');
-        const filename = `backup_epondok_alusymuni_${dateStr}_${hourStr}${minStr}.json`;
+        const defaultFilename = `backup_epondok_alusymuni_${dateStr}_${hourStr}${minStr}.json`;
+        const filename = (typeof customFilename === 'string' && customFilename.trim()) ? customFilename.trim() : defaultFilename;
 
         // Trigger Download
         const link = document.createElement("a");
@@ -220,6 +221,26 @@ function handleFileSelectRestore(event) {
                 pulangSantriList: Array.isArray(dataPulang) ? dataPulang : []
             };
 
+            // Deteksi Tahun Ajaran dari Transaksi di File Cadangan
+            const taCountMap = {};
+            (selectedRestoreData.transactions || []).forEach(t => {
+                if (t && t.ta) taCountMap[t.ta] = (taCountMap[t.ta] || 0) + 1;
+            });
+            let detectedTa = '';
+            let maxCount = 0;
+            for (const [taVal, count] of Object.entries(taCountMap)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    detectedTa = taVal;
+                }
+            }
+            if (!detectedTa) {
+                detectedTa = parsed.tahunAjaranAktif || 
+                             (selectedRestoreData.appSettings && selectedRestoreData.appSettings.tahunAjaranList?.find(t => t.aktif)?.ta) || 
+                             '';
+            }
+            selectedRestoreData._detectedTa = detectedTa;
+
             // Hitung total kas masuk dari file cadangan untuk preview
             let totalKasFile = selectedRestoreData.transactions.filter(t => t.type === 'in').reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
             if (totalKasFile === 0 && parsed.summary && parsed.summary.totalKasMasuk) {
@@ -227,7 +248,7 @@ function handleFileSelectRestore(event) {
             }
 
             // Tampilkan Preview File yang Dipilih
-            tampilkanPreviewFileRestore(file.name, file.size, infoExportDate, selectedRestoreData, totalKasFile);
+            tampilkanPreviewFileRestore(file.name, file.size, infoExportDate, selectedRestoreData, totalKasFile, detectedTa);
 
         } catch (err) {
             console.error("Gagal membaca file cadangan:", err);
@@ -248,10 +269,11 @@ function handleFileSelectRestore(event) {
 }
 
 // Tampilkan Rincian File yang Siap Dipulihkan
-function tampilkanPreviewFileRestore(fileName, fileSize, exportDate, data, totalKas = 0) {
+function tampilkanPreviewFileRestore(fileName, fileSize, exportDate, data, totalKas = 0, detectedTa = '') {
     const boxEmpty = document.getElementById('restore-box-empty');
     const boxPreview = document.getElementById('restore-box-preview');
     const btnExecute = document.getElementById('btn-eksekusi-restore');
+    const alertBox = document.getElementById('restore-preview-alert');
 
     if (boxEmpty) boxEmpty.classList.add('hidden');
     if (boxPreview) boxPreview.classList.remove('hidden');
@@ -273,13 +295,56 @@ function tampilkanPreviewFileRestore(fileName, fileSize, exportDate, data, total
         if (data.transactions.length > 0) {
             elTrx.innerHTML = `<span class="text-blue-700 font-bold">${data.transactions.length} Transaksi</span> <span class="text-[10px] text-gray-500 font-normal">(${formatRupiah(totalKas)})</span>`;
         } else {
-            elTrx.innerHTML = `<span class="text-amber-600 font-bold">0 Transaksi</span>`;
+            elTrx.innerHTML = `<span class="text-rose-600 font-extrabold">0 Transaksi (Kosong)</span>`;
+        }
+    }
+
+    if (alertBox) {
+        alertBox.classList.remove('hidden');
+        if (data.transactions.length === 0) {
+            alertBox.innerHTML = `
+                <div class="bg-rose-50 border-2 border-rose-300 p-3.5 rounded-xl text-xs text-rose-800 space-y-1.5 shadow-sm">
+                    <div class="font-extrabold flex items-center gap-2 text-rose-700 text-sm">
+                        <i class="fas fa-exclamation-triangle text-base"></i> File Ini Memuat 0 Transaksi!
+                    </div>
+                    <p class="text-[11px] leading-relaxed text-gray-700">
+                        File yang Anda pilih <b>tidak memiliki riwayat transaksi/tagihan</b>. Kemungkinan besar ini adalah file cadangan yang diunduh <i>setelah</i> transaksi dibersihkan/dihapus.
+                    </p>
+                    <div class="p-2.5 bg-white/90 rounded-lg border border-rose-200 text-[11px] text-rose-950 font-medium space-y-1">
+                        <p>👉 <b>Solusi Pemulihan:</b></p>
+                        <p>1. Klik tombol <b>"Batal"</b> di pojok kanan atas preview ini.</p>
+                        <p>2. Cari file cadangan di folder <b>Downloads</b> Anda yang diunduh <b>sebelum</b> transaksi dibersihkan (file yang ukurannya lebih besar atau memiliki nama waktu yang lebih awal).</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            const taLabel = detectedTa ? `Tahun Ajaran <b>${detectedTa}</b>` : 'Tahun Ajaran Aktif';
+            alertBox.innerHTML = `
+                <div class="bg-emerald-50 border border-emerald-300 p-3.5 rounded-xl text-xs text-emerald-800 space-y-1 shadow-sm">
+                    <div class="font-bold flex items-center gap-2 text-emerald-700 text-sm">
+                        <i class="fas fa-check-circle text-base"></i> File Cadangan Lengkap Ditemukan!
+                    </div>
+                    <p class="text-[11px] leading-relaxed text-gray-700">
+                        Memuat <b>${data.transactions.length} Transaksi</b> dengan Total Kas Masuk <b>${formatRupiah(totalKas)}</b> untuk ${taLabel}.
+                    </p>
+                    <p class="text-[10px] text-emerald-700 font-medium">
+                        ✓ Sistem otomatis menyelaraskan Tahun Ajaran agar tagihan dan saldo dashboard langsung tampil normal.
+                    </p>
+                </div>
+            `;
         }
     }
 
     if (btnExecute) {
         btnExecute.disabled = false;
         btnExecute.classList.remove('opacity-50', 'cursor-not-allowed');
+        if (data.transactions.length === 0) {
+            btnExecute.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> Pulihkan File (Perhatian: 0 Transaksi)`;
+            btnExecute.className = "w-full bg-amber-600 hover:bg-amber-700 text-white py-3 px-5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2";
+        } else {
+            btnExecute.innerHTML = `<i class="fas fa-upload mr-1"></i> Pulihkan Database Sekarang (${data.transactions.length} Transaksi)`;
+            btnExecute.className = "w-full bg-blue-700 hover:bg-indigo-700 text-white py-3 px-5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2";
+        }
     }
 }
 
@@ -294,13 +359,20 @@ function batalPilihFileRestore() {
     const boxEmpty = document.getElementById('restore-box-empty');
     const boxPreview = document.getElementById('restore-box-preview');
     const btnExecute = document.getElementById('btn-eksekusi-restore');
+    const alertBox = document.getElementById('restore-preview-alert');
 
     if (boxEmpty) boxEmpty.classList.remove('hidden');
     if (boxPreview) boxPreview.classList.add('hidden');
+    if (alertBox) {
+        alertBox.classList.add('hidden');
+        alertBox.innerHTML = '';
+    }
 
     if (btnExecute) {
         btnExecute.disabled = true;
         btnExecute.classList.add('opacity-50', 'cursor-not-allowed');
+        btnExecute.innerHTML = `<i class="fas fa-upload mr-1"></i> Pulihkan Database Sekarang`;
+        btnExecute.className = "w-full bg-blue-700 hover:bg-indigo-700 text-white py-3 px-5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 opacity-50 cursor-not-allowed";
     }
 }
 
@@ -315,6 +387,15 @@ function prosesRestoreData() {
     const santriBaru = restorePayload.santriData.length;
     const trxBaru = restorePayload.transactions.length;
 
+    let warningKosong = '';
+    if (trxBaru === 0) {
+        warningKosong = `
+            <div class="bg-rose-50 border border-rose-300 p-2.5 rounded-lg text-rose-800 text-xs font-bold mt-2">
+                <i class="fas fa-exclamation-triangle mr-1"></i> PERINGATAN: File cadangan ini TIDAK memiliki riwayat transaksi (0 Transaksi). Seluruh tagihan dan kas akan bernilai Rp 0 jika file ini dipulihkan.
+            </div>
+        `;
+    }
+
     const pesanKonfirmasi = `
         <div class="text-left text-sm text-gray-600 space-y-2 mt-2">
             <p class="text-rose-600 font-bold">
@@ -325,21 +406,22 @@ function prosesRestoreData() {
                 <div>• Data Transaksi akan diganti: <b>${trxBaru} Data</b></div>
                 <div>• Pengaturan tarif, kamar & tahun ajaran akan disesuaikan dengan file cadangan.</div>
             </div>
+            ${warningKosong}
             <p class="text-xs text-gray-500 mt-2">
-                Pastikan Anda telah membuat cadangan data saat ini jika masih memerlukannya. Lanjutkan pemulihan?
+                Lanjutkan pemulihan database sekarang?
             </p>
         </div>
     `;
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: 'Konfirmasi Pulihkan Data',
+            title: trxBaru === 0 ? 'Pulihkan File 0 Transaksi?' : 'Konfirmasi Pulihkan Data',
             html: pesanKonfirmasi,
-            icon: 'warning',
+            icon: trxBaru === 0 ? 'error' : 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1d4ed8',
+            confirmButtonColor: trxBaru === 0 ? '#d97706' : '#1d4ed8',
             cancelButtonColor: '#64748b',
-            confirmButtonText: '<i class="fas fa-upload mr-1"></i> Ya, Pulihkan Database',
+            confirmButtonText: trxBaru === 0 ? '<i class="fas fa-upload mr-1"></i> Tetap Pulihkan File Kosong' : '<i class="fas fa-upload mr-1"></i> Ya, Pulihkan Database',
             cancelButtonText: 'Batalkan',
             focusCancel: true
         }).then((result) => {
@@ -358,14 +440,23 @@ function prosesRestoreData() {
 function eksekusiSimpanRestore(payload) {
     try {
         window._isRestoringDatabase = true;
+        const restoreTs = Date.now();
 
         // 1. Bersihkan seluruh marker penghapusan & timestamp reset lama dari LocalStorage
-        // agar transaksi yang baru dipulihkan tidak dianggap sebagai transaksi yang telah dihapus
+        // PENTING: Set epondok_restore_ts & epondok_last_trx_reset_ts ke restoreTs saat ini (BUKAN 0!)
+        // agar Cloud Sync tidak menghapus kembali transaksi yang baru saja dipulihkan!
         localStorage.removeItem('epondok_deleted_trx_ids');
         localStorage.removeItem('epondok_last_trx_reset_ts');
         localStorage.setItem('epondok_deleted_trx_ids', '[]');
-        localStorage.setItem('epondok_last_trx_reset_ts', '0');
+        localStorage.setItem('epondok_last_trx_reset_ts', String(restoreTs));
+        localStorage.setItem('epondok_restore_ts', String(restoreTs));
         localStorage.setItem('epondok_trx_reset_version', '2026-11-10-clean-v15');
+
+        // Batalkan timer auto-sync yang mungkin sedang menggantung
+        if (typeof syncDebounceTimer !== 'undefined' && syncDebounceTimer) {
+            clearTimeout(syncDebounceTimer);
+            syncDebounceTimer = null;
+        }
 
         // 2. Normalisasi & Validasi Pengaturan Sistem (appSettings)
         let restoredSettings = payload.appSettings || {};
@@ -398,12 +489,37 @@ function eksekusiSimpanRestore(payload) {
             };
         }
 
-        // Pastikan tahun ajaran aktif tersedia
+        // Deteksi Tahun Ajaran Dominan dari transaksi
+        const rawTrx = payload.transactions || [];
+        const taCountMap = {};
+        rawTrx.forEach(t => {
+            if (t && t.ta) taCountMap[t.ta] = (taCountMap[t.ta] || 0) + 1;
+        });
+        let predominantTa = payload._detectedTa || '';
+        let maxCount = 0;
+        for (const [taVal, count] of Object.entries(taCountMap)) {
+            if (count > maxCount) {
+                maxCount = count;
+                predominantTa = taVal;
+            }
+        }
+
+        // Pastikan tahun ajaran aktif tersedia dan SELARAS dengan transaksi cadangan
         if (!Array.isArray(restoredSettings.tahunAjaranList) || restoredSettings.tahunAjaranList.length === 0) {
             restoredSettings.tahunAjaranList = [
                 { ta: '1446/1447', aktif: false },
                 { ta: '1447/1448', aktif: true }
             ];
+        }
+
+        if (predominantTa) {
+            let foundTa = restoredSettings.tahunAjaranList.find(t => t.ta === predominantTa);
+            if (!foundTa) {
+                restoredSettings.tahunAjaranList.push({ ta: predominantTa, aktif: true });
+            }
+            restoredSettings.tahunAjaranList.forEach(t => {
+                t.aktif = (t.ta === predominantTa);
+            });
         } else {
             const hasActive = restoredSettings.tahunAjaranList.some(t => t.aktif);
             if (!hasActive) {
@@ -413,7 +529,7 @@ function eksekusiSimpanRestore(payload) {
         const activeTa = (restoredSettings.tahunAjaranList.find(t => t.aktif) || {}).ta || '1447/1448';
 
         // 3. Normalisasi Data Transaksi
-        const cleanTransactions = (payload.transactions || []).map(t => {
+        const cleanTransactions = rawTrx.map(t => {
             if (!t || typeof t !== 'object') return null;
             return {
                 ...t,
@@ -439,8 +555,19 @@ function eksekusiSimpanRestore(payload) {
         window.liburanSantriList = liburanSantriList;
         window.pulangSantriList = pulangSantriList;
 
+        // Reset filter dashboard ke T.A agar langsung sinkron dengan transaksi yang dipulihkan
+        if (typeof dashboardPeriodFilter !== 'undefined') {
+            dashboardPeriodFilter = 'ta';
+        }
+
         // 5. Simpan Permanen ke LocalStorage
         saveDataToStorage();
+
+        // Segera batalkan debounce auto-sync yang dipicu saveDataToStorage agar tidak mendahului force-push restore
+        if (typeof syncDebounceTimer !== 'undefined' && syncDebounceTimer) {
+            clearTimeout(syncDebounceTimer);
+            syncDebounceTimer = null;
+        }
 
         // 6. Muat Ulang & Sinkronkan Seluruh Modul Tampilan Aplikasi
         if (typeof updateDateHeader === 'function') updateDateHeader();
@@ -551,7 +678,12 @@ function bersihkanTransaksiPercobaan() {
     }).then((res) => {
         if (res.isConfirmed) {
             // Otomatis unduh cadangan dulu sebelum dibersihkan demi keamanan bendahara
-            downloadBackupJSON();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-CA');
+            const hourStr = String(now.getHours()).padStart(2, '0');
+            const minStr = String(now.getMinutes()).padStart(2, '0');
+            const filenameKhusus = `backup_epondok_SEBELUM_BERSIHKAN_${dateStr}_${hourStr}${minStr}.json`;
+            downloadBackupJSON(filenameKhusus);
 
             // Tandai seluruh ID transaksi lama sebagai terhapus agar tidak tertarik kembali dari perangkat/Cloud lain
             if (typeof trackDeletedTransactionId === 'function' && Array.isArray(transactions)) {
@@ -583,7 +715,16 @@ function bersihkanTransaksiPercobaan() {
             Swal.fire({
                 icon: 'success',
                 title: 'Transaksi Percobaan Dibersihkan!',
-                text: 'Seluruh riwayat transaksi telah dikosongkan. File cadangan otomatis telah diunduh sebagai arsip keselamatan.',
+                html: `
+                    <div class="text-sm text-gray-600 space-y-2 mt-2 text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <p class="font-bold text-gray-800">Seluruh riwayat transaksi telah dikosongkan.</p>
+                        <p class="text-xs text-gray-500">File cadangan otomatis sebelum dibersihkan telah tersimpan di folder Downloads:</p>
+                        <div class="bg-blue-50 border border-blue-200 p-2.5 rounded-lg font-mono text-xs text-blue-800 font-bold break-all">
+                            <i class="fas fa-file-code mr-1"></i> ${filenameKhusus}
+                        </div>
+                        <p class="text-[11px] text-gray-400">Gunakan file ini jika di masa depan Anda ingin memulihkan transaksi kembali.</p>
+                    </div>
+                `,
                 confirmButtonColor: '#1d4ed8'
             });
         }

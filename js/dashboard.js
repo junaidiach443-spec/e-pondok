@@ -140,6 +140,56 @@ function updateDashboard() {
     const saldoKasTunai = kasTunaiMasuk - kasTunaiKeluar;
     const saldoKasTransfer = kasTransferMasuk - kasTransferKeluar;
 
+    // Deteksi ketidaksesuaian Tahun Ajaran: Kas Masuk T.A aktif bernilai Rp 0 namun ada transaksi di T.A lain
+    const elTaMismatch = document.getElementById('dash-ta-mismatch-banner');
+    if (elTaMismatch) {
+        if (dashboardPeriodFilter === 'ta' && kasMasuk === 0 && Array.isArray(transactions) && transactions.length > 0) {
+            const inTrxOtherTa = transactions.filter(t => t && t.type === 'in' && t.ta && t.ta !== TA);
+            if (inTrxOtherTa.length > 0) {
+                const otherTaMap = {};
+                let otherSum = 0;
+                inTrxOtherTa.forEach(t => {
+                    const amt = Number(t.amount) || 0;
+                    otherTaMap[t.ta] = (otherTaMap[t.ta] || 0) + amt;
+                    otherSum += amt;
+                });
+                const otherTaList = Object.keys(otherTaMap);
+                const firstOther = otherTaList[0];
+
+                elTaMismatch.classList.remove('hidden');
+                elTaMismatch.innerHTML = `
+                    <div class="bg-amber-50 border border-amber-300 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 text-base">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div>
+                                <p class="font-extrabold text-sm text-gray-800">Ditemukan ${inTrxOtherTa.length} Transaksi (${formatRupiah(otherSum)}) di Tahun Ajaran Lain (${otherTaList.join(', ')})</p>
+                                <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
+                                    Dashboard saat ini memfilter <b>T.A ${TA}</b> sehingga bernilai Rp 0. Anda dapat beralih ke T.A tersebut atau melihat kas sepanjang masa.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                            <button type="button" onclick="setDashboardPeriodFilter('all')" class="flex-1 sm:flex-none px-3.5 py-2 bg-white border border-amber-300 rounded-xl font-bold text-xs text-amber-800 hover:bg-amber-100 transition-colors shadow-sm">
+                                <i class="fas fa-history mr-1"></i> Lihat Semua Waktu
+                            </button>
+                            <button type="button" onclick="gantiTahunAjaranAktifByName('${firstOther}')" class="flex-1 sm:flex-none px-3.5 py-2 bg-blue-700 text-white rounded-xl font-bold text-xs hover:bg-blue-800 transition-colors shadow-sm">
+                                <i class="fas fa-calendar-check mr-1"></i> Beralih ke T.A ${firstOther}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                elTaMismatch.classList.add('hidden');
+                elTaMismatch.innerHTML = '';
+            }
+        } else {
+            elTaMismatch.classList.add('hidden');
+            elTaMismatch.innerHTML = '';
+        }
+    }
+
     // Perbarui Kartu 2: Saldo Kas
     const elKasTitle = document.getElementById('dash-kas-title');
     const elKasBadge = document.getElementById('dash-kas-badge');
@@ -306,7 +356,28 @@ function updateDashboard() {
     }, 100);
 }
 
+// Fungsi Cepat Beralih Tahun Ajaran Aktif Berdasarkan Nama TA
+function gantiTahunAjaranAktifByName(targetTa) {
+    if (!targetTa) return;
+    if (!appSettings || !Array.isArray(appSettings.tahunAjaranList)) return;
+    let idx = appSettings.tahunAjaranList.findIndex(t => t.ta === targetTa);
+    if (idx === -1) {
+        appSettings.tahunAjaranList.push({ ta: targetTa, aktif: true });
+        idx = appSettings.tahunAjaranList.length - 1;
+    }
+    if (typeof aktifkanTahun === 'function') {
+        aktifkanTahun(idx);
+    } else {
+        appSettings.tahunAjaranList.forEach(t => { t.aktif = (t.ta === targetTa); });
+        saveDataToStorage();
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof renderSyahriah === 'function') renderSyahriah();
+        if (typeof renderLaporan === 'function') renderLaporan();
+    }
+}
+
 // Expose ke global window
 window.dashboardPeriodFilter = dashboardPeriodFilter;
 window.setDashboardPeriodFilter = setDashboardPeriodFilter;
 window.updateDashboard = updateDashboard;
+window.gantiTahunAjaranAktifByName = gantiTahunAjaranAktifByName;

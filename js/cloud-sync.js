@@ -460,6 +460,12 @@ function getDeletedTransactionIds() {
         const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
         const fromSettings = (settings && Array.isArray(settings.deletedTrxIds)) ? settings.deletedTrxIds : [];
         const combined = Array.from(new Set([...local, ...fromSettings]));
+
+        // Transaksi yang sedang aktif di memori/storage TIDAK BOLEH dianggap terhapus
+        const activeIds = new Set((window.transactions || (typeof transactions !== 'undefined' ? transactions : [])).map(t => t && t.id).filter(Boolean));
+        if (activeIds.size > 0) {
+            return combined.filter(id => !activeIds.has(id));
+        }
         return combined;
     } catch (e) {
         return [];
@@ -748,12 +754,14 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
     }
     let dataUpdated = false;
     const cloudSettings = (cloudData.appSettings && typeof cloudData.appSettings === 'object') ? cloudData.appSettings : null;
+    const restoreTs = Number(localStorage.getItem('epondok_restore_ts') || 0);
 
     // 0A. Hormati Reset Transaksi Awal dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database)
+    // PENTING: Hanya lakukan reset jika cloudResetTs LEBIH BARU dari localResetTs DAN LEBIH BARU dari restoreTs!
     if (cloudSettings && cloudSettings.trxResetTimestamp && !window._isRestoringDatabase) {
         const cloudResetTs = Number(cloudSettings.trxResetTimestamp) || 0;
         const localResetTs = Number(localStorage.getItem('epondok_last_trx_reset_ts') || 0);
-        if (cloudResetTs > localResetTs) {
+        if (cloudResetTs > localResetTs && cloudResetTs > restoreTs) {
             const curTrx = window.transactions || transactions || [];
             const kept = curTrx.filter(t => {
                 if (!t || !t.id) return false;
@@ -770,14 +778,36 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
 
     // 0B. Sinkronkan daftar transaksi yang dihapus dari Cloud terlebih dahulu (Kecuali sedang memulihkan cadangan database)
     if (!window._isRestoringDatabase) {
+        const currentTrxIds = new Set((window.transactions || transactions || []).map(t => t && t.id).filter(Boolean));
+
         if (cloudSettings && Array.isArray(cloudSettings.deletedTrxIds)) {
-            cloudSettings.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+            cloudSettings.deletedTrxIds.forEach(id => {
+                if (!currentTrxIds.has(id)) {
+                    trackDeletedTransactionId(id);
+                }
+            });
         }
         if (Array.isArray(cloudData.deletedTrxIds)) {
-            cloudData.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+            cloudData.deletedTrxIds.forEach(id => {
+                if (!currentTrxIds.has(id)) {
+                    trackDeletedTransactionId(id);
+                }
+            });
         }
 
+        // Hapus ID transaksi aktif dari local storage deletedTrxIds agar tidak ikut terhapus
         const activeDeletedIds = new Set(getDeletedTransactionIds());
+        let hasDeletedCleaned = false;
+        currentTrxIds.forEach(id => {
+            if (activeDeletedIds.has(id)) {
+                activeDeletedIds.delete(id);
+                hasDeletedCleaned = true;
+            }
+        });
+        if (hasDeletedCleaned) {
+            localStorage.setItem('epondok_deleted_trx_ids', JSON.stringify([...activeDeletedIds]));
+        }
+
         if (activeDeletedIds.size > 0) {
             const curTrx = window.transactions || transactions || [];
             const beforeCount = curTrx.length;
@@ -798,7 +828,10 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         delete cleanIncoming._cloudSantriExtras;
         const localResetTs = (window.appSettings && window.appSettings.trxResetTimestamp) || 0;
         const mergedSettings = { ...window.appSettings, ...cleanIncoming };
-        if (localResetTs > (cleanIncoming.trxResetTimestamp || 0)) {
+        // Jika reset timestamp cloud lebih usang atau sama dengan waktu pemulihan lokal, hapus trxResetTimestamp
+        if (Number(cleanIncoming.trxResetTimestamp || 0) <= restoreTs) {
+            delete mergedSettings.trxResetTimestamp;
+        } else if (localResetTs > (cleanIncoming.trxResetTimestamp || 0)) {
             mergedSettings.trxResetTimestamp = localResetTs;
         }
         window.appSettings = mergedSettings;
@@ -968,6 +1001,15 @@ async function pushToCloud(options = {}) {
 
         const isRestoring = Boolean(isRestorePush || window._isRestoringDatabase);
 
+        // Jika proses restore sedang berlangsung, batalkan antrean auto-sync biasa
+        if (isRestoring) {
+            if (syncDebounceTimer) {
+                clearTimeout(syncDebounceTimer);
+                syncDebounceTimer = null;
+            }
+            hasPendingPush = false;
+        }
+
         // 1. PRE-PULL & MERGE sebelum push ke Google Sheets (Dilewati jika sedang restore agar data cadangan tidak terhapus)
         if (!isRestoring) {
             try {
@@ -1052,6 +1094,9 @@ async function pushToCloud(options = {}) {
         }
         return false;
     } finally {
+        if (isRestoring) {
+            hasPendingPush = false;
+        }
         isSyncingActive = false;
         renderCloudStatusIndicator();
         if (hasPendingPush && navigator.onLine) {
