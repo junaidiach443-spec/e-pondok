@@ -454,6 +454,7 @@ function trackDeletedTransactionId(trxId) {
 }
 
 function getDeletedTransactionIds() {
+    if (window._isRestoringDatabase) return [];
     try {
         const local = JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
         const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
@@ -742,11 +743,14 @@ function mergeListById(localList, cloudList, storageKey) {
  * Helper Terpusat: Terapkan Snapshot Cloud ke State Lokal dengan Aman
  */
 function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
+    if (window._isRestoringDatabase) {
+        return { dataUpdated: false, trxMerge: { hasNewFromCloud: false } };
+    }
     let dataUpdated = false;
     const cloudSettings = (cloudData.appSettings && typeof cloudData.appSettings === 'object') ? cloudData.appSettings : null;
 
-    // 0A. Hormati Reset Transaksi Awal dari Cloud bila ada reset lebih baru
-    if (cloudSettings && cloudSettings.trxResetTimestamp) {
+    // 0A. Hormati Reset Transaksi Awal dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database)
+    if (cloudSettings && cloudSettings.trxResetTimestamp && !window._isRestoringDatabase) {
         const cloudResetTs = Number(cloudSettings.trxResetTimestamp) || 0;
         const localResetTs = Number(localStorage.getItem('epondok_last_trx_reset_ts') || 0);
         if (cloudResetTs > localResetTs) {
@@ -764,24 +768,26 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         }
     }
 
-    // 0B. Sinkronkan daftar transaksi yang dihapus dari Cloud terlebih dahulu
-    if (cloudSettings && Array.isArray(cloudSettings.deletedTrxIds)) {
-        cloudSettings.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
-    }
-    if (Array.isArray(cloudData.deletedTrxIds)) {
-        cloudData.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
-    }
+    // 0B. Sinkronkan daftar transaksi yang dihapus dari Cloud terlebih dahulu (Kecuali sedang memulihkan cadangan database)
+    if (!window._isRestoringDatabase) {
+        if (cloudSettings && Array.isArray(cloudSettings.deletedTrxIds)) {
+            cloudSettings.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+        }
+        if (Array.isArray(cloudData.deletedTrxIds)) {
+            cloudData.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
+        }
 
-    const activeDeletedIds = new Set(getDeletedTransactionIds());
-    if (activeDeletedIds.size > 0) {
-        const curTrx = window.transactions || transactions || [];
-        const beforeCount = curTrx.length;
-        const filtered = curTrx.filter(t => t && t.id && !activeDeletedIds.has(t.id));
-        if (filtered.length !== beforeCount) {
-            transactions = filtered;
-            window.transactions = filtered;
-            localStorage.setItem('transactions', JSON.stringify(filtered));
-            dataUpdated = true;
+        const activeDeletedIds = new Set(getDeletedTransactionIds());
+        if (activeDeletedIds.size > 0) {
+            const curTrx = window.transactions || transactions || [];
+            const beforeCount = curTrx.length;
+            const filtered = curTrx.filter(t => t && t.id && !activeDeletedIds.has(t.id));
+            if (filtered.length !== beforeCount) {
+                transactions = filtered;
+                window.transactions = filtered;
+                localStorage.setItem('transactions', JSON.stringify(filtered));
+                dataUpdated = true;
+            }
         }
     }
 
@@ -927,7 +933,7 @@ async function pullFromCloud(options = {}) {
  * Unggah Seluruh Data Aplikasi ke Google Sheets (Push / Upload)
  */
 async function pushToCloud(options = {}) {
-    const { silent = false } = options;
+    const { silent = false, isRestorePush = false } = options;
     const url = cloudConfig.webAppUrl;
 
     if (!url) {
@@ -957,29 +963,38 @@ async function pushToCloud(options = {}) {
 
     try {
         if (!silent && typeof showToast === 'function') {
-            showToast('Mengunggah data ke Google Sheets...', 'info');
+            showToast(isRestorePush ? 'Memulihkan data ke Google Sheets...' : 'Mengunggah data ke Google Sheets...', 'info');
         }
 
-        // 1. PRE-PULL & MERGE sebelum push ke Google Sheets
-        try {
-            const prePullRes = await callGASApi('getAllData', null, 25000);
-            if (prePullRes && prePullRes.status === 'success' && prePullRes.data) {
-                applyCloudSnapshotToLocal(prePullRes.data, true);
+        const isRestoring = Boolean(isRestorePush || window._isRestoringDatabase);
+
+        // 1. PRE-PULL & MERGE sebelum push ke Google Sheets (Dilewati jika sedang restore agar data cadangan tidak terhapus)
+        if (!isRestoring) {
+            try {
+                const prePullRes = await callGASApi('getAllData', null, 25000);
+                if (prePullRes && prePullRes.status === 'success' && prePullRes.data) {
+                    applyCloudSnapshotToLocal(prePullRes.data, true);
+                }
+            } catch (prePullErr) {
+                console.warn('[Cloud Sync] Pre-pull sebelum push dilewati/gagal:', prePullErr.message);
             }
-        } catch (prePullErr) {
-            console.warn('[Cloud Sync] Pre-pull sebelum push dilewati/gagal:', prePullErr.message);
         }
 
         // Pastikan appSettings.deletedTrxIds selalu up-to-date di payload
         let currentSettings = window.appSettings || appSettings || {};
-        if (!Array.isArray(currentSettings.deletedTrxIds)) {
+        if (isRestoring) {
             currentSettings.deletedTrxIds = [];
-        }
-        getDeletedTransactionIds().forEach(id => {
-            if (!currentSettings.deletedTrxIds.includes(id)) {
-                currentSettings.deletedTrxIds.push(id);
+            delete currentSettings.trxResetTimestamp;
+        } else {
+            if (!Array.isArray(currentSettings.deletedTrxIds)) {
+                currentSettings.deletedTrxIds = [];
             }
-        });
+            getDeletedTransactionIds().forEach(id => {
+                if (!currentSettings.deletedTrxIds.includes(id)) {
+                    currentSettings.deletedTrxIds.push(id);
+                }
+            });
+        }
         window.appSettings = currentSettings;
         if (typeof appSettings !== 'undefined') appSettings = currentSettings;
         localStorage.setItem('appSettings', JSON.stringify(currentSettings));
@@ -994,7 +1009,8 @@ async function pushToCloud(options = {}) {
             mutasiKamarList: window.mutasiKamarList || mutasiKamarList || [],
             liburanSantriList: window.liburanSantriList || liburanSantriList || [],
             pulangSantriList: window.pulangSantriList || pulangSantriList || [],
-            deletedTrxIds: getDeletedTransactionIds()
+            deletedTrxIds: isRestoring ? [] : getDeletedTransactionIds(),
+            isRestore: isRestoring
         };
 
         const res = await callGASApi('saveAllData', payloadData, 40000);
@@ -1446,15 +1462,17 @@ function writeAllDataToSpreadsheet(payload) {
   var trxSheet = ss.getSheetByName(SHEET_NAMES.TRANSAKSI);
   var existingTrxRows = getRowsAsObjects(trxSheet);
   var trxMap = {};
-  existingTrxRows.forEach(function(r) {
-    if (r.id) {
-      trxMap[r.id] = r;
-    }
-  });
+  if (!payload.isRestore) {
+    existingTrxRows.forEach(function(r) {
+      if (r.id) {
+        trxMap[r.id] = r;
+      }
+    });
+  }
 
-  // Hapus ID yang ada di daftar deletedTrxIds
+  // Hapus ID yang ada di daftar deletedTrxIds (Kecuali sedang restore database)
   var deletedIds = payload.deletedTrxIds || [];
-  if (Array.isArray(deletedIds)) {
+  if (Array.isArray(deletedIds) && !payload.isRestore) {
     deletedIds.forEach(function(did) {
       delete trxMap[did];
     });
@@ -1462,7 +1480,7 @@ function writeAllDataToSpreadsheet(payload) {
 
   // Gabungkan transaksi dari payload
   transactions.forEach(function(t) {
-    if (t && t.id && (!deletedIds.includes(t.id))) {
+    if (t && t.id && (payload.isRestore || !deletedIds.includes(t.id))) {
       trxMap[t.id] = t;
     }
   });

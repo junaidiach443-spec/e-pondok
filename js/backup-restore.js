@@ -174,44 +174,60 @@ function handleFileSelectRestore(event) {
             const parsed = JSON.parse(rawContent);
 
             // Validasi apakah struktur file berisi database e-Pondok
-            let dataSantri = null;
-            let dataTrx = null;
-            let dataSettings = null;
-            let dataMutasi = null;
-            let infoExportDate = '-';
-            let infoApp = 'e-Pondok Cadangan';
+            let dataSantri = (parsed.database && parsed.database.santriData) || 
+                             (parsed.data && parsed.data.santriData) || 
+                             parsed.santriData || 
+                             [];
 
-            if (parsed.database) {
-                // Format Standar Payload e-Pondok
-                dataSantri = parsed.database.santriData;
-                dataTrx = parsed.database.transactions;
-                dataSettings = parsed.database.appSettings;
-                dataMutasi = parsed.database.mutasiKamarList || [];
-                infoExportDate = parsed.exportDateFormatted || parsed.exportDate || '-';
-                infoApp = parsed.appName || infoApp;
-            } else if (parsed.santriData || parsed.transactions || parsed.appSettings) {
-                // Format direct dump
-                dataSantri = parsed.santriData;
-                dataTrx = parsed.transactions;
-                dataSettings = parsed.appSettings;
-                dataMutasi = parsed.mutasiKamarList || [];
-            } else {
-                throw new Error("Struktur isi file JSON tidak cocok dengan data e-Pondok.");
-            }
+            let dataTrx = (parsed.database && parsed.database.transactions) || 
+                          (parsed.data && parsed.data.transactions) || 
+                          parsed.transactions || 
+                          [];
 
-            if (!Array.isArray(dataSantri) && !Array.isArray(dataTrx) && !dataSettings) {
+            let dataSettings = (parsed.database && parsed.database.appSettings) || 
+                               (parsed.data && parsed.data.appSettings) || 
+                               parsed.appSettings || 
+                               {};
+
+            let dataMutasi = (parsed.database && parsed.database.mutasiKamarList) || 
+                             (parsed.data && parsed.data.mutasiKamarList) || 
+                             parsed.mutasiKamarList || 
+                             [];
+
+            let dataLiburan = (parsed.database && parsed.database.liburanSantriList) || 
+                              (parsed.data && parsed.data.liburanSantriList) || 
+                              parsed.liburanSantriList || 
+                              [];
+
+            let dataPulang = (parsed.database && parsed.database.pulangSantriList) || 
+                             (parsed.data && parsed.data.pulangSantriList) || 
+                             parsed.pulangSantriList || 
+                             [];
+
+            let infoExportDate = parsed.exportDateFormatted || parsed.exportDate || '-';
+            let infoApp = parsed.appName || 'e-Pondok Cadangan';
+
+            if (!Array.isArray(dataSantri) && !Array.isArray(dataTrx) && (!dataSettings || Object.keys(dataSettings).length === 0)) {
                 throw new Error("File tidak memuat data santri, transaksi, maupun pengaturan.");
             }
 
             selectedRestoreData = {
                 santriData: Array.isArray(dataSantri) ? dataSantri : [],
                 transactions: Array.isArray(dataTrx) ? dataTrx : [],
-                appSettings: dataSettings || {},
-                mutasiKamarList: Array.isArray(dataMutasi) ? dataMutasi : []
+                appSettings: (dataSettings && typeof dataSettings === 'object') ? dataSettings : {},
+                mutasiKamarList: Array.isArray(dataMutasi) ? dataMutasi : [],
+                liburanSantriList: Array.isArray(dataLiburan) ? dataLiburan : [],
+                pulangSantriList: Array.isArray(dataPulang) ? dataPulang : []
             };
 
+            // Hitung total kas masuk dari file cadangan untuk preview
+            let totalKasFile = selectedRestoreData.transactions.filter(t => t.type === 'in').reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+            if (totalKasFile === 0 && parsed.summary && parsed.summary.totalKasMasuk) {
+                totalKasFile = parsed.summary.totalKasMasuk;
+            }
+
             // Tampilkan Preview File yang Dipilih
-            tampilkanPreviewFileRestore(file.name, file.size, infoExportDate, selectedRestoreData);
+            tampilkanPreviewFileRestore(file.name, file.size, infoExportDate, selectedRestoreData, totalKasFile);
 
         } catch (err) {
             console.error("Gagal membaca file cadangan:", err);
@@ -232,7 +248,7 @@ function handleFileSelectRestore(event) {
 }
 
 // Tampilkan Rincian File yang Siap Dipulihkan
-function tampilkanPreviewFileRestore(fileName, fileSize, exportDate, data) {
+function tampilkanPreviewFileRestore(fileName, fileSize, exportDate, data, totalKas = 0) {
     const boxEmpty = document.getElementById('restore-box-empty');
     const boxPreview = document.getElementById('restore-box-preview');
     const btnExecute = document.getElementById('btn-eksekusi-restore');
@@ -253,7 +269,13 @@ function tampilkanPreviewFileRestore(fileName, fileSize, exportDate, data) {
     if (elSantri) elSantri.innerText = `${data.santriData.length} Santri`;
 
     const elTrx = document.getElementById('restore-preview-trx');
-    if (elTrx) elTrx.innerText = `${data.transactions.length} Transaksi`;
+    if (elTrx) {
+        if (data.transactions.length > 0) {
+            elTrx.innerHTML = `<span class="text-blue-700 font-bold">${data.transactions.length} Transaksi</span> <span class="text-[10px] text-gray-500 font-normal">(${formatRupiah(totalKas)})</span>`;
+        } else {
+            elTrx.innerHTML = `<span class="text-amber-600 font-bold">0 Transaksi</span>`;
+        }
+    }
 
     if (btnExecute) {
         btnExecute.disabled = false;
@@ -335,13 +357,81 @@ function prosesRestoreData() {
 // Simpan Data Hasil Restore ke LocalStorage dan Refresh Seluruh Komponen
 function eksekusiSimpanRestore(payload) {
     try {
-        // 1. Perbarui State Global
-        santriData = payload.santriData || [];
-        transactions = payload.transactions || [];
-        appSettings = payload.appSettings || {};
-        mutasiKamarList = payload.mutasiKamarList || [];
-        liburanSantriList = payload.liburanSantriList || [];
-        pulangSantriList = payload.pulangSantriList || [];
+        window._isRestoringDatabase = true;
+
+        // 1. Bersihkan seluruh marker penghapusan & timestamp reset lama dari LocalStorage
+        // agar transaksi yang baru dipulihkan tidak dianggap sebagai transaksi yang telah dihapus
+        localStorage.removeItem('epondok_deleted_trx_ids');
+        localStorage.removeItem('epondok_last_trx_reset_ts');
+        localStorage.setItem('epondok_deleted_trx_ids', '[]');
+        localStorage.setItem('epondok_last_trx_reset_ts', '0');
+        localStorage.setItem('epondok_trx_reset_version', '2026-11-10-clean-v15');
+
+        // 2. Normalisasi & Validasi Pengaturan Sistem (appSettings)
+        let restoredSettings = payload.appSettings || {};
+        if (typeof restoredSettings !== 'object' || !restoredSettings) {
+            restoredSettings = {};
+        }
+
+        // Hapus sisa marker reset lama di appSettings
+        restoredSettings.deletedTrxIds = [];
+        delete restoredSettings.trxResetTimestamp;
+        delete restoredSettings._cloudTrxExtras;
+
+        // Validasi tarif syahriah & tarif komponen bulanan agar tidak bernilai 0 / NaN
+        if (!restoredSettings.tarifSyahriah || isNaN(Number(restoredSettings.tarifSyahriah)) || Number(restoredSettings.tarifSyahriah) <= 0) {
+            if (restoredSettings.tarifKomponenBulanan && typeof restoredSettings.tarifKomponenBulanan === 'object') {
+                const p = Number(restoredSettings.tarifKomponenBulanan.pondok) || 0;
+                const m = Number(restoredSettings.tarifKomponenBulanan.madrasah) || 0;
+                const k = Number(restoredSettings.tarifKomponenBulanan.makan) || 0;
+                restoredSettings.tarifSyahriah = (p + m + k) > 0 ? (p + m + k) : 250000;
+            } else {
+                restoredSettings.tarifSyahriah = 250000;
+            }
+        }
+        if (!restoredSettings.tarifKomponenBulanan || typeof restoredSettings.tarifKomponenBulanan !== 'object') {
+            const tot = Number(restoredSettings.tarifSyahriah) || 250000;
+            restoredSettings.tarifKomponenBulanan = {
+                pondok: 100000,
+                madrasah: 50000,
+                makan: Math.max(0, tot - 150000)
+            };
+        }
+
+        // Pastikan tahun ajaran aktif tersedia
+        if (!Array.isArray(restoredSettings.tahunAjaranList) || restoredSettings.tahunAjaranList.length === 0) {
+            restoredSettings.tahunAjaranList = [
+                { ta: '1446/1447', aktif: false },
+                { ta: '1447/1448', aktif: true }
+            ];
+        } else {
+            const hasActive = restoredSettings.tahunAjaranList.some(t => t.aktif);
+            if (!hasActive) {
+                restoredSettings.tahunAjaranList[restoredSettings.tahunAjaranList.length - 1].aktif = true;
+            }
+        }
+        const activeTa = (restoredSettings.tahunAjaranList.find(t => t.aktif) || {}).ta || '1447/1448';
+
+        // 3. Normalisasi Data Transaksi
+        const cleanTransactions = (payload.transactions || []).map(t => {
+            if (!t || typeof t !== 'object') return null;
+            return {
+                ...t,
+                amount: Number(t.amount) || 0,
+                ta: t.ta || activeTa,
+                type: t.type || 'in',
+                metode: t.metode || 'Tunai'
+            };
+        }).filter(Boolean);
+
+        // 4. Perbarui State Global
+        santriData = Array.isArray(payload.santriData) ? payload.santriData : [];
+        transactions = cleanTransactions;
+        appSettings = restoredSettings;
+        mutasiKamarList = Array.isArray(payload.mutasiKamarList) ? payload.mutasiKamarList : [];
+        liburanSantriList = Array.isArray(payload.liburanSantriList) ? payload.liburanSantriList : [];
+        pulangSantriList = Array.isArray(payload.pulangSantriList) ? payload.pulangSantriList : [];
+
         window.santriData = santriData;
         window.transactions = transactions;
         window.appSettings = appSettings;
@@ -349,10 +439,11 @@ function eksekusiSimpanRestore(payload) {
         window.liburanSantriList = liburanSantriList;
         window.pulangSantriList = pulangSantriList;
 
-        // 2. Simpan Permanen ke LocalStorage
+        // 5. Simpan Permanen ke LocalStorage
         saveDataToStorage();
 
-        // 3. Muat Ulang & Sinkronkan Seluruh Modul Aplikasi
+        // 6. Muat Ulang & Sinkronkan Seluruh Modul Tampilan Aplikasi
+        if (typeof updateDateHeader === 'function') updateDateHeader();
         if (typeof updateFiltersAndDropdowns === 'function') updateFiltersAndDropdowns();
         if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
         if (typeof renderSyahriah === 'function') renderSyahriah();
@@ -362,14 +453,32 @@ function eksekusiSimpanRestore(payload) {
         if (typeof renderPengaturanPJDivisi === 'function') renderPengaturanPJDivisi();
         if (typeof renderPengaturanKhususIkhtibar === 'function') renderPengaturanKhususIkhtibar();
         if (typeof renderPengaturanKamar === 'function') renderPengaturanKamar();
+        if (typeof initFormTarifBulananPengaturan === 'function') initFormTarifBulananPengaturan();
         if (typeof renderPengeluaranMenu === 'function') renderPengeluaranMenu();
         if (typeof renderMutasiKamarSection === 'function') renderMutasiKamarSection();
         if (typeof renderPembayaranLainPage === 'function') renderPembayaranLainPage();
+        if (typeof renderPembayaranKustomList === 'function') renderPembayaranKustomList();
         if (typeof renderLaporan === 'function') renderLaporan();
+        if (typeof renderLaporanRekap === 'function') renderLaporanRekap();
         if (typeof updateDashboard === 'function') updateDashboard();
-        if (typeof updateDateHeader === 'function') updateDateHeader();
 
-        // 4. Perbarui Tampilan Halaman Backup & Restore
+        if (typeof currentDetailSantriId !== 'undefined' && currentDetailSantriId && typeof bukaDetailSyahriah === 'function') {
+            bukaDetailSyahriah(currentDetailSantriId);
+        }
+        if (typeof window.currentKategoriLaporan !== 'undefined' && window.currentKategoriLaporan && typeof renderIsiLaporanDetail === 'function') {
+            renderIsiLaporanDetail();
+        }
+
+        // 7. Unggah Force-Push ke Google Sheets agar database di Cloud ikut terpulihkan utuh
+        if (typeof pushToCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+            pushToCloud({ silent: true, isRestorePush: true }).finally(() => {
+                window._isRestoringDatabase = false;
+            });
+        } else {
+            window._isRestoringDatabase = false;
+        }
+
+        // 8. Perbarui Tampilan Halaman Backup & Restore
         batalPilihFileRestore();
         renderBackupRestorePage();
 
@@ -378,9 +487,13 @@ function eksekusiSimpanRestore(payload) {
                 icon: 'success',
                 title: 'Database Berhasil Dipulihkan!',
                 html: `
-                    <div class="text-sm text-gray-600 mt-2 space-y-1">
-                        <p>Seluruh data santri, riwayat transaksi, dan pengaturan telah berhasil diperbarui sesuai file cadangan.</p>
-                        <p class="text-xs text-blue-700 font-bold mt-2">Aplikasi siap digunakan kembali.</p>
+                    <div class="text-sm text-gray-600 mt-2 space-y-1 text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <p class="text-gray-900 font-bold mb-2">Ringkasan Data yang Dipulihkan:</p>
+                        <p>• Data Santri: <b>${santriData.length} Santri</b></p>
+                        <p>• Riwayat Transaksi: <b>${transactions.length} Transaksi</b></p>
+                        <p>• Tarif Syahriah: <b>${formatRupiah(appSettings.tarifSyahriah)}/bulan</b></p>
+                        <p>• Tahun Ajaran Aktif: <b>${activeTa}</b></p>
+                        <p class="text-xs text-blue-700 font-bold pt-2 border-t border-gray-200 mt-2">Semua tagihan, riwayat, dan saldo siap digunakan kembali.</p>
                     </div>
                 `,
                 confirmButtonColor: '#1d4ed8',
@@ -390,6 +503,7 @@ function eksekusiSimpanRestore(payload) {
             showToast("Database berhasil dipulihkan!");
         }
     } catch (err) {
+        window._isRestoringDatabase = false;
         console.error("Gagal mengeksekusi restore data:", err);
         if (typeof showToast === 'function') showToast("Gagal memulihkan database: " + err.message, "error");
     }

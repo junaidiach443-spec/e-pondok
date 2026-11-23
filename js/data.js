@@ -2542,7 +2542,7 @@ function loadDataFromStorage() {
     if (savedSantri && isNewVersion) {
         try {
             let parsed = JSON.parse(savedSantri);
-            if (Array.isArray(parsed) && parsed.length >= 70) {
+            if (Array.isArray(parsed) && parsed.length > 0) {
                 parsed = parsed.map(s => ({
                     ...s,
                     status: s.status || 'Aktif',
@@ -2551,6 +2551,8 @@ function loadDataFromStorage() {
                     alasanBoyong: (s.alasanBoyong || '').replace(/Gantung/gi, 'Guru Tugas / Non-Mukim')
                 }));
                 santriData = sortSantriData(parsed);
+            } else if (Array.isArray(parsed) && parsed.length === 0) {
+                santriData = [];
             } else {
                 santriData = sortSantriData(santriData);
                 localStorage.setItem('santriData', JSON.stringify(santriData));
