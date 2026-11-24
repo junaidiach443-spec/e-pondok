@@ -45,6 +45,12 @@ function updateHeaderTitle(title) {
 
 // Navigasi Utama Halaman
 function navigate(pageId) {
+    // Alihkan 'backup-restore' ke Halaman Pengaturan (bagian paling bawah)
+    if (pageId === 'backup-restore') {
+        pageId = 'pengaturan';
+        window._pendingScrollToBackup = true;
+    }
+
     // Proteksi Keamanan Halaman Pengaturan dengan Password "juna321"
     if (pageId === 'pengaturan') {
         const isAuth = sessionStorage.getItem('epondok_pengaturan_auth') === 'juna321';
@@ -242,6 +248,15 @@ function navigate(pageId) {
         if (typeof renderPengaturanKhususIkhtibar === 'function') renderPengaturanKhususIkhtibar();
         if (typeof renderPengaturanKamar === 'function') renderPengaturanKamar();
         if (typeof renderPengaturanAuth === 'function') renderPengaturanAuth();
+        if (typeof renderBackupRestorePage === 'function') renderBackupRestorePage();
+
+        if (window._pendingScrollToBackup) {
+            window._pendingScrollToBackup = false;
+            setTimeout(() => {
+                const sec = document.getElementById('section-backup-restore');
+                if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+            }, 200);
+        }
     } else if (targetPageId === 'backup-restore') {
         if (typeof renderBackupRestorePage === 'function') renderBackupRestorePage();
     }

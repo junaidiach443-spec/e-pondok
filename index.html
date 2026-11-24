@@ -266,11 +266,8 @@
             </a>
 
             <div class="pt-4 pb-2 px-4"><p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Sistem</p></div>
-            <a href="#" onclick="navigate('pengaturan')" id="nav-pengaturan" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-800 font-medium transition-colors">
+            <a href="#" onclick="navigate('pengaturan')" id="nav-pengaturan" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-100 hover:text-gray-800 font-medium transition-colors mb-2">
                 <i class="fas fa-cog w-5 text-gray-400"></i> Pengaturan
-            </a>
-            <a href="#" onclick="navigate('backup-restore')" id="nav-backup-restore" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors mb-2">
-                <i class="fas fa-database w-5 text-blue-600"></i> Backup & Restore
             </a>
             <a href="#" onclick="kunciAplikasi(); return false;" class="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-50 font-medium transition-colors mb-4 border border-rose-100">
                 <i class="fas fa-arrow-right-from-bracket w-5 text-rose-500"></i> Logout
@@ -1951,7 +1948,7 @@
             </div>
 
             <!-- Halaman: Pengaturan -->
-            <div id="page-pengaturan" class="hidden max-w-4xl mx-auto space-y-6 pb-10">
+            <div id="page-pengaturan" class="hidden max-w-5xl mx-auto space-y-8 pb-16">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <div class="flex items-center gap-2">
@@ -2413,25 +2410,8 @@
                     </button>
                 </div>
 
-                <!-- Banner Pintasan Backup & Restore di Halaman Pengaturan -->
-                <div class="bg-gradient-to-r from-blue-50 via-sky-50 to-white rounded-2xl border border-blue-200/80 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-800 text-sm">Pusat Cadangan & Pemulihan Database (Backup & Restore)</h4>
-                            <p class="text-xs text-gray-500 mt-0.5">Amankan seluruh data santri dan transaksi keuangan ke file JSON atau pulihkan data dari file cadangan.</p>
-                        </div>
-                    </div>
-                    <button onclick="navigate('backup-restore')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all flex items-center gap-2 shrink-0">
-                        <i class="fas fa-database"></i> Buka Backup & Restore
-                    </button>
-                </div>
-            </div>
-
-            <!-- Halaman: Backup & Restore Data -->
-            <div id="page-backup-restore" class="hidden max-w-5xl mx-auto space-y-6 pb-12">
+                <!-- Bagian: Pusat Cadangan & Pemulihan Database (Backup & Restore) -->
+                <div id="section-backup-restore" class="space-y-6 pt-6 border-t-2 border-gray-200/80">
                 <!-- Header Banner -->
                 <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="flex items-center gap-3.5">
@@ -2769,8 +2749,11 @@
                     </button>
                 </div>
             </div>
+            <!-- /section-backup-restore -->
         </div>
-    </main>
+        <!-- /page-pengaturan -->
+    </div>
+</main>
 
     <!-- Modal: Tambah / Edit Santri -->
     <!-- Modal: Tambah / Edit Santri -->
@@ -4919,23 +4902,23 @@
     </div>
 
     <!-- Modular Application Scripts -->
-    <script src="js/utils.js?v=29"></script>
-    <script src="js/data.js?v=29"></script>
-    <script src="js/navigation.js?v=29"></script>
-    <script src="js/dashboard.js?v=29"></script>
-    <script src="js/santri.js?v=29"></script>
-    <script src="js/izin-keluar.js?v=29"></script>
-    <script src="js/syahriah.js?v=29"></script>
-    <script src="js/tagihan-kustom.js?v=29"></script>
-    <script src="js/pembayaran-lain.js?v=29"></script>
-    <script src="js/pengeluaran.js?v=29"></script>
-    <script src="js/cetak.js?v=29"></script>
-    <script src="js/laporan.js?v=29"></script>
-    <script src="js/pengaturan.js?v=29"></script>
-    <script src="js/backup-restore.js?v=29"></script>
-    <script src="js/auth.js?v=29"></script>
-    <script src="js/cloud-sync.js?v=29"></script>
-    <script src="js/app.js?v=29"></script>
+    <script src="js/utils.js?v=30"></script>
+    <script src="js/data.js?v=30"></script>
+    <script src="js/navigation.js?v=30"></script>
+    <script src="js/dashboard.js?v=30"></script>
+    <script src="js/santri.js?v=30"></script>
+    <script src="js/izin-keluar.js?v=30"></script>
+    <script src="js/syahriah.js?v=30"></script>
+    <script src="js/tagihan-kustom.js?v=30"></script>
+    <script src="js/pembayaran-lain.js?v=30"></script>
+    <script src="js/pengeluaran.js?v=30"></script>
+    <script src="js/cetak.js?v=30"></script>
+    <script src="js/laporan.js?v=30"></script>
+    <script src="js/pengaturan.js?v=30"></script>
+    <script src="js/backup-restore.js?v=30"></script>
+    <script src="js/auth.js?v=30"></script>
+    <script src="js/cloud-sync.js?v=30"></script>
+    <script src="js/app.js?v=30"></script>
 </body>
 </html>
 
