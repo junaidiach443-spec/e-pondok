@@ -243,6 +243,7 @@ function readAllDataFromSpreadsheet() {
   var settingsSheet = ss.getSheetByName(SHEET_NAMES.PENGATURAN);
   var appSettings = null;
   var deletedTrxIds = [];
+  var deletedSantriIds = [];
   if (settingsSheet) {
     var data = settingsSheet.getDataRange().getValues();
     for (var i = 0; i < data.length; i++) {
@@ -260,11 +261,28 @@ function readAllDataFromSpreadsheet() {
           deletedTrxIds = [];
         }
       }
+      if (data[i][0] === 'DELETED_SANTRI_IDS' && data[i][1]) {
+        try {
+          deletedSantriIds = JSON.parse(data[i][1]);
+        } catch (e) {
+          deletedSantriIds = [];
+        }
+      }
     }
   }
 
   if (appSettings && Array.isArray(appSettings.deletedTrxIds) && deletedTrxIds.length === 0) {
     deletedTrxIds = appSettings.deletedTrxIds;
+  }
+  if (appSettings && Array.isArray(appSettings.deletedSantriIds) && deletedSantriIds.length === 0) {
+    deletedSantriIds = appSettings.deletedSantriIds;
+  }
+
+  // Filter keluar santri yang telah dihapus
+  if (deletedSantriIds && deletedSantriIds.length > 0) {
+    var delSantriSet = {};
+    deletedSantriIds.forEach(function(id) { delSantriSet[id] = true; });
+    santriData = santriData.filter(function(s) { return !delSantriSet[s.id]; });
   }
 
   // Filter keluar transaksi yang telah dihapus
@@ -280,7 +298,8 @@ function readAllDataFromSpreadsheet() {
     transactions: transactions,
     appSettings: appSettings,
     mutasiKamarList: mutasiKamarList,
-    deletedTrxIds: deletedTrxIds
+    deletedTrxIds: deletedTrxIds,
+    deletedSantriIds: deletedSantriIds
   };
 }
 
@@ -303,7 +322,16 @@ function writeAllDataToSpreadsheet(payload) {
   var santriRows = [santriHeaders];
   var nowStr = new Date().toISOString();
 
+  // Kumpulkan set ID santri yang dihapus
+  var delSantriIds = Array.isArray(payload.deletedSantriIds) ? payload.deletedSantriIds : [];
+  if (appSettings && Array.isArray(appSettings.deletedSantriIds)) {
+    delSantriIds = delSantriIds.concat(appSettings.deletedSantriIds);
+  }
+  var delSantriSet = {};
+  delSantriIds.forEach(function(id) { if (id) delSantriSet[id] = true; });
+
   santriData.forEach(function(s, idx) {
+    if (!s || !s.id || delSantriSet[s.id]) return; // Lewati santri yang dihapus
     santriRows.push([
       String(s.id || ''),
       Number(s.no) || (idx + 1),
@@ -411,6 +439,7 @@ function writeAllDataToSpreadsheet(payload) {
     ['Key', 'Value', 'Keterangan'],
     ['FULL_SETTINGS_JSON', JSON.stringify(appSettings), 'Cadangan utuh format JSON Pengaturan Sistem'],
     ['DELETED_TRX_IDS', JSON.stringify(delIds), 'Daftar ID transaksi yang dihapus'],
+    ['DELETED_SANTRI_IDS', JSON.stringify(delSantriIds), 'Daftar ID santri yang dihapus'],
     ['TarifSyahriah', appSettings.tarifSyahriah || 0, 'Nominal Syahriah Bulanan'],
     ['TahunAjaranAktif', (function() {
       var active = (appSettings.tahunAjaranList || []).find(function(t) { return t.aktif; });

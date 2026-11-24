@@ -8,19 +8,19 @@
 
 // Render Riwayat Seluruh Transaksi Masuk & Keluar
 // Render Riwayat Seluruh Transaksi Masuk & Keluar dengan Pagination 20 Data
-function renderLaporan(resetPage = false) { 
+function renderLaporan(resetPage = false) {
     if (resetPage && window.paginationState) {
         window.paginationState.riwayat.page = 1;
     }
     const filterTipeEl = document.getElementById('filter-tipe');
-    const f = filterTipeEl ? filterTipeEl.value : 'all'; 
+    const f = filterTipeEl ? filterTipeEl.value : 'all';
     const filterMetodeEl = document.getElementById('filter-metode-riwayat');
     const fMetode = filterMetodeEl ? filterMetodeEl.value : 'all';
     const elSearch = document.getElementById('search-riwayat');
     const src = elSearch ? elSearch.value.toLowerCase().trim() : '';
-    const tb = document.getElementById('table-riwayat'); 
+    const tb = document.getElementById('table-riwayat');
     if (!tb) return;
-    
+
     // Hitung ringkasan kas masuk Tunai vs Transfer
     let totalKasTunai = 0;
     let totalKasTransfer = 0;
@@ -40,10 +40,10 @@ function renderLaporan(resetPage = false) {
     const elSumTransfer = document.getElementById('riwayat-total-transfer');
     if (elSumTransfer) elSumTransfer.innerText = formatRupiah(totalKasTransfer);
 
-    let d = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date)); 
-    if (f !== 'all') d = d.filter(t => t.type === f); 
+    let d = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (f !== 'all') d = d.filter(t => t.type === f);
     if (fMetode !== 'all') d = d.filter(t => (t.metode || 'Tunai') === fMetode);
-    
+
     if (src) {
         d = d.filter(t => {
             let namaPihak = "";
@@ -92,7 +92,7 @@ function renderLaporan(resetPage = false) {
         }
 
         const isTransfer = (t.metode === 'Transfer');
-        const badgeMetode = isTransfer 
+        const badgeMetode = isTransfer
             ? `<span class="px-2.5 py-1 text-[11px] rounded-lg font-bold bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1.5"><i class="fas fa-university text-[10px]"></i> Transfer</span>`
             : `<span class="px-2.5 py-1 text-[11px] rounded-lg font-bold bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1.5"><i class="fas fa-money-bill-wave text-[10px]"></i> Tunai</span>`;
 
@@ -105,7 +105,7 @@ function renderLaporan(resetPage = false) {
             <td class="p-4 text-right font-extrabold text-lg font-mono ${t.type === 'in' ? 'text-blue-600' : 'text-rose-600'}">${t.type === 'in' ? '+' : '-'} ${formatRupiah(t.amount)}</td>
             <td class="p-4 text-center"><button onclick="hapusTransaksi('${t.id}')" class="text-gray-400 hover:text-rose-600 p-2 transition-colors" title="Hapus"><i class="fas fa-trash-alt"></i></button></td>
         </tr>`;
-    }).join('') : '<tr><td colspan="7" class="p-10 text-center text-gray-400"><i class="fas fa-history text-3xl mb-2 text-gray-300"></i><p>Tidak ada riwayat transaksi yang cocok</p></td></tr>'; 
+    }).join('') : '<tr><td colspan="7" class="p-10 text-center text-gray-400"><i class="fas fa-history text-3xl mb-2 text-gray-300"></i><p>Tidak ada riwayat transaksi yang cocok</p></td></tr>';
 
     if (typeof renderPaginationControls === 'function') {
         renderPaginationControls({
@@ -146,10 +146,10 @@ function renderLaporanRekap() {
             </div>
         </div>
     `;
-    
+
     (appSettings.tagihanKustom || []).forEach((tk, idx) => {
         const color = colorPalette[(idx + 1) % colorPalette.length] || colorPalette[0];
-        const cName = color.bg.split('-')[1]; 
+        const cName = color.bg.split('-')[1];
         cards += `
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all cursor-pointer relative overflow-hidden group" onclick="bukaHalamanLaporanDetail('${tk.nama}')">
             <div class="absolute -right-6 -top-6 w-32 h-32 ${color.bg} opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700 z-0"></div>
@@ -170,10 +170,10 @@ function bukaHalamanLaporanDetail(kategori) {
     window.currentKategoriLaporan = kategori;
     const titleEl = document.getElementById('title-laporan-detail');
     if (titleEl) titleEl.innerText = 'Laporan ' + kategori;
-    
+
     const taEl = document.getElementById('ta-laporan-detail');
     if (taEl) taEl.innerText = getTahunAjaranAktif();
-    
+
     // Inisialisasi dropdown filter kamar
     const filterKamar = document.getElementById('lap-filter-kamar');
     if (filterKamar) {
@@ -250,20 +250,20 @@ function renderIsiLaporanDetail(resetPage = false) {
         let infoKhusus = '';
 
         if (window.currentKategoriLaporan === 'Syahriah') {
-            const tarifSantri = (typeof getTarifBulananSantri === 'function') 
-                ? getTarifBulananSantri(s.id) 
+            const tarifSantri = (typeof getTarifBulananSantri === 'function')
+                ? getTarifBulananSantri(s.id)
                 : (appSettings.tarifSyahriah || 250000);
             const isBebasSyahriah = (typeof isSantriBebasSyahriah === 'function') ? isSantriBebasSyahriah(s.id) : false;
             isBebas = isBebasSyahriah;
             nominalTarget = isBebas ? 0 : (tarifSantri * 12);
-            
+
             const trx = transactions.filter(t => t.santriId === s.id && t.kategori === 'Syahriah' && t.ta === TA && t.type === 'in');
             totalBayar = trx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
             tunggakan = isBebas ? 0 : Math.max(0, nominalTarget - totalBayar);
             statusLunas = isBebas || (tunggakan <= 0);
 
-            const komp = (typeof getKomponenBulananSantri === 'function') 
-                ? getKomponenBulananSantri(s.id) 
+            const komp = (typeof getKomponenBulananSantri === 'function')
+                ? getKomponenBulananSantri(s.id)
                 : { pondok: true, madrasah: true, makan: true };
             if (!komp.pondok && !komp.madrasah && !komp.makan) {
                 infoKhusus = '(Bebas Biaya)';
@@ -287,10 +287,10 @@ function renderIsiLaporanDetail(resetPage = false) {
                 if (infoTarif.bebas) infoKhusus = 'Bebas Biaya';
                 else if (infoTarif.isKhusus) infoKhusus = 'Dispensasi';
 
-                const trx = transactions.filter(t => 
-                    t.santriId === s.id && 
-                    t.type === 'in' && 
-                    t.ta === TA && 
+                const trx = transactions.filter(t =>
+                    t.santriId === s.id &&
+                    t.type === 'in' &&
+                    t.ta === TA &&
                     (typeof isTrxMatchingJenisPL === 'function'
                         ? isTrxMatchingJenisPL(t, fPosPL)
                         : (t.subJenis === fPosPL || (t.kategori === 'Pembayaran Lain' && t.subJenis === fPosPL) || t.kategori === fPosPL))
@@ -315,8 +315,8 @@ function renderIsiLaporanDetail(resetPage = false) {
             }
         } else {
             // Tagihan Kustom (Ikhtibar dll)
-            const infoTarifKustom = (typeof getTarifSantriKustom === 'function') 
-                ? getTarifSantriKustom(s.id, window.currentKategoriLaporan) 
+            const infoTarifKustom = (typeof getTarifSantriKustom === 'function')
+                ? getTarifSantriKustom(s.id, window.currentKategoriLaporan)
                 : { isKhusus: false, nominal: 0, bebas: false };
 
             if (infoTarifKustom.isKhusus) {
@@ -367,10 +367,10 @@ function renderIsiLaporanDetail(resetPage = false) {
 
     // Hitung & Perbarui Rincian Penerimaan Komponen Bulanan jika kategori Syahriah
     if (window.currentKategoriLaporan === 'Syahriah') {
-        const tarifKomponen = (typeof getTarifKomponenBulanan === 'function') 
-            ? getTarifKomponenBulanan() 
+        const tarifKomponen = (typeof getTarifKomponenBulanan === 'function')
+            ? getTarifKomponenBulanan()
             : { pondok: 100000, madrasah: 50000, makan: 100000 };
-            
+
         const elTarifPondok = document.getElementById('lap-rekap-tarif-pondok');
         const elTarifMadrasah = document.getElementById('lap-rekap-tarif-madrasah');
         const elTarifMakan = document.getElementById('lap-rekap-tarif-makan');
@@ -383,10 +383,10 @@ function renderIsiLaporanDetail(resetPage = false) {
         let totalMasukMakan = 0;
 
         const filteredSantriIds = new Set(dataLap.map(x => x.id));
-        const syahriahTrxFiltered = (transactions || []).filter(t => 
-            t.kategori === 'Syahriah' && 
-            t.ta === TA && 
-            t.type === 'in' && 
+        const syahriahTrxFiltered = (transactions || []).filter(t =>
+            t.kategori === 'Syahriah' &&
+            t.ta === TA &&
+            t.type === 'in' &&
             filteredSantriIds.has(t.santriId)
         );
 
@@ -594,23 +594,23 @@ function kirimPengingatTagihanWA(santriId, kategori, tunggakan) {
         const waliGreeting = santri.namaWali ? `Bpk/Ibu *${santri.namaWali}* (Wali dari *${santri.nama}*)` : `Bpk/Ibu Wali dari *${santri.nama}*`;
 
         return `*PEMBERITAHUAN ADMINISTRASI KEUANGAN*\n` +
-               `*${namaPesantren.toUpperCase()}*\n` +
-               `================================\n\n` +
-               `Assalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
-               `Kepada Yth. ${waliGreeting},\n` +
-               `Semoga Bapak/Ibu sekeluarga senantiasa berada dalam lindungan dan limpahan rahmat Allah SWT.\n\n` +
-               `Kami dari bagian keuangan ingin menyampaikan informasi terkait kewajiban administrasi santri berikut:\n\n` +
-               `*Nama Santri:* ${santri.nama}\n` +
-               `*NIS:* ${santri.nis || '-'}\n` +
-               `*Kamar / Kelas:* ${santri.kamar || '-'}\n` +
-               `*Tahun Ajaran:* ${ta}\n` +
-               `*Pos Kewajiban:* ${kategori || 'Administrasi'}\n` +
-               `*Sisa Tunggakan:* *${formatRupiah(tunggakan)}*\n\n` +
-               `Mohon kiranya Bapak/Ibu dapat melakukan pelunasan administrasi tersebut di kantor bendahara pesantren atau via transfer.\n\n` +
-               `_Apabila Bapak/Ibu telah melakukan pembayaran atau terdapat kekeliruan pencatatan, mohon konfirmasi dengan membalas pesan ini atau mengirimkan bukti transfer._\n\n` +
-               `Jazakumullahu Khairan Katsiran.\n` +
-               `Wassalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
-               `_Pengurus Keuangan / Bendahara Pesantren_`;
+            `*${namaPesantren.toUpperCase()}*\n` +
+            `================================\n\n` +
+            `Assalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
+            `Kepada Yth. ${waliGreeting},\n` +
+            `Semoga Bapak/Ibu sekeluarga senantiasa berada dalam lindungan dan limpahan rahmat Allah SWT.\n\n` +
+            `Kami dari bagian keuangan ingin menyampaikan informasi terkait kewajiban administrasi santri berikut:\n\n` +
+            `*Nama Santri:* ${santri.nama}\n` +
+            `*NIS:* ${santri.nis || '-'}\n` +
+            `*Kamar / Kelas:* ${santri.kamar || '-'}\n` +
+            `*Tahun Ajaran:* ${ta}\n` +
+            `*Pos Kewajiban:* ${kategori || 'Administrasi'}\n` +
+            `*Sisa Tunggakan:* *${formatRupiah(tunggakan)}*\n\n` +
+            `Mohon kiranya Bapak/Ibu dapat melakukan pelunasan administrasi tersebut di kantor bendahara pesantren atau via transfer.\n\n` +
+            `_Apabila Bapak/Ibu telah melakukan pembayaran atau terdapat kekeliruan pencatatan, mohon konfirmasi dengan membalas pesan ini atau mengirimkan bukti transfer._\n\n` +
+            `Jazakumullahu Khairan Katsiran.\n` +
+            `Wassalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
+            `_Pengurus Keuangan / Bendahara Pesantren_`;
     };
 
     const kirimKeNo = (rawPhone) => {

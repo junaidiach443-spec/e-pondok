@@ -464,14 +464,52 @@ function getDeletedTransactionIds() {
         const local = JSON.parse(localStorage.getItem('epondok_deleted_trx_ids') || '[]');
         const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
         const fromSettings = (settings && Array.isArray(settings.deletedTrxIds)) ? settings.deletedTrxIds : [];
-        const combined = Array.from(new Set([...ghostIds, ...local, ...fromSettings]));
+        return Array.from(new Set([...ghostIds, ...local, ...fromSettings]));
+    } catch (e) {
+        return [];
+    }
+}
 
-        // Transaksi yang sedang aktif di memori/storage TIDAK BOLEH dianggap terhapus
-        const activeIds = new Set((window.transactions || (typeof transactions !== 'undefined' ? transactions : [])).map(t => t && t.id).filter(Boolean));
-        if (activeIds.size > 0) {
-            return combined.filter(id => !activeIds.has(id));
+/**
+ * Pelacakan ID santri yang dihapus secara permanen & sinkronisasi multi-perangkat
+ */
+function trackDeletedSantriId(santriId) {
+    if (!santriId) return;
+    try {
+        let deleted = JSON.parse(localStorage.getItem('epondok_deleted_santri_ids') || '[]');
+        if (!deleted.includes(santriId)) {
+            deleted.push(santriId);
+            if (deleted.length > 2000) deleted = deleted.slice(-2000);
+            localStorage.setItem('epondok_deleted_santri_ids', JSON.stringify(deleted));
         }
-        return combined;
+
+        let settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
+        if (settings && typeof settings === 'object') {
+            if (!Array.isArray(settings.deletedSantriIds)) {
+                settings.deletedSantriIds = [];
+            }
+            if (!settings.deletedSantriIds.includes(santriId)) {
+                settings.deletedSantriIds.push(santriId);
+                if (settings.deletedSantriIds.length > 2000) {
+                    settings.deletedSantriIds = settings.deletedSantriIds.slice(-2000);
+                }
+            }
+            window.appSettings = settings;
+            if (typeof appSettings !== 'undefined') appSettings = settings;
+            localStorage.setItem('appSettings', JSON.stringify(settings));
+        }
+    } catch (e) {
+        console.warn('Gagal melacak ID santri dihapus:', e);
+    }
+}
+
+function getDeletedSantriIds() {
+    if (window._isRestoringDatabase) return [];
+    try {
+        const local = JSON.parse(localStorage.getItem('epondok_deleted_santri_ids') || '[]');
+        const settings = window.appSettings || (typeof appSettings !== 'undefined' ? appSettings : null);
+        const fromSettings = (settings && Array.isArray(settings.deletedSantriIds)) ? settings.deletedSantriIds : [];
+        return Array.from(new Set([...local, ...fromSettings]));
     } catch (e) {
         return [];
     }
@@ -674,18 +712,19 @@ function mergeSantriFromCloud(cloudSantriList, cloudSettings = null) {
         ? cloudSettings._cloudSantriExtras
         : {};
 
+    const deletedSantriIds = new Set(getDeletedSantriIds());
     const currentList = (Array.isArray(window.santriData) && window.santriData.length > 0)
         ? window.santriData
         : (santriData || []);
 
     const localMap = new Map();
     currentList.forEach(s => {
-        if (s && s.id) localMap.set(s.id, s);
+        if (s && s.id && !deletedSantriIds.has(s.id)) localMap.set(s.id, s);
     });
 
     let hasChanges = false;
     cloudSantriList.forEach(rawCs => {
-        if (!rawCs || !rawCs.id) return;
+        if (!rawCs || !rawCs.id || deletedSantriIds.has(rawCs.id)) return;
         const extra = santriExtras[rawCs.id];
         let cs = { ...rawCs };
         if (extra && typeof extra === 'object') {
@@ -799,46 +838,44 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         }
     }
 
-    // 0B. Sinkronkan daftar transaksi yang dihapus dari Cloud terlebih dahulu (Kecuali sedang memulihkan cadangan database)
+    // 0B. Sinkronkan daftar transaksi & santri yang dihapus dari Cloud (Kecuali sedang memulihkan cadangan database)
     if (!window._isRestoringDatabase) {
-        const currentTrxIds = new Set((window.transactions || transactions || []).map(t => t && t.id).filter(Boolean));
-
+        // 1. Sinkronisasi Penghapusan Transaksi
         if (cloudSettings && Array.isArray(cloudSettings.deletedTrxIds)) {
-            cloudSettings.deletedTrxIds.forEach(id => {
-                if (!currentTrxIds.has(id)) {
-                    trackDeletedTransactionId(id);
-                }
-            });
+            cloudSettings.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
         }
         if (Array.isArray(cloudData.deletedTrxIds)) {
-            cloudData.deletedTrxIds.forEach(id => {
-                if (!currentTrxIds.has(id)) {
-                    trackDeletedTransactionId(id);
-                }
-            });
+            cloudData.deletedTrxIds.forEach(id => trackDeletedTransactionId(id));
         }
-
-        // Hapus ID transaksi aktif dari local storage deletedTrxIds agar tidak ikut terhapus
-        const activeDeletedIds = new Set(getDeletedTransactionIds());
-        let hasDeletedCleaned = false;
-        currentTrxIds.forEach(id => {
-            if (activeDeletedIds.has(id)) {
-                activeDeletedIds.delete(id);
-                hasDeletedCleaned = true;
-            }
-        });
-        if (hasDeletedCleaned) {
-            localStorage.setItem('epondok_deleted_trx_ids', JSON.stringify([...activeDeletedIds]));
-        }
-
-        if (activeDeletedIds.size > 0) {
+        const activeDeletedTrxIds = new Set(getDeletedTransactionIds());
+        if (activeDeletedTrxIds.size > 0) {
             const curTrx = window.transactions || transactions || [];
-            const beforeCount = curTrx.length;
-            const filtered = curTrx.filter(t => t && t.id && !activeDeletedIds.has(t.id));
-            if (filtered.length !== beforeCount) {
-                transactions = filtered;
-                window.transactions = filtered;
-                localStorage.setItem('transactions', JSON.stringify(filtered));
+            const beforeCountTrx = curTrx.length;
+            const filteredTrx = curTrx.filter(t => t && t.id && !activeDeletedTrxIds.has(t.id));
+            if (filteredTrx.length !== beforeCountTrx) {
+                transactions = filteredTrx;
+                window.transactions = filteredTrx;
+                localStorage.setItem('transactions', JSON.stringify(filteredTrx));
+                dataUpdated = true;
+            }
+        }
+
+        // 2. Sinkronisasi Penghapusan Master Santri
+        if (cloudSettings && Array.isArray(cloudSettings.deletedSantriIds)) {
+            cloudSettings.deletedSantriIds.forEach(id => trackDeletedSantriId(id));
+        }
+        if (Array.isArray(cloudData.deletedSantriIds)) {
+            cloudData.deletedSantriIds.forEach(id => trackDeletedSantriId(id));
+        }
+        const activeDeletedSantriIds = new Set(getDeletedSantriIds());
+        if (activeDeletedSantriIds.size > 0) {
+            const curSantri = window.santriData || santriData || [];
+            const beforeCountSantri = curSantri.length;
+            const filteredSantri = curSantri.filter(s => s && s.id && !activeDeletedSantriIds.has(s.id));
+            if (filteredSantri.length !== beforeCountSantri) {
+                santriData = filteredSantri;
+                window.santriData = filteredSantri;
+                localStorage.setItem('santriData', JSON.stringify(filteredSantri));
                 dataUpdated = true;
             }
         }
@@ -964,10 +1001,11 @@ async function pullFromCloud(options = {}) {
             showToast(`Data Cloud berhasil disinkronkan! (${countS} Santri, ${countT} Transaksi)`, 'success');
         }
 
-        // Jika ada santri atau transaksi lokal yang belum ada di Cloud, tandai untuk otomatis diunggah ke Google Sheets
+        // Jika ada santri atau transaksi lokal yang belum ada di Cloud (dan bukan yang dihapus), tandai untuk otomatis diunggah
         const cloudSantriSet = new Set(((res.data && res.data.santriData) || []).map(s => s && s.id).filter(Boolean));
         const localSantriList = window.santriData || santriData || [];
-        const hasUnpushedSantri = localSantriList.some(s => s && s.id && !cloudSantriSet.has(s.id));
+        const deletedSantriSet = new Set(getDeletedSantriIds());
+        const hasUnpushedSantri = localSantriList.some(s => s && s.id && !cloudSantriSet.has(s.id) && !deletedSantriSet.has(s.id));
 
         if (hasUnpushedSantri || (trxMerge && trxMerge.hasLocalUnpushed)) {
             hasPendingPush = true;
@@ -1057,10 +1095,11 @@ async function pushToCloud(options = {}) {
             }
         }
 
-        // Pastikan appSettings.deletedTrxIds selalu up-to-date di payload
+        // Pastikan appSettings.deletedTrxIds & deletedSantriIds selalu up-to-date di payload
         let currentSettings = window.appSettings || appSettings || {};
         if (window._isRestoringDatabase) {
             currentSettings.deletedTrxIds = [];
+            currentSettings.deletedSantriIds = [];
             delete currentSettings.trxResetTimestamp;
             delete currentSettings.santriResetTimestamp;
         } else {
@@ -1072,6 +1111,15 @@ async function pushToCloud(options = {}) {
                     currentSettings.deletedTrxIds.push(id);
                 }
             });
+
+            if (!Array.isArray(currentSettings.deletedSantriIds)) {
+                currentSettings.deletedSantriIds = [];
+            }
+            getDeletedSantriIds().forEach(id => {
+                if (!currentSettings.deletedSantriIds.includes(id)) {
+                    currentSettings.deletedSantriIds.push(id);
+                }
+            });
         }
         window.appSettings = currentSettings;
         if (typeof appSettings !== 'undefined') appSettings = currentSettings;
@@ -1079,15 +1127,19 @@ async function pushToCloud(options = {}) {
 
         const settingsWithExtras = attachCloudSyncExtrasToSettings(currentSettings);
 
+        const currentDeletedTrx = getDeletedTransactionIds();
+        const currentDeletedSantri = getDeletedSantriIds();
+
         // Siapkan Payload Lengkap beserta daftar ID yang dihapus
         const payloadData = {
-            santriData: window.santriData || santriData || [],
-            transactions: window.transactions || transactions || [],
+            santriData: (window.santriData || santriData || []).filter(s => s && s.id && !currentDeletedSantri.includes(s.id)),
+            transactions: (window.transactions || transactions || []).filter(t => t && t.id && !currentDeletedTrx.includes(t.id)),
             appSettings: settingsWithExtras,
             mutasiKamarList: window.mutasiKamarList || mutasiKamarList || [],
             liburanSantriList: window.liburanSantriList || liburanSantriList || [],
             pulangSantriList: window.pulangSantriList || pulangSantriList || [],
-            deletedTrxIds: skipPrePull ? [] : getDeletedTransactionIds(),
+            deletedTrxIds: skipPrePull ? [] : currentDeletedTrx,
+            deletedSantriIds: skipPrePull ? [] : currentDeletedSantri,
             isRestore: skipPrePull
         };
 
@@ -1574,13 +1626,31 @@ function readAllDataFromSpreadsheet() {
     }
   }
 
+  // Filter keluar santri yang telah dihapus
+  var deletedSantriIds = (appSettings && Array.isArray(appSettings.deletedSantriIds)) ? appSettings.deletedSantriIds : [];
+  if (deletedSantriIds && deletedSantriIds.length > 0) {
+    var delSantriSet = {};
+    deletedSantriIds.forEach(function(id) { delSantriSet[id] = true; });
+    santriData = santriData.filter(function(s) { return !delSantriSet[s.id]; });
+  }
+
+  // Filter keluar transaksi yang telah dihapus
+  var deletedTrxIds = (appSettings && Array.isArray(appSettings.deletedTrxIds)) ? appSettings.deletedTrxIds : [];
+  if (deletedTrxIds && deletedTrxIds.length > 0) {
+    var delTrxSet = {};
+    deletedTrxIds.forEach(function(id) { delTrxSet[id] = true; });
+    transactions = transactions.filter(function(t) { return !delTrxSet[t.id]; });
+  }
+
   return {
     santriData: santriData,
     transactions: transactions,
     appSettings: appSettings,
     mutasiKamarList: mutasiKamarList,
     liburanSantriList: liburanSantriList,
-    pulangSantriList: pulangSantriList
+    pulangSantriList: pulangSantriList,
+    deletedSantriIds: deletedSantriIds,
+    deletedTrxIds: deletedTrxIds
   };
 }
 
@@ -1599,7 +1669,16 @@ function writeAllDataToSpreadsheet(payload) {
   var santriRows = [santriHeaders];
   var nowStr = new Date().toISOString();
 
+  // Kumpulkan set ID santri yang dihapus
+  var delSantriIds = Array.isArray(payload.deletedSantriIds) ? payload.deletedSantriIds : [];
+  if (appSettings && Array.isArray(appSettings.deletedSantriIds)) {
+    delSantriIds = delSantriIds.concat(appSettings.deletedSantriIds);
+  }
+  var delSantriSet = {};
+  delSantriIds.forEach(function(id) { if (id) delSantriSet[id] = true; });
+
   santriData.forEach(function(s, idx) {
+    if (!s || !s.id || delSantriSet[s.id]) return; // Lewati santri yang dihapus
     santriRows.push([
       String(s.id || ''),
       Number(s.no) || (idx + 1),
@@ -1959,6 +2038,8 @@ window.triggerAutoSyncToCloud = triggerAutoSyncToCloud;
 window.handleHeaderCloudClick = handleHeaderCloudClick;
 window.trackDeletedTransactionId = trackDeletedTransactionId;
 window.getDeletedTransactionIds = getDeletedTransactionIds;
+window.trackDeletedSantriId = trackDeletedSantriId;
+window.getDeletedSantriIds = getDeletedSantriIds;
 window.mergeTransactionsFromCloud = mergeTransactionsFromCloud;
 window.mergeSantriFromCloud = mergeSantriFromCloud;
 window.refreshAllApplicationViews = refreshAllApplicationViews;

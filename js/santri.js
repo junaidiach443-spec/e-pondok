@@ -785,8 +785,15 @@ function hapusSantri(id) {
     const s = santriData.find(x => x.id === id);
     const nama = s ? s.nama : 'santri ini';
     showConfirm("Hapus Santri Permanen?", `Perhatian: Yakin ingin menghapus ${nama} secara permanen dari database master? Jika santri hanya keluar/lulus, disarankan menggunakan fitur "Boyong" agar riwayat tetap tersimpan.`, () => {
+        if (typeof trackDeletedSantriId === 'function') {
+            trackDeletedSantriId(id);
+        }
         santriData = santriData.filter(x => x.id !== id);
+        window.santriData = santriData;
         saveDataToStorage();
+        if (typeof triggerAutoSyncToCloud === 'function') {
+            triggerAutoSyncToCloud(true);
+        }
         updateFiltersAndDropdowns();
         renderSemuaTabel();
         renderMasterSantriTable();
