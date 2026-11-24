@@ -2494,18 +2494,34 @@ function parseAndShowPreviewRows(rows) {
     if (statusIdx === -1) statusIdx = 3;
 
     tempImportSantriData = [];
+    let skippedEmptyRows = 0;
+    const seenNisInFile = new Set();
+    let duplicateNisInFileCount = 0;
 
     for (let i = headerRowIdx + 1; i < rows.length; i++) {
         const row = rows[i];
-        if (!row || row.length === 0) continue;
+        if (!row || row.length === 0) {
+            skippedEmptyRows++;
+            continue;
+        }
 
         const nama = (namaIdx > -1 && row[namaIdx]) ? row[namaIdx].toString().trim().toUpperCase() : '';
-        if (!nama) continue; // Nama wajib
+        if (!nama) {
+            skippedEmptyRows++;
+            continue; // Nama wajib
+        }
 
         const no = (noIdx > -1 && row[noIdx]) ? parseInt(row[noIdx], 10) || null : null;
         const instansi = (instansiIdx > -1 && row[instansiIdx]) ? row[instansiIdx].toString().trim().toUpperCase() : 'PPU';
         const tglMasuk = (tglMasukIdx > -1 && row[tglMasukIdx]) ? row[tglMasukIdx].toString().trim() : '';
         let nis = (nisIdx > -1 && row[nisIdx]) ? row[nisIdx].toString().trim() : '';
+        if (nis && nis !== '-' && nis !== '0') {
+            if (seenNisInFile.has(nis)) {
+                duplicateNisInFileCount++;
+            } else {
+                seenNisInFile.add(nis);
+            }
+        }
         const nik = (nikIdx > -1 && row[nikIdx]) ? row[nikIdx].toString().trim() : '';
 
         let tempatLahir = (tempatLahirIdx > -1 && row[tempatLahirIdx]) ? row[tempatLahirIdx].toString().trim().toUpperCase() : '';
@@ -2627,7 +2643,16 @@ function parseAndShowPreviewRows(rows) {
     const countEl = document.getElementById('count-preview-import');
     const btnProses = document.getElementById('btn-proses-import');
 
-    if (countEl) countEl.innerText = tempImportSantriData.length;
+    if (countEl) {
+        let note = `${tempImportSantriData.length} santri siap diimport`;
+        if (skippedEmptyRows > 0 || duplicateNisInFileCount > 0) {
+            const parts = [];
+            if (skippedEmptyRows > 0) parts.push(`${skippedEmptyRows} baris kosong/header/keterangan`);
+            if (duplicateNisInFileCount > 0) parts.push(`${duplicateNisInFileCount} duplikat NIS`);
+            note += ` <span class="text-xs text-amber-700 font-normal">(${parts.join(', ')} dilewati)</span>`;
+        }
+        countEl.innerHTML = note;
+    }
     
     if (tablePreview) {
         const previewRows = tempImportSantriData.slice(0, 10);
@@ -2699,9 +2724,9 @@ function prosesEksekusiImportSantri() {
     let countGT = 0;
 
     tempImportSantriData.forEach((item, idx) => {
-        let nis = item.nis;
-        if (!nis) {
-            nis = 'NIS-' + (Date.now() + Math.floor(Math.random() * 10000)).toString().slice(-6);
+        let nis = (item.nis || '').toString().trim();
+        if (!nis || nis === '-' || nis === '0' || nis.toLowerCase() === 'nan' || nis.toLowerCase() === 'null') {
+            nis = 'NIS-' + (Date.now() + idx + Math.floor(Math.random() * 10000)).toString().slice(-8);
         }
 
         // Daftarkan kamar ke master jika kamar aktif belum ada
