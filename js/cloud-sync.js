@@ -865,56 +865,10 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         dataUpdated = true;
     }
 
-    // 3. Smart Merge Santri Data dengan proteksi reset
-    if (Array.isArray(cloudData.santriData)) {
-        const activeSantriResetTs = Math.max(
-            Number(localStorage.getItem('epondok_santri_reset_ts') || 0),
-            Number((cloudSettings && cloudSettings.santriResetTimestamp) || 0)
-        );
-
-        if (activeSantriResetTs > 0 && !window._isRestoringDatabase && !isPrePullBeforePush) {
-            const santriExtras = (cloudSettings && cloudSettings._cloudSantriExtras && typeof cloudSettings._cloudSantriExtras === 'object')
-                ? cloudSettings._cloudSantriExtras
-                : {};
-
-            // 1. Bersihkan santri lokal lama yang berasal dari sebelum reset, tetapi PERTAHANKAN santri baru (updatedAt > activeSantriResetTs)
-            const currentLocal = Array.isArray(window.santriData) ? window.santriData : (santriData || []);
-            const validLocalSantri = currentLocal.filter(s => {
-                if (!s || !s.id) return false;
-                if (s.updatedAt) {
-                    const upTs = new Date(s.updatedAt).getTime();
-                    return !isNaN(upTs) && upTs > activeSantriResetTs;
-                }
-                return false;
-            });
-
-            if (validLocalSantri.length !== currentLocal.length) {
-                santriData = validLocalSantri;
-                window.santriData = validLocalSantri;
-                localStorage.setItem('santriData', JSON.stringify(validLocalSantri));
-                dataUpdated = true;
-            }
-
-            // 2. Saring santri Cloud: hanya terima santri baru yang diinput setelah tanggal reset (updatedAt > activeSantriResetTs)
-            const filteredCloudSantri = cloudData.santriData.filter(s => {
-                if (!s || !s.id) return false;
-                const extra = santriExtras[s.id];
-                const upStr = s.updatedAt || (extra && extra.updatedAt);
-                if (upStr) {
-                    const upTs = new Date(upStr).getTime();
-                    if (!isNaN(upTs)) return upTs > activeSantriResetTs;
-                }
-                return false;
-            });
-
-            if (filteredCloudSantri.length > 0) {
-                const santriChanged = mergeSantriFromCloud(filteredCloudSantri, cloudSettings);
-                if (santriChanged) dataUpdated = true;
-            }
-        } else if (cloudData.santriData.length > 0) {
-            const santriChanged = mergeSantriFromCloud(cloudData.santriData, cloudSettings);
-            if (santriChanged) dataUpdated = true;
-        }
+    // 3. Smart Merge Santri Data (Multi-Perangkat Aman & Anti-Hilang)
+    if (Array.isArray(cloudData.santriData) && cloudData.santriData.length > 0) {
+        const santriChanged = mergeSantriFromCloud(cloudData.santriData, cloudSettings);
+        if (santriChanged) dataUpdated = true;
     }
 
     // 4. Smart Merge Mutasi Kamar, Liburan, & Pulang

@@ -706,6 +706,9 @@ function simpanSantri() {
     }
 
     saveDataToStorage();
+    if (typeof pushToCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+        pushToCloud({ silent: true, isRestorePush: true });
+    }
     updateFiltersAndDropdowns();
     renderSemuaTabel();
     renderMasterSantriTable();
@@ -1593,6 +1596,9 @@ function prosesBoyongSantri() {
 
     // Simpan ke storage dan sinkronkan seluruh modul
     saveDataToStorage();
+    if (typeof pushToCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+        pushToCloud({ silent: true, isRestorePush: true });
+    }
     updateFiltersAndDropdowns();
     renderSemuaTabel();
     renderMasterSantriTable();
@@ -1663,6 +1669,9 @@ function prosesAktifkanSantri() {
     }
 
     saveDataToStorage();
+    if (typeof pushToCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+        pushToCloud({ silent: true, isRestorePush: true });
+    }
     updateFiltersAndDropdowns();
     renderSemuaTabel();
     renderMasterSantriTable();
@@ -2780,6 +2789,9 @@ function prosesEksekusiImportSantri() {
     });
 
     saveDataToStorage();
+    if (typeof pushToCloud === 'function' && typeof cloudConfig !== 'undefined' && cloudConfig.webAppUrl) {
+        pushToCloud({ silent: true, isRestorePush: true });
+    }
     updateFiltersAndDropdowns();
     if (typeof renderMasterSantriTable === 'function') renderMasterSantriTable();
     if (typeof renderSemuaTabel === 'function') renderSemuaTabel();
