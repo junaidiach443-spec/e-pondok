@@ -477,7 +477,7 @@ function renderIsiLaporanDetail(resetPage = false) {
                     <button type="button" onclick="kirimPengingatTagihanWA('${s.id}', '${window.currentKategoriLaporan}', ${s.tunggakan})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Kirim Tagihan via WhatsApp">
                         <i class="fab fa-whatsapp text-sm"></i> Tagih WA
                     </button>
-                ` : `<span class="text-xs text-gray-300">-</span>`}
+                 ` : `<span class="text-xs text-gray-300">-</span>`}
             </td>
         </tr>`;
     }).join('') : `<tr><td colspan="8" class="p-10 text-center text-gray-400"><i class="fas fa-file-excel text-3xl mb-2 text-gray-300"></i><p>Tidak ada data laporan yang sesuai filter</p></td></tr>`;
