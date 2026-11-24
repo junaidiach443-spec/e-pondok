@@ -756,9 +756,9 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
     const cloudSettings = (cloudData.appSettings && typeof cloudData.appSettings === 'object') ? cloudData.appSettings : null;
     const restoreTs = Number(localStorage.getItem('epondok_restore_ts') || 0);
 
-    // 0A. Hormati Reset Transaksi Awal dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database)
+    // 0A. Hormati Reset Transaksi Awal dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database atau sedang pre-pull sebelum push)
     // PENTING: Hanya lakukan reset jika cloudResetTs LEBIH BARU dari localResetTs DAN LEBIH BARU dari restoreTs!
-    if (cloudSettings && cloudSettings.trxResetTimestamp && !window._isRestoringDatabase) {
+    if (!isPrePullBeforePush && cloudSettings && cloudSettings.trxResetTimestamp && !window._isRestoringDatabase) {
         const cloudResetTs = Number(cloudSettings.trxResetTimestamp) || 0;
         const localResetTs = Number(localStorage.getItem('epondok_last_trx_reset_ts') || 0);
         if (cloudResetTs > localResetTs && cloudResetTs > restoreTs) {
@@ -776,16 +776,26 @@ function applyCloudSnapshotToLocal(cloudData, isPrePullBeforePush = false) {
         }
     }
 
-    // 0A-2. Hormati Reset Master Santri dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database)
-    if (cloudSettings && cloudSettings.santriResetTimestamp && !window._isRestoringDatabase) {
+    // 0A-2. Hormati Reset Master Santri dari Cloud bila ada reset lebih baru (Kecuali sedang memulihkan cadangan database atau sedang pre-pull sebelum push)
+    if (!isPrePullBeforePush && cloudSettings && cloudSettings.santriResetTimestamp && !window._isRestoringDatabase) {
         const cloudSantriResetTs = Number(cloudSettings.santriResetTimestamp) || 0;
         const localSantriResetTs = Number(localStorage.getItem('epondok_santri_reset_ts') || 0);
         if (cloudSantriResetTs > localSantriResetTs && cloudSantriResetTs > restoreTs) {
-            santriData = [];
-            window.santriData = [];
-            localStorage.setItem('santriData', JSON.stringify([]));
-            localStorage.setItem('epondok_santri_reset_ts', String(cloudSantriResetTs));
-            dataUpdated = true;
+            const curSantri = window.santriData || santriData || [];
+            const hasNewerSantri = curSantri.some(s => {
+                if (!s || !s.updatedAt) return false;
+                const ts = new Date(s.updatedAt).getTime();
+                return ts > cloudSantriResetTs;
+            });
+            if (!hasNewerSantri && curSantri.length === 0) {
+                santriData = [];
+                window.santriData = [];
+                localStorage.setItem('santriData', JSON.stringify([]));
+                localStorage.setItem('epondok_santri_reset_ts', String(cloudSantriResetTs));
+                dataUpdated = true;
+            } else {
+                localStorage.setItem('epondok_santri_reset_ts', String(cloudSantriResetTs));
+            }
         }
     }
 
@@ -954,8 +964,12 @@ async function pullFromCloud(options = {}) {
             showToast(`Data Cloud berhasil disinkronkan! (${countS} Santri, ${countT} Transaksi)`, 'success');
         }
 
-        // Jika ada transaksi lokal yang belum ada di Cloud, tandai untuk dikirim di finally tepat setelah kunci dilepas
-        if (trxMerge && trxMerge.hasLocalUnpushed) {
+        // Jika ada santri atau transaksi lokal yang belum ada di Cloud, tandai untuk otomatis diunggah ke Google Sheets
+        const cloudSantriSet = new Set(((res.data && res.data.santriData) || []).map(s => s && s.id).filter(Boolean));
+        const localSantriList = window.santriData || santriData || [];
+        const hasUnpushedSantri = localSantriList.some(s => s && s.id && !cloudSantriSet.has(s.id));
+
+        if (hasUnpushedSantri || (trxMerge && trxMerge.hasLocalUnpushed)) {
             hasPendingPush = true;
         }
 
@@ -1152,6 +1166,65 @@ function triggerAutoSyncToCloud(immediate = false) {
 }
 
 /**
+ * Sinkronisasi Dua Arah Lengkap (Two-Way Sync):
+ * 1. Ambil data terbaru dari Cloud
+ * 2. Unggah data gabungan lokal ke Google Sheets secara instan
+ */
+async function syncDataNow(options = {}) {
+    const { silent = false } = options;
+    if (!cloudConfig.webAppUrl) {
+        if (!silent && typeof showToast === 'function') {
+            showToast('URL Google Apps Script belum diatur!', 'error');
+        }
+        return false;
+    }
+    if (!navigator.onLine) {
+        if (!silent && typeof showToast === 'function') {
+            showToast('Perangkat sedang offline. Data Anda aman tersimpan di perangkat.', 'warning');
+        }
+        return false;
+    }
+    if (isSyncingActive) {
+        if (!silent && typeof showToast === 'function') {
+            showToast("Sedang menyinkronkan data dengan Google Sheets...", "info");
+        }
+        return false;
+    }
+
+    try {
+        if (!silent && typeof showToast === 'function') {
+            showToast("Menyinkronkan data dengan Google Sheets...", "info");
+        }
+
+        // 1. Tarik perubahan terbaru dari Cloud terlebih dahulu
+        await pullFromCloud({ silent: true });
+
+        // 2. Segera kirim seluruh data lokal gabungan ke Cloud (isRestorePush: true agar langsung dikirim tanpa delay)
+        const pushResult = await pushToCloud({ silent: true, isRestorePush: true });
+
+        if (pushResult) {
+            const countS = (window.santriData || santriData || []).length;
+            const countT = (window.transactions || transactions || []).length;
+            if (!silent && typeof showToast === 'function') {
+                showToast(`Sinkronisasi berhasil! (${countS} Santri, ${countT} Transaksi tersimpan di Google Sheets)`, 'success');
+            }
+            return true;
+        } else {
+            if (!silent && typeof showToast === 'function') {
+                showToast('Gagal mengunggah data ke Google Sheets', 'error');
+            }
+            return false;
+        }
+    } catch (e) {
+        console.error('[Cloud Sync] Error syncDataNow:', e);
+        if (!silent && typeof showToast === 'function') {
+            showToast('Kendala sinkronisasi: ' + e.message, 'error');
+        }
+        return false;
+    }
+}
+
+/**
  * Handler klik pill indikator cloud di header
  */
 function handleHeaderCloudClick() {
@@ -1161,7 +1234,7 @@ function handleHeaderCloudClick() {
         }
         return;
     }
-    pullFromCloud({ silent: false });
+    syncDataNow({ silent: false });
 }
 
 /**
@@ -1881,6 +1954,7 @@ window.simpanFormPengaturanCloud = simpanFormPengaturanCloud;
 window.testCloudConnection = testCloudConnection;
 window.pullFromCloud = pullFromCloud;
 window.pushToCloud = pushToCloud;
+window.syncDataNow = syncDataNow;
 window.triggerAutoSyncToCloud = triggerAutoSyncToCloud;
 window.handleHeaderCloudClick = handleHeaderCloudClick;
 window.trackDeletedTransactionId = trackDeletedTransactionId;
